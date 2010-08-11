@@ -9,6 +9,8 @@ import java.util.Scanner;
 import javax.swing.*;
 import java.text.DecimalFormat;
 
+// Test comment
+
 public class DMRDecode {
 	private DisplayModel display_model;
 	private DisplayView display_view;
