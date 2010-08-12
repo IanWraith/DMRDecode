@@ -1,22 +1,37 @@
+// Please note much of the code in this program was taken from the DSD software
+// and converted into Java. The author of this software is unknown but has the
+// GPG Key ID below
+
+// Copyright (C) 2010 DSD Author
+// GPG Key ID: 0x3F1D7FD0 (74EF 430D F7F2 0A48 FCE6  F630 FAA2 635D 3F1D 7FD0)
+// 
+// Permission to use, copy, modify, and/or distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above
+// copyright notice and this permission notice appear in all copies.
+//
+// THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+// REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+// AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+// INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+// LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+// OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+//
+
 package com.dmr;
 
 import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
-import java.io.FileWriter;
-import java.util.Scanner;
 import javax.swing.*;
-import java.text.DecimalFormat;
-
-// Test comment
 
 public class DMRDecode {
 	private DisplayModel display_model;
 	private DisplayView display_view;
-	private static DMRdecode theApp;
+	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 1 - Ian Wraith 2010";
+	public String program_version="DMR Decoder V0.00 Build 0";
 	public TargetDataLine Line;
 	public AudioFormat format;
 	public int vertical_scrollbar_value=0;
@@ -25,9 +40,22 @@ public class DMRDecode {
 	private static boolean RUNNING=true;
 	private int have_sync=0;
 	private int samplesPerSymbol=10;
+	private int rf_mod=0;
+	private int jitter=-1;
+	private int symbolCenter=4;
+	private int max=15000;
+	private int min=-15000;
+	private int center=0;
+	private int lastsample=0;
+	private int numflips=0;
+	private int maxref=12000;
+	private int minref=-12000;
+	private int lastsynctype=-1;
+	private int symboltiming=0;
+	private int symbolcnt=0;
 
 	public static void main(String[] args) {
-		theApp=new DMRdecode();
+		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
 		
 		// Prepare the program //
@@ -89,9 +117,12 @@ public class DMRDecode {
 	  
 	  // The main routine for decoding DMR data
 	  public void decode()	{
-		  getSymbol();
+		  int symbol;
+		  symbol=getSymbol();
+	
 	  }
 	  
+	  // This code lifted straight from the DSD source code and needs a lot of tidying
 	  public int getSymbol()	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i = 0; i < samplesPerSymbol; i++)
@@ -135,7 +166,9 @@ public class DMRDecode {
 		          jitter = -1;
 		        }
 
-		      result = read (opts->audio_in_fd, &sample, 2);
+			      sample=getAudio();
+		      
+		      
 		      if ((sample > max) && (have_sync == 1) && (rf_mod == 0))
 		        {
 		          sample = max;
@@ -161,14 +194,14 @@ public class DMRDecode {
 		                {               // first spike out of place
 		                  jitter = i;
 		                }
-		              if ((opts->symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
+		              if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
 		                {
 		                  //printf ("O");
 		                }
 		            }
 		          else
 		            {
-		              if ((opts->symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
+		              if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
 		                {
 		                  //printf ("+");
 		                }
@@ -194,16 +227,16 @@ public class DMRDecode {
 		                {               // first spike out of place
 		                  jitter = i;
 		                }
-		              if ((opts->symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
+		              if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
 		                {
 		                  //printf ("X");
 		                }
 		            }
 		          else
 		            {
-		              if ((opts->symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
+		              if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
 		                {
-		                  printf ("-");
+		                  //printf ("-");
 		                }
 		              if ((jitter < 0) && (lastsample > center) && (rf_mod != 1))
 		                {               // first transition edge
@@ -231,20 +264,38 @@ public class DMRDecode {
 		    }
 		  symbol = (sum / count);
 
-		  if ((opts->symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
+		  if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
 		    {
 		      if (jitter >= 0)
 		        {
-		          printf (" %i\n", jitter);
+		          //printf (" %i\n", jitter);
 		        }
 		      else
 		        {
-		          printf ("\n");
+		          //printf ("\n");
 		        }
 		    }
 
 		  symbolcnt++;
 		  return symbol;
 	  }
+	  
+	  // Grab and return a single byte from the audio line
+	  public int getAudio ()	{
+		  int sample,count,total=0;
+		  byte buffer[]=new byte[2];
+		  try	{
+			  while (total<1)	{
+				  count=Line.read(buffer,0,2);
+				  total=total+count;
+			  	}
+			  } catch (Exception e)	{
+			  String err=e.getMessage();
+			  JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+		  }
+		  sample=buffer[0];
+		  return sample;
+	  }
+	  
 
 }
