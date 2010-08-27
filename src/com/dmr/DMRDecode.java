@@ -53,6 +53,10 @@ public class DMRDecode {
 	private int lastsynctype=-1;
 	private int symboltiming=0;
 	private int symbolcnt=0;
+	private int sbuf[]=new int[128];
+	private int sidx=0;
+	private int ssize=36;
+	private int mod_threshold=26;
 
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -296,8 +300,7 @@ public class DMRDecode {
 		  return sample;
 	  }
 	  
-	  int getFrameSync ()
-	  {
+	  public int getFrameSync ()	{
 	    /* detects frame sync and returns frame type
 	     * 0 = +p25p1
 	     * 1 = -p25p1
@@ -318,16 +321,19 @@ public class DMRDecode {
 	     */
 
 	    int i, j, t, o, dibit, sync, symbol, synctest_pos, lastt;
-	    char synctest[25];
-	    char synctest18[19];
-	    char synctest32[33];
-	    char modulation[8];
-	    char *synctest_p;
-	    char synctest_buf[10240];
+	    int synctest[]=new int[25];
+	    int synctest18[]=new int[19];
+	    int synctest32[]=new int[33];
+	    int modulation[]=new int[8];
+	    //char *synctest_p;
+	    int synctest_buf[]=new int [10240];
+	    int synctest_p[]=new int [10240];
+	    int synctest_p_counter=0;
 	    int lmin, lmax, lidx;
-	    int lbuf[24], lbuf2[24];
+	    int lbuf[]=new int[24]; 
+	    int lbuf2[]=new int[24];
 	    int lsum;
-	    char spectrum[64];
+	    int spectrum[]=new int[64];
 
 	    // detect frame sync
 	    t = 0;
@@ -335,7 +341,8 @@ public class DMRDecode {
 	    synctest18[18] = 0;
 	    synctest32[32] = 0;
 	    synctest_pos = 0;
-	    synctest_p = synctest_buf;
+	    synctest_p=synctest_buf;
+	   
 	    sync = 0;
 	    lmin = 0;
 	    lmax = 0;
@@ -348,7 +355,7 @@ public class DMRDecode {
 	        t++;
 	        symbol=getSymbol();
 	        lbuf[lidx] = symbol;
-	        state->sbuf[state->sidx] = symbol;
+	        sbuf[sidx] = symbol;
 	        if (lidx == 23)
 	          {
 	            lidx = 0;
@@ -357,40 +364,31 @@ public class DMRDecode {
 	          {
 	            lidx++;
 	          }
-	        if (state->sidx == (opts->ssize - 1))
+	        if (sidx == (ssize - 1))
 	          {
-	            state->sidx = 0;
+	            sidx = 0;
 	          }
 	        else
 	          {
-	            state->sidx++;
+	            sidx++;
 	          }
 
 	        if (lastt == 23)
 	          {
 	            lastt = 0;
-	            if (state->numflips > opts->mod_threshold)
+	            if (numflips > mod_threshold)
 	              {
-	                if (opts->mod_qpsk == 1)
-	                  {
-	                    state->rf_mod = 1;
-	                  }
+
 	              }
-	            else if (state->numflips > 18)
+	            else if (numflips > 18)
 	              {
-	                if (opts->mod_gfsk == 1)
-	                  {
-	                    state->rf_mod = 2;
-	                  }
+
 	              }
 	            else
 	              {
-	                if (opts->mod_c4fm == 1)
-	                  {
-	                    state->rf_mod = 0;
-	                  }
+
 	              }
-	            state->numflips = 0;
+	            numflips = 0;
 	          }
 	        else
 	          {
@@ -400,18 +398,18 @@ public class DMRDecode {
 	        //determine dibit state
 	        if (symbol > 0)
 	          {
-	            *state->dibit_buf_p = 1;
-	            state->dibit_buf_p++;
+	            *dibit_buf_p = 1;
+	            dibit_buf_p++;
 	            dibit = 49;
 	          }
 	        else
 	          {
-	            *state->dibit_buf_p = 3;
-	            state->dibit_buf_p++;
+	            *dibit_buf_p = 3;
+	            dibit_buf_p++;
 	            dibit = 51;
 	          }
 
-	        *synctest_p = dibit;
+	        synctest_p[synctest_p_counter]=dibit;
 	        if (t >= 24)
 	          {
 	            for (i = 0; i < 24; i++)
@@ -422,54 +420,41 @@ public class DMRDecode {
 	            lmin = (lbuf2[2] + lbuf2[3] + lbuf2[4]) / 3;
 	            lmax = (lbuf2[21] + lbuf2[20] + lbuf2[19]) / 3;
 
-	            if (state->rf_mod == 1)
+	            if (rf_mod == 1)
 	              {
-	                state->minbuf[state->midx] = lmin;
-	                state->maxbuf[state->midx] = lmax;
-	                if (state->midx == (opts->msize - 1))
+	                minbuf[midx] = lmin;
+	                maxbuf[midx] = lmax;
+	                if (midx == (msize - 1))
 	                  {
-	                    state->midx = 0;
+	                    midx = 0;
 	                  }
 	                else
 	                  {
-	                    state->midx++;
+	                    midx++;
 	                  }
 	                lsum = 0;
-	                for (i = 0; i < opts->msize; i++)
+	                for (i = 0; i < msize; i++)
 	                  {
-	                    lsum += state->minbuf[i];
+	                    lsum += minbuf[i];
 	                  }
-	                state->min = lsum / opts->msize;
+	                min = lsum / msize;
 	                lsum = 0;
-	                for (i = 0; i < opts->msize; i++)
+	                for (i = 0; i < msize; i++)
 	                  {
-	                    lsum += state->maxbuf[i];
+	                    lsum += maxbuf[i];
 	                  }
-	                state->max = lsum / opts->msize;
-	                state->center = ((state->max) + (state->min)) / 2;
-	                state->maxref = ((state->max) * 0.80);
-	                state->minref = ((state->min) * 0.80);
+	                max = lsum / msize;
+	                center = ((max) + (min)) / 2;
+	                maxref = ((max) * 0.80);
+	                minref = ((min) * 0.80);
 	              }
 	            else
 	              {
-	                state->maxref = state->max;
-	                state->minref = state->min;
+	                maxref = max;
+	                minref = min;
 	              }
 
-	            if (state->rf_mod == 0)
-	              {
-	                sprintf (modulation, "C4FM");
-	              }
-	            else if (state->rf_mod == 1)
-	              {
-	                sprintf (modulation, "QPSK");
-	              }
-	            else if (state->rf_mod == 2)
-	              {
-	                sprintf (modulation, "GFSK");
-	              }
-
-	            if (opts->datascope == 1)
+	            if (datascope == 1)
 	              {
 	                if (lidx == 0)
 	                  {
@@ -482,39 +467,39 @@ public class DMRDecode {
 	                        o = (lbuf2[i] + 32768) / 1024;
 	                        spectrum[o]++;
 	                      }
-	                    if (state->symbolcnt > (4800 / opts->scoperate))
+	                    if (symbolcnt > (4800 / scoperate))
 	                      {
-	                        state->symbolcnt = 0;
-	                        printf ("\n");
-	                        printf ("Demod mode:     %s                Nac:                     %4X\n", modulation, state->nac);
-	                        printf ("Frame Type:    %s        Talkgroup:            %7i\n", state->ftype, state->lasttg);
-	                        printf ("Frame Subtype: %s       Source:          %12i\n", state->fsubtype, state->lastsrc);
-	                        printf ("TDMA activity:  %s %s     Voice errors: %s\n", state->slot0light, state->slot1light, state->err_str);
-	                        printf ("+----------------------------------------------------------------+\n");
+	                        symbolcnt = 0;
+	                        //printf ("\n");
+	                        //printf ("Demod mode:     %s                Nac:                     %4X\n", modulation, nac);
+	                        //printf ("Frame Type:    %s        Talkgroup:            %7i\n", ftype, lasttg);
+	                        //printf ("Frame Subtype: %s       Source:          %12i\n", fsubtype, lastsrc);
+	                        //printf ("TDMA activity:  %s %s     Voice errors: %s\n", slot0light, slot1light, err_str);
+	                        //printf ("+----------------------------------------------------------------+\n");
 	                        for (i = 0; i < 10; i++)
 	                          {
-	                            printf ("|");
+	                            //printf ("|");
 	                            for (j = 0; j < 64; j++)
 	                              {
 	                                if (i == 0)
 	                                  {
-	                                    if ((j == ((state->min) + 32768) / 1024) || (j == ((state->max) + 32768) / 1024))
+	                                    if ((j == ((min) + 32768) / 1024) || (j == ((max) + 32768) / 1024))
 	                                      {
-	                                        printf ("#");
+	                                        //printf ("#");
 	                                      }
-	                                    else if (j == (state->center + 32768) / 1024)
+	                                    else if (j == (center + 32768) / 1024)
 	                                      {
-	                                        printf ("!");
+	                                        //printf ("!");
 	                                      }
 	                                    else
 	                                      {
 	                                        if (j == 32)
 	                                          {
-	                                            printf ("|");
+	                                            //printf ("|");
 	                                          }
 	                                        else
 	                                          {
-	                                            printf (" ");
+	                                            //printf (" ");
 	                                          }
 	                                      }
 	                                  }
@@ -522,379 +507,129 @@ public class DMRDecode {
 	                                  {
 	                                    if (spectrum[j] > 9 - i)
 	                                      {
-	                                        printf ("*");
+	                                        //printf ("*");
 	                                      }
 	                                    else
 	                                      {
 	                                        if (j == 32)
 	                                          {
-	                                            printf ("|");
+	                                            //printf ("|");
 	                                          }
 	                                        else
 	                                          {
-	                                            printf (" ");
+	                                           //printf (" ");
 	                                          }
 	                                      }
 	                                  }
 	                              }
-	                            printf ("|\n");
+	                            //printf ("|\n");
 	                          }
-	                        printf ("+----------------------------------------------------------------+\n");
+	                        //printf ("+----------------------------------------------------------------+\n");
 	                      }
 	                  }
 	              }
 
 	            strncpy (synctest, (synctest_p - 23), 24);
-	            if (opts->frame_p25p1 == 1)
-	              {
-	                if (strcmp (synctest, FRAME_SYNC) == 0)
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, " P25 Phase 1 ");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, " +p25p1    ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = 0;
-	                    return (0);
-	                  }
-	                if (strcmp (synctest, INV_FRAME_SYNC) == 0)
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, " P25 Phase 1 ");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, " -p25p1    ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = 1;
-	                    return (1);
-	                  }
-	              }
-	            if (opts->frame_x2tdma == 1)
-	              {
-	                if (strcmp (synctest, X2TDMA_DATA_SYNC) == 0)
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + (lmax)) / 2;
-	                    state->min = ((state->min) + (lmin)) / 2;
-	                    if (opts->inverted_x2tdma == 0)
-	                      {
-	                        // data frame
-	                        sprintf (state->ftype, " X2-TDMA     ");
-	                        if (opts->errorbars == 1)
-	                          {
-	                            printFrameSync (opts, state, " +X2-TDMA  ", synctest_pos + 1, modulation);
-	                          }
-	                        state->lastsynctype = 2;
-	                        return (2);
-	                      }
-	                    else
-	                      {
-	                        // inverted voice frame
-	                        sprintf (state->ftype, " X2-TDMA     ");
-	                        if (opts->errorbars == 1)
-	                          {
-	                            printFrameSync (opts, state, " -X2-TDMA  ", synctest_pos + 1, modulation);
-	                          }
-	                        if (state->lastsynctype != 3)
-	                          {
-	                            state->firstframe = 1;
-	                          }
-	                        state->lastsynctype = 3;
-	                        return (3);
-	                      }
-	                  }
-	                if (strcmp (synctest, X2TDMA_VOICE_SYNC) == 0)
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    if (opts->inverted_x2tdma == 0)
-	                      {
-	                        // voice frame
-	                        sprintf (state->ftype, " X2-TDMA     ");
-	                        if (opts->errorbars == 1)
-	                          {
-	                            printFrameSync (opts, state, " +X2-TDMA  ", synctest_pos + 1, modulation);
-	                          }
-	                        if (state->lastsynctype != 4)
-	                          {
-	                            state->firstframe = 1;
-	                          }
-	                        state->lastsynctype = 4;
-	                        return (4);
-	                      }
-	                    else
-	                      {
-	                        // inverted data frame
-	                        sprintf (state->ftype, " X2-TDMA     ");
-	                        if (opts->errorbars == 1)
-	                          {
-	                            printFrameSync (opts, state, " -X2-TDMA  ", synctest_pos + 1, modulation);
-	                          }
-	                        state->lastsynctype = 5;
-	                        return (5);
-	                      }
-	                  }
-	              }
-	            if (opts->frame_dmr == 1)
+
+
+	            if (frame_dmr == 1)
 	              {
 	                if (strcmp (synctest, DMR_DATA_SYNC) == 0)
 	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + (lmax)) / 2;
-	                    state->min = ((state->min) + (lmin)) / 2;
-	                    if (opts->inverted_dmr == 0)
+	                    carrier = 1;
+	                    offset = synctest_pos;
+	                    max = ((max) + (lmax)) / 2;
+	                    min = ((min) + (lmin)) / 2;
+	                    if (inverted_dmr == 0)
 	                      {
 	                        // data frame
-	                        sprintf (state->ftype, " DMR         ");
-	                        if (opts->errorbars == 1)
+	                        sprintf (ftype, " DMR         ");
+	                        if (errorbars == 1)
 	                          {
-	                            printFrameSync (opts, state, " +DMR      ", synctest_pos + 1, modulation);
+	                            //printFrameSync (opts, state, " +DMR      ", synctest_pos + 1, modulation);
 	                          }
-	                        state->lastsynctype = 10;
+	                        lastsynctype = 10;
 	                        return (10);
 	                      }
 	                    else
 	                      {
 	                        // inverted voice frame
-	                        sprintf (state->ftype, " DMR         ");
-	                        if (opts->errorbars == 1)
+	                        sprintf (ftype, " DMR         ");
+	                        if (errorbars == 1)
 	                          {
-	                            printFrameSync (opts, state, " -DMR      ", synctest_pos + 1, modulation);
+	                            //printFrameSync (opts, state, " -DMR      ", synctest_pos + 1, modulation);
 	                          }
-	                        if (state->lastsynctype != 11)
+	                        if (lastsynctype != 11)
 	                          {
-	                            state->firstframe = 1;
+	                            firstframe = 1;
 	                          }
-	                        state->lastsynctype = 11;
+	                        lastsynctype = 11;
 	                        return (11);
 	                      }
 	                  }
 	                if (strcmp (synctest, DMR_VOICE_SYNC) == 0)
 	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    if (opts->inverted_dmr == 0)
+	                    carrier = 1;
+	                    offset = synctest_pos;
+	                    max = ((max) + lmax) / 2;
+	                    min = ((min) + lmin) / 2;
+	                    if (inverted_dmr == 0)
 	                      {
 	                        // voice frame
-	                        sprintf (state->ftype, " DMR         ");
-	                        if (opts->errorbars == 1)
+	                        sprintf (ftype, " DMR         ");
+	                        if (errorbars == 1)
 	                          {
-	                            printFrameSync (opts, state, " +DMR      ", synctest_pos + 1, modulation);
+	                           // printFrameSync (opts, state, " +DMR      ", synctest_pos + 1, modulation);
 	                          }
-	                        if (state->lastsynctype != 12)
+	                        if (lastsynctype != 12)
 	                          {
-	                            state->firstframe = 1;
+	                            firstframe = 1;
 	                          }
-	                        state->lastsynctype = 12;
+	                        lastsynctype = 12;
 	                        return (12);
 	                      }
 	                    else
 	                      {
 	                        // inverted data frame
-	                        sprintf (state->ftype, " DMR         ");
-	                        if (opts->errorbars == 1)
+	                        sprintf (ftype, " DMR         ");
+	                        if (errorbars == 1)
 	                          {
-	                            printFrameSync (opts, state, " -DMR      ", synctest_pos + 1, modulation);
+	                            //printFrameSync (opts, state, " -DMR      ", synctest_pos + 1, modulation);
 	                          }
-	                        state->lastsynctype = 13;
+	                        lastsynctype = 13;
 	                        return (13);
 	                      }
 	                  }
 	              }
-	            if (opts->frame_provoice == 1)
-	              {
-	                strncpy (synctest32, (synctest_p - 31), 32);
-	                if ((strcmp (synctest32, PROVOICE_SYNC) == 0) || (strcmp (synctest32, PROVOICE_EA_SYNC) == 0))
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, " ProVoice    ");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, " -ProVoice ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = 14;
-	                    return (14);
-	                  }
-	                else if ((strcmp (synctest32, INV_PROVOICE_SYNC) == 0) || (strcmp (synctest32, INV_PROVOICE_EA_SYNC) == 0))
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, " ProVoice    ");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, " -ProVoice ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = 15;
-	                    return (15);
-	                  }
 
-	              }
-	            if (opts->frame_nxdn == 1)
+	            if ((t == 24) && (lastsynctype != -1))
 	              {
-	                strncpy (synctest18, (synctest_p - 17), 18);
-	                if (strcmp (synctest18, NXDN96_SYNC) == 0)
+	              if ((lastsynctype == 11) && (strcmp (synctest, DMR_VOICE_SYNC) != 0))
 	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, " NXDN96      ");
-	                    if (opts->errorbars == 1)
+	                    carrier = 1;
+	                    offset = synctest_pos;
+	                    max = ((max) + lmax) / 2;
+	                    min = ((min) + lmin) / 2;
+	                    sprintf (ftype, "(DMR)        ");
+	                    if (errorbars == 1)
 	                      {
-	                        printFrameSync (opts, state, " +NXDN96   ", synctest_pos + 1, modulation);
+	                        //printFrameSync (opts, state, "(-DMR)     ", synctest_pos + 1, modulation);
 	                      }
-	                    state->lastsynctype = 8;
-	                    return (8);
-	                  }
-	                if (strcmp (synctest18, INV_NXDN96_SYNC) == 0)
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, " NXDN96      ");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, " -NXDN96   ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = 9;
-	                    return (9);
-	                  }
-	              }
-	            if (opts->frame_dstar == 1)
-	              {
-	                if (strcmp (synctest, DSTAR_SYNC) == 0)
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, " D-STAR      ");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, " +D-STAR   ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = 6;
-	                    return (6);
-	                  }
-	                if (strcmp (synctest, INV_DSTAR_SYNC) == 0)
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, " D-STAR      ");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, " -D-STAR   ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = 7;
-	                    return (7);
-	                  }
-	              }
-
-	            if ((t == 24) && (state->lastsynctype != -1))
-	              {
-	                if ((state->lastsynctype == 0) && ((state->lastp25type == 1) || (state->lastp25type == 2)))
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + (lmax)) / 2;
-	                    state->min = ((state->min) + (lmin)) / 2;
-	                    sprintf (state->ftype, "(P25 Phase 1)");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, "(+p25p1)   ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = -1;
-	                    return (0);
-	                  }
-	                else if ((state->lastsynctype == 1) && ((state->lastp25type == 1) || (state->lastp25type == 2)))
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, "(P25 Phase 1)");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, "(-p25p1)   ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = -1;
-	                    return (1);
-	                  }
-	                else if ((state->lastsynctype == 3) && (strcmp (synctest, X2TDMA_VOICE_SYNC) != 0))
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, "(X2-TDMA)    ");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, "(-X2-TDMA) ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = -1;
-	                    return (3);
-	                  }
-	                else if ((state->lastsynctype == 4) && (strcmp (synctest, X2TDMA_DATA_SYNC) != 0))
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, "(X2-TDMA)    ");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, "(+X2-TDMA) ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = -1;
-	                    return (4);
-	                  }
-	                else if ((state->lastsynctype == 11) && (strcmp (synctest, DMR_VOICE_SYNC) != 0))
-	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, "(DMR)        ");
-	                    if (opts->errorbars == 1)
-	                      {
-	                        printFrameSync (opts, state, "(-DMR)     ", synctest_pos + 1, modulation);
-	                      }
-	                    state->lastsynctype = -1;
+	                    lastsynctype = -1;
 	                    return (11);
 	                  }
-	                else if ((state->lastsynctype == 12) && (strcmp (synctest, DMR_DATA_SYNC) != 0))
+	                else if ((lastsynctype == 12) && (strcmp (synctest, DMR_DATA_SYNC) != 0))
 	                  {
-	                    state->carrier = 1;
-	                    state->offset = synctest_pos;
-	                    state->max = ((state->max) + lmax) / 2;
-	                    state->min = ((state->min) + lmin) / 2;
-	                    sprintf (state->ftype, "(DMR)        ");
-	                    if (opts->errorbars == 1)
+	                    carrier = 1;
+	                    offset = synctest_pos;
+	                    max = ((max) + lmax) / 2;
+	                    min = ((min) + lmin) / 2;
+	                    sprintf (ftype, "(DMR)        ");
+	                    if (errorbars == 1)
 	                      {
-	                        printFrameSync (opts, state, "(+DMR)     ", synctest_pos + 1, modulation);
+	                        //printFrameSync (opts, state, "(+DMR)     ", synctest_pos + 1, modulation);
 	                      }
-	                    state->lastsynctype = -1;
+	                    lastsynctype = -1;
 	                    return (12);
 	                  }
 	              }
@@ -902,31 +637,32 @@ public class DMRDecode {
 
 	        if (exitflag == 1)
 	          {
-	            cleanupAndExit (opts, state);
+	            //cleanupAndExit (opts, state);
 	          }
 
 	        if (synctest_pos < 10200)
 	          {
 	            synctest_pos++;
-	            synctest_p++;
+	            synctest_p_counter++;
 	          }
 	        else
 	          {
 	            // buffer reset
 	            synctest_pos = 0;
+	            synctest_p_counter=0;
 	            synctest_p = synctest_buf;
 	            noCarrier (opts, state);
 	          }
 
-	        if (state->carrier == 1)
+	        if (carrier == 1)
 	          {
 	            if (synctest_pos >= 1800)
 	              {
-	                if (opts->errorbars == 1)
+	                if (errorbars == 1)
 	                  {
-	                    if (opts->verbose > 1)
+	                    if (verbose > 1)
 	                      {
-	                        printf ("Sync: no sync\n");
+	                        //printf ("Sync: no sync\n");
 	                      }
 	                  }
 	                noCarrier (opts, state);
