@@ -133,29 +133,8 @@ public class DMRDecode {
 		      // timing control
 		      if ((i == 0) && (have_sync == 0))
 		        {
-		          if (rf_mod == 1)
-		            {
-		              if ((jitter >= 0) && (jitter < symbolCenter))
-		                {
-		                  i++;          // fall back
-		                }
-		              else if ((jitter > symbolCenter) && (jitter < 10))
-		                {
-		                  i--;          // catch up
-		                }
-		            }
-		          else if (rf_mod == 2)
-		            {
-		              if ((jitter >= symbolCenter - 1) && (jitter <= symbolCenter))
-		                {
-		                  i--;
-		                }
-		              else if ((jitter >= symbolCenter + 1) && (jitter <= symbolCenter + 2))
-		                {
-		                  i++;
-		                }
-		            }
-		          else if (rf_mod == 0)
+
+		          if (rf_mod == 0)
 		            {
 		              if ((jitter > 0) && (jitter <= symbolCenter))
 		                {
@@ -192,10 +171,6 @@ public class DMRDecode {
 		              if (lastsample < (maxref * 1.25))
 		                {
 		                  numflips += 1;
-		                }
-		              if ((jitter < 0) && (rf_mod == 1))
-		                {               // first spike out of place
-		                  jitter = i;
 		                }
 		              if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
 		                {
@@ -313,7 +288,6 @@ public class DMRDecode {
 	    int synctest18[]=new int[19];
 	    int synctest32[]=new int[33];
 	    int modulation[]=new int[8];
-	    //char *synctest_p;
 	    int synctest_buf[]=new int [10240];
 	    int synctest_p[]=new int [10240];
 	    int synctest_p_counter=0;
@@ -338,44 +312,23 @@ public class DMRDecode {
 	    lastt = 0;
 	    numflips = 0;
 
-	    while (sync == 0)
+	    while (sync==0)
 	      {
 	        t++;
 	        symbol=getSymbol();
-	        lbuf[lidx] = symbol;
-	        sbuf[sidx] = symbol;
-	        if (lidx == 23)
-	          {
-	            lidx = 0;
-	          }
-	        else
-	          {
-	            lidx++;
-	          }
-	        if (sidx == (ssize - 1))
-	          {
-	            sidx = 0;
-	          }
-	        else
-	          {
-	            sidx++;
-	          }
+	        lbuf[lidx]=symbol;
+	        sbuf[sidx]=symbol;
+	        
+	        if (lidx==23) lidx=0;
+	         else lidx++;
+	        
+	        if (sidx==(ssize-1)) sidx = 0;
+	          else sidx++;
+	          
 
 	        if (lastt == 23)
 	          {
 	            lastt = 0;
-	            if (numflips > mod_threshold)
-	              {
-
-	              }
-	            else if (numflips > 18)
-	              {
-
-	              }
-	            else
-	              {
-
-	              }
 	            numflips = 0;
 	          }
 	        else
@@ -456,7 +409,7 @@ public class DMRDecode {
 	                    if (inverted_dmr == 0)
 	                      {
 	                        // data frame
-	                        sprintf (ftype, " DMR         ");
+	                        //sprintf (ftype, " DMR         ");
 	                        if (errorbars == 1)
 	                          {
 	                            //printFrameSync (opts, state, " +DMR      ", synctest_pos + 1, modulation);
@@ -467,7 +420,7 @@ public class DMRDecode {
 	                    else
 	                      {
 	                        // inverted voice frame
-	                        sprintf (ftype, " DMR         ");
+	                        //sprintf (ftype, " DMR         ");
 	                        if (errorbars == 1)
 	                          {
 	                            //printFrameSync (opts, state, " -DMR      ", synctest_pos + 1, modulation);
@@ -489,7 +442,7 @@ public class DMRDecode {
 	                    if (inverted_dmr == 0)
 	                      {
 	                        // voice frame
-	                        sprintf (ftype, " DMR         ");
+	                        //sprintf (ftype, " DMR         ");
 	                        if (errorbars == 1)
 	                          {
 	                           // printFrameSync (opts, state, " +DMR      ", synctest_pos + 1, modulation);
@@ -523,7 +476,7 @@ public class DMRDecode {
 	                    offset = synctest_pos;
 	                    max = ((max) + lmax) / 2;
 	                    min = ((min) + lmin) / 2;
-	                    sprintf (ftype, "(DMR)        ");
+	                    //sprintf (ftype, "(DMR)        ");
 	                    if (errorbars == 1)
 	                      {
 	                        //printFrameSync (opts, state, "(-DMR)     ", synctest_pos + 1, modulation);
@@ -578,7 +531,7 @@ public class DMRDecode {
 	                        //printf ("Sync: no sync\n");
 	                      }
 	                  }
-	                noCarrier (opts, state);
+	                //noCarrier (opts, state);
 	                return (-1);
 	              }
 	          }
