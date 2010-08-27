@@ -301,24 +301,12 @@ public class DMRDecode {
 	  }
 	  
 	  public int getFrameSync ()	{
-	    /* detects frame sync and returns frame type
-	     * 0 = +p25p1
-	     * 1 = -p25p1
-	     * 2 = +X2-TDMA (non inverted signal data frame)
-	     * 3 = +X2-TDMA (inverted signal voice frame)
-	     * 4 = -X2-TDMA (non inverted signal voice frame)
-	     * 5 = -X2-TDMA (inverted signal data frame)
-	     * 6 = +D-STAR
-	     * 7 = -D-STAR
-	     * 8 = +NXDN96
-	     * 9 = -NXDN96
-	     * 10 = +DMR (non inverted singlan data frame)
-	     * 11 = -DMR (inverted signal voice frame)
-	     * 12 = +DMR (non inverted signal voice frame)
-	     * 13 = -DMR (inverted signal data frame)
-	     * 14 = +ProVoice
-	     * 15 = -ProVoice
-	     */
+	    // detects frame sync and returns frame type
+	    // 10 = +DMR (non inverted singlan data frame)
+	    // 11 = -DMR (inverted signal voice frame)
+	    // 12 = +DMR (non inverted signal voice frame)
+	    // 13 = -DMR (inverted signal data frame)
+
 
 	    int i, j, t, o, dibit, sync, symbol, synctest_pos, lastt;
 	    int synctest[]=new int[25];
@@ -452,81 +440,6 @@ public class DMRDecode {
 	              {
 	                maxref = max;
 	                minref = min;
-	              }
-
-	            if (datascope == 1)
-	              {
-	                if (lidx == 0)
-	                  {
-	                    for (i = 0; i < 64; i++)
-	                      {
-	                        spectrum[i] = 0;
-	                      }
-	                    for (i = 0; i < 24; i++)
-	                      {
-	                        o = (lbuf2[i] + 32768) / 1024;
-	                        spectrum[o]++;
-	                      }
-	                    if (symbolcnt > (4800 / scoperate))
-	                      {
-	                        symbolcnt = 0;
-	                        //printf ("\n");
-	                        //printf ("Demod mode:     %s                Nac:                     %4X\n", modulation, nac);
-	                        //printf ("Frame Type:    %s        Talkgroup:            %7i\n", ftype, lasttg);
-	                        //printf ("Frame Subtype: %s       Source:          %12i\n", fsubtype, lastsrc);
-	                        //printf ("TDMA activity:  %s %s     Voice errors: %s\n", slot0light, slot1light, err_str);
-	                        //printf ("+----------------------------------------------------------------+\n");
-	                        for (i = 0; i < 10; i++)
-	                          {
-	                            //printf ("|");
-	                            for (j = 0; j < 64; j++)
-	                              {
-	                                if (i == 0)
-	                                  {
-	                                    if ((j == ((min) + 32768) / 1024) || (j == ((max) + 32768) / 1024))
-	                                      {
-	                                        //printf ("#");
-	                                      }
-	                                    else if (j == (center + 32768) / 1024)
-	                                      {
-	                                        //printf ("!");
-	                                      }
-	                                    else
-	                                      {
-	                                        if (j == 32)
-	                                          {
-	                                            //printf ("|");
-	                                          }
-	                                        else
-	                                          {
-	                                            //printf (" ");
-	                                          }
-	                                      }
-	                                  }
-	                                else
-	                                  {
-	                                    if (spectrum[j] > 9 - i)
-	                                      {
-	                                        //printf ("*");
-	                                      }
-	                                    else
-	                                      {
-	                                        if (j == 32)
-	                                          {
-	                                            //printf ("|");
-	                                          }
-	                                        else
-	                                          {
-	                                           //printf (" ");
-	                                          }
-	                                      }
-	                                  }
-	                              }
-	                            //printf ("|\n");
-	                          }
-	                        //printf ("+----------------------------------------------------------------+\n");
-	                      }
-	                  }
 	              }
 
 	            strncpy (synctest, (synctest_p - 23), 24);
