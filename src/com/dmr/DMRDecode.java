@@ -128,7 +128,7 @@ public class DMRDecode {
 	  // This code lifted straight from the DSD source code and needs a lot of tidying
 	  public int getSymbol()	{
 		  int sample,i,sum=0,symbol,count=0;
-		  for (i = 0; i < samplesPerSymbol; i++)	{
+		  for (i=0;i<samplesPerSymbol;i++)	{
 		      // timing control
 		      if ((i==0) && (have_sync==0))	{
 		        if (rf_mod==0)	{
@@ -145,9 +145,7 @@ public class DMRDecode {
 		        if (sample>(maxref*1.25))	{
 		        	if (lastsample<(maxref*1.25)) numflips+=1;
 		          }
-		          else	{
-		            if ((jitter<0)&&(lastsample<center)&&(rf_mod!=1)) jitter=i;   
-		            }
+		          else if ((jitter<0)&&(lastsample<center)&&(rf_mod!=1)) jitter=i;   
 		        }
 		      else	{                       // sample < 0
 		        if (lastsample>center) numflips+=1;
@@ -216,12 +214,13 @@ public class DMRDecode {
 	    int lbuf2[]=new int[24];
 	    int lsum;
 	    int spectrum[]=new int[64];
+	    Quicksort qsort=new Quicksort();
 
 	    // detect frame sync
 	    t=0;
-	    synctest[24] = 0;
-	    synctest18[18] = 0;
-	    synctest32[32] = 0;
+	    synctest[24]=0;
+	    synctest18[18]=0;
+	    synctest32[32]=0;
 	    synctest_pos=0;
 	    synctest_p=synctest_buf;
 	   
@@ -242,7 +241,7 @@ public class DMRDecode {
 	        if (lidx==23) lidx=0;
 	         else lidx++;
 	        
-	        if (sidx==(ssize-1)) sidx = 0;
+	        if (sidx==(ssize-1)) sidx=0;
 	          else sidx++;
 	          
 
@@ -256,62 +255,31 @@ public class DMRDecode {
 	        //determine dibit state
 	        if (symbol > 0)
 	          {
-	            *dibit_buf_p = 1;
-	            dibit_buf_p++;
+	            //*dibit_buf_p = 1;
+	            //dibit_buf_p++;
 	            dibit = 49;
 	          }
 	        else
 	          {
-	            *dibit_buf_p = 3;
-	            dibit_buf_p++;
+	            //*dibit_buf_p = 3;
+	            //dibit_buf_p++;
 	            dibit = 51;
 	          }
 
 	        synctest_p[synctest_p_counter]=dibit;
-	        if (t >= 24)
-	          {
-	            for (i = 0; i < 24; i++)
-	              {
-	                lbuf2[i] = lbuf[i];
+	        if (t>=24) {
+	            for (i=0;i<24;i++) {
+	              lbuf2[i]=lbuf[i];
 	              }
-	            qsort (lbuf2, 24, sizeof (int), comp);
-	            lmin = (lbuf2[2] + lbuf2[3] + lbuf2[4]) / 3;
-	            lmax = (lbuf2[21] + lbuf2[20] + lbuf2[19]) / 3;
-
-	            if (rf_mod == 1)
-	              {
-	                minbuf[midx] = lmin;
-	                maxbuf[midx] = lmax;
-	                if (midx == (msize - 1))
-	                  {
-	                    midx = 0;
-	                  }
-	                else
-	                  {
-	                    midx++;
-	                  }
-	                lsum = 0;
-	                for (i = 0; i < msize; i++)
-	                  {
-	                    lsum += minbuf[i];
-	                  }
-	                min = lsum / msize;
-	                lsum = 0;
-	                for (i = 0; i < msize; i++)
-	                  {
-	                    lsum += maxbuf[i];
-	                  }
-	                max = lsum / msize;
-	                center = ((max) + (min)) / 2;
-	                maxref = ((max) * 0.80);
-	                minref = ((min) * 0.80);
-	              }
-	            else
-	              {
-	                maxref = max;
-	                minref = min;
-	              }
-
+	            qsort.sort(lbuf2);
+	            lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
+	            lmax=(lbuf2[21]+lbuf2[20]+lbuf2[19])/3;
+	            maxref=max;
+	            minref=min;
+	              
+	            // Copy 24 ints from synctest_p into synctest
+	            
+	            
 	            strncpy (synctest, (synctest_p - 23), 24);
 
 
@@ -327,10 +295,7 @@ public class DMRDecode {
 	                      {
 	                        // data frame
 	                        //sprintf (ftype, " DMR         ");
-	                        if (errorbars == 1)
-	                          {
-	                            //printFrameSync (opts, state, " +DMR      ", synctest_pos + 1, modulation);
-	                          }
+	                        
 	                        lastsynctype = 10;
 	                        return (10);
 	                      }
@@ -360,10 +325,6 @@ public class DMRDecode {
 	                      {
 	                        // voice frame
 	                        //sprintf (ftype, " DMR         ");
-	                        if (errorbars == 1)
-	                          {
-	                           // printFrameSync (opts, state, " +DMR      ", synctest_pos + 1, modulation);
-	                          }
 	                        if (lastsynctype != 12)
 	                          {
 	                            firstframe = 1;
@@ -374,11 +335,8 @@ public class DMRDecode {
 	                    else
 	                      {
 	                        // inverted data frame
-	                        sprintf (ftype, " DMR         ");
-	                        if (errorbars == 1)
-	                          {
-	                            //printFrameSync (opts, state, " -DMR      ", synctest_pos + 1, modulation);
-	                          }
+	                        //sprintf (ftype, " DMR         ");
+
 	                        lastsynctype = 13;
 	                        return (13);
 	                      }
