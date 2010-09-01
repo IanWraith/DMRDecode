@@ -59,7 +59,12 @@ public class DMRDecode {
 	private int mod_threshold=26;
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
-
+	private int frame_dmr=1;
+	private int carrier=0;
+	private int offset=0;
+	private boolean inverted_dmr=false;
+	private boolean firstframe=false;
+	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
@@ -233,8 +238,7 @@ public class DMRDecode {
 	    lastt=0;
 	    numflips=0;
 
-	    while (sync==0)
-	      {
+	    while (sync==0)	{
 	        t++;
 	        symbol=getSymbol();
 	        lbuf[lidx]=symbol;
@@ -255,14 +259,12 @@ public class DMRDecode {
 	          
 
 	        //determine dibit state
-	        if (symbol > 0)
-	          {
+		        if (symbol > 0)	{
 	            //*dibit_buf_p = 1;
 	            //dibit_buf_p++;
 	            dibit = 49;
 	          }
-	        else
-	          {
+		       else	{
 	            //*dibit_buf_p = 3;
 	            //dibit_buf_p++;
 	            dibit = 51;
@@ -280,135 +282,76 @@ public class DMRDecode {
 	            minref=min;
 	              
 	            // Copy 24 ints from synctest_p into synctest
-	            
-	            
-	            strncpy (synctest, (synctest_p - 23), 24);
-
-
-	            if (frame_dmr == 1)
-	              {
-	                if (strcmp (synctest, DMR_DATA_SYNC) == 0)
-	                  {
-	                    carrier = 1;
-	                    offset = synctest_pos;
-	                    max = ((max) + (lmax)) / 2;
-	                    min = ((min) + (lmin)) / 2;
-	                    if (inverted_dmr == 0)
-	                      {
-	                        // data frame
-	                        //sprintf (ftype, " DMR         ");
-	                        
-	                        lastsynctype = 10;
+	            System.arraycopy(synctest_p,0,synctest,0,24);
+	
+	            if (frame_dmr == 1)	{
+	            	if (synctest.equals(DMR_DATA_SYNC))	{
+	                    carrier=1;
+	                    offset=synctest_pos;
+	                    max=((max)+(lmax))/2;
+	                    min=((min)+(lmin))/2;
+	                    if (inverted_dmr==false)	{
+	                        lastsynctype=10;
 	                        return (10);
 	                      }
-	                    else
-	                      {
-	                        // inverted voice frame
-	                        //sprintf (ftype, " DMR         ");
-	                        if (errorbars == 1)
-	                          {
-	                            //printFrameSync (opts, state, " -DMR      ", synctest_pos + 1, modulation);
-	                          }
-	                        if (lastsynctype != 11)
-	                          {
-	                            firstframe = 1;
-	                          }
-	                        lastsynctype = 11;
+	                    else	{
+	                        if (lastsynctype!=11) firstframe=true;
+	                        lastsynctype=11;
 	                        return (11);
 	                      }
 	                  }
-	                if (strcmp (synctest, DMR_VOICE_SYNC) == 0)
-	                  {
-	                    carrier = 1;
-	                    offset = synctest_pos;
-	                    max = ((max) + lmax) / 2;
-	                    min = ((min) + lmin) / 2;
-	                    if (inverted_dmr == 0)
-	                      {
-	                        // voice frame
-	                        //sprintf (ftype, " DMR         ");
-	                        if (lastsynctype != 12)
-	                          {
-	                            firstframe = 1;
-	                          }
-	                        lastsynctype = 12;
+	                if (synctest.equals(DMR_VOICE_SYNC))	{
+	                    carrier=1;
+	                    offset=synctest_pos;
+	                    max=((max)+lmax)/2;
+	                    min=((min)+lmin)/2;
+	                    if (inverted_dmr==false)	{
+	                        if (lastsynctype!=12) firstframe=true;
+	                        lastsynctype=12;
 	                        return (12);
 	                      }
-	                    else
-	                      {
-	                        // inverted data frame
-	                        //sprintf (ftype, " DMR         ");
-
-	                        lastsynctype = 13;
+	                    else	{
+	                    	lastsynctype=13;
 	                        return (13);
 	                      }
 	                  }
 	              }
 
-	            if ((t == 24) && (lastsynctype != -1))
-	              {
-	              if ((lastsynctype == 11) && (strcmp (synctest, DMR_VOICE_SYNC) != 0))
-	                  {
-	                    carrier = 1;
-	                    offset = synctest_pos;
-	                    max = ((max) + lmax) / 2;
-	                    min = ((min) + lmin) / 2;
-	                    //sprintf (ftype, "(DMR)        ");
-	                    if (errorbars == 1)
-	                      {
-	                        //printFrameSync (opts, state, "(-DMR)     ", synctest_pos + 1, modulation);
-	                      }
-	                    lastsynctype = -1;
+	            if ((t==24)&&(lastsynctype!=-1))	{
+	              if ((lastsynctype==11)&&(synctest.equals(DMR_VOICE_SYNC)==false))	{
+	                    carrier=1;
+	                    offset=synctest_pos;
+	                    max=((max)+lmax)/2;
+	                    min=((min)+lmin)/2;
+	                    lastsynctype=-1;
 	                    return (11);
 	                  }
-	                else if ((lastsynctype == 12) && (strcmp (synctest, DMR_DATA_SYNC) != 0))
-	                  {
-	                    carrier = 1;
-	                    offset = synctest_pos;
-	                    max = ((max) + lmax) / 2;
-	                    min = ((min) + lmin) / 2;
-	                    sprintf (ftype, "(DMR)        ");
-	                    if (errorbars == 1)
-	                      {
-	                        //printFrameSync (opts, state, "(+DMR)     ", synctest_pos + 1, modulation);
-	                      }
-	                    lastsynctype = -1;
+	                else if ((lastsynctype == 12) && (synctest.equals(DMR_DATA_SYNC)==false))	{
+	                    carrier=1;
+	                    offset=synctest_pos;
+	                    max=((max)+lmax)/2;
+	                    min=((min)+lmin)/2;
+	                    lastsynctype=-1;
 	                    return (12);
 	                  }
 	              }
 	          }
 
-	        if (exitflag == 1)
-	          {
-	            //cleanupAndExit (opts, state);
-	          }
-
-	        if (synctest_pos < 10200)
-	          {
+	        if (synctest_pos<10200)	{
 	            synctest_pos++;
 	            synctest_p_counter++;
 	          }
-	        else
-	          {
+	        else	{
 	            // buffer reset
-	            synctest_pos = 0;
+	            synctest_pos=0;
 	            synctest_p_counter=0;
-	            synctest_p = synctest_buf;
-	            noCarrier (opts, state);
+	            synctest_p=synctest_buf;
+	            noCarrier ();
 	          }
 
-	        if (carrier == 1)
-	          {
-	            if (synctest_pos >= 1800)
-	              {
-	                if (errorbars == 1)
-	                  {
-	                    if (verbose > 1)
-	                      {
-	                        //printf ("Sync: no sync\n");
-	                      }
-	                  }
-	                //noCarrier (opts, state);
+	        if (carrier==1)	{
+	            if (synctest_pos>=1800)	{
+	                noCarrier ();
 	                return (-1);
 	              }
 	          }
@@ -417,5 +360,18 @@ public class DMRDecode {
 	    return (-1);
 	  }
 	  
+	  void noCarrier ()
+	  {
+	  //dibit_buf_p = dibit_buf + 200;
+	  //memset (dibit_buf, 0, sizeof (int) * 200);
+	  jitter=-1;
+	  lastsynctype=-1;
+	  carrier=0;
+	  max=15000;
+	  min=-15000;
+	  center=0;
+	  firstframe=false;
+	  }
 
+	  
 }
