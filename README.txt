@@ -8,6 +8,6 @@ convert that code to Java and remove all sections that don't relate to DMR.
 
 Milestone 1 will simply be to detect both kinds of DMR frame sync.
 
-Ian Wraith (31st August 2010)
+Ian Wraith (1st September 2010)
 
 
