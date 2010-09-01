@@ -4,6 +4,7 @@ package com.dmr;
 // Many thanks to Lars Vogel for an excellent site
 
 public class Quicksort {
+	
 	private int[] numbers;
 	private int number;
 
