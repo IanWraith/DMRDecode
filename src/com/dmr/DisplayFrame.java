@@ -29,10 +29,7 @@ import java.util.Scanner;
 public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
 	private DMRDecode theApp;
-	public static final long serialVersionUID=1;
-	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,500);
-	public JScrollBar hscrollbar=new JScrollBar(JScrollBar.HORIZONTAL,0,1,0,1000);
-	
+	public static final long serialVersionUID=1;	
 	private JMenuItem exit_item;
 
 	// Constructor
@@ -51,29 +48,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		// View
 		JMenu viewMenu=new JMenu("View");
 		menuBar.add(viewMenu);
-		// Add the vertical scrollbar
-		add(vscrollbar,BorderLayout.EAST);
-		// Add a listener for this
-		vscrollbar.addAdjustmentListener(new MyAdjustmentListener());
-		// Add the horizontal scrollbar
-		add(hscrollbar,BorderLayout.SOUTH);
-		// Add a listener for this
-		hscrollbar.addAdjustmentListener(new MyAdjustmentListener());
 		}
 
 	// Handle messages from the scrollbars
 	class MyAdjustmentListener implements AdjustmentListener  {
 		public void adjustmentValueChanged(AdjustmentEvent e) {
-			// Vertical scrollbar
-			if (e.getSource()==vscrollbar) {
-				theApp.vertical_scrollbar_value=e.getValue();
-				repaint();   
-			}
-			// Horizontal scrollbar
-			if (e.getSource()==hscrollbar) {
-				theApp.horizontal_scrollbar_value=e.getValue();
-				repaint();   
-			}	 
+
 		}
 	 }
 
