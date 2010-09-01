@@ -24,7 +24,13 @@ import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
+import java.util.Arrays;
 import javax.swing.*;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.Element;
+import javax.swing.text.html.HTML;
+import javax.swing.text.StyleConstants;
+import javax.swing.JEditorPane;
 
 public class DMRDecode {
 	private DisplayModel display_model;
@@ -64,15 +70,15 @@ public class DMRDecode {
 	private int offset=0;
 	private boolean inverted_dmr=false;
 	private boolean firstframe=false;
+	public JEditorPane editorPane;
+	public HTMLDocument doc;
+	public Element el;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
-		
-		// Prepare the program //
-		//theApp.prepare_variables();
 		theApp.prepare_audio();
-		
+		theApp.addLine("Running ..");
 		while (RUNNING)	{
 			if (theApp.audioReady==true) theApp.decode();
 		}
@@ -81,15 +87,21 @@ public class DMRDecode {
 	
 	// Setup the window //
 	public void createGUI() {
-		window=new DisplayFrame(program_version,this);
+		window=new DisplayFrame(program_version,this);	
 		Toolkit theKit=window.getToolkit();
 		Dimension wndsize=theKit.getScreenSize();
 		window.setBounds(wndsize.width/6,wndsize.height/6,2*wndsize.width/3,2*wndsize.height/3);
 		window.addWindowListener(new WindowHandler());
 		display_model=new DisplayModel();
-		display_view=new DisplayView(this);
-		display_model.addObserver(display_view);
-		window.getContentPane().add(display_view,BorderLayout.CENTER);
+		editorPane=new JEditorPane();
+		editorPane.setContentType("text/html");
+		editorPane.setEditable(false);
+		editorPane.setText("<html><table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"></table></html>");
+	    doc=(HTMLDocument)editorPane.getDocument();
+		el=doc.getElement(doc.getDefaultRootElement(),StyleConstants.NameAttribute,HTML.Tag.TABLE);
+		JScrollPane scrollPane=new JScrollPane(editorPane);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		window.getContentPane().add(scrollPane,BorderLayout.CENTER);
 		window.setVisible(true);
 		}
 
@@ -114,9 +126,9 @@ public class DMRDecode {
 	// Setup the audio interface
 	  public void prepare_audio() {
 		  try {
-			  format = new AudioFormat(48000, 16, 1, true, true);
-			  DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-			  Line = (TargetDataLine) AudioSystem.getLine(info);
+			  format=new AudioFormat(48000,16,1,true,true);
+			  DataLine.Info info=new DataLine.Info(TargetDataLine.class,format);
+			  Line=(TargetDataLine) AudioSystem.getLine(info);
 			  Line.open(format);
 			  Line.start();
 			  audioReady=true;
@@ -128,8 +140,12 @@ public class DMRDecode {
 	  
 	  // The main routine for decoding DMR data
 	  public void decode()	{
-	
-	
+		  int fret=getFrameSync();
+		  if (fret==10) addLine("DMR_DATA_SYNC");
+		  else if (fret==13) addLine("DMR_DATA_SYNC (Inverted)");
+		  else if (fret==12) addLine("DMR_VOICE_SYNC");
+		  else if (fret==11) addLine("DMR_VOICE_SYNC (Inverted)");
+		  else addLine("Unknown !");
 	  }
 	  
 	  // This code lifted straight from the DSD source code and needs a lot of tidying
@@ -196,17 +212,16 @@ public class DMRDecode {
 			  String err=e.getMessage();
 			  JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
 		  }
-		  sample=buffer[0];
+		  sample=(buffer[0]<<8)+buffer[1];
 		  return sample;
 	  }
 	  
 	  public int getFrameSync ()	{
 	    // detects frame sync and returns frame type
-	    // 10 = +DMR (non inverted singlan data frame)
+	    // 10 = +DMR (non inverted signal data frame)
 	    // 11 = -DMR (inverted signal voice frame)
 	    // 12 = +DMR (non inverted signal voice frame)
 	    // 13 = -DMR (inverted signal data frame)
-
 
 	    int i,j,t,o,dibit,sync,symbol,synctest_pos,lastt;
 	    int synctest[]=new int[25];
@@ -241,6 +256,12 @@ public class DMRDecode {
 	    while (sync==0)	{
 	        t++;
 	        symbol=getSymbol();
+	        
+	        //if (symbol!=-1){
+	        	String disp=Integer.toString(symbol);
+	        	addLine(disp);
+	        //}
+	        
 	        lbuf[lidx]=symbol;
 	        sbuf[sidx]=symbol;
 	        
@@ -262,12 +283,12 @@ public class DMRDecode {
 		        if (symbol > 0)	{
 	            //*dibit_buf_p = 1;
 	            //dibit_buf_p++;
-	            dibit = 49;
+	            dibit=49;
 	          }
 		       else	{
 	            //*dibit_buf_p = 3;
 	            //dibit_buf_p++;
-	            dibit = 51;
+	            dibit=51;
 	          }
 
 	        synctest_p[synctest_p_counter]=dibit;
@@ -284,8 +305,8 @@ public class DMRDecode {
 	            // Copy 24 ints from synctest_p into synctest
 	            System.arraycopy(synctest_p,0,synctest,0,24);
 	
-	            if (frame_dmr == 1)	{
-	            	if (synctest.equals(DMR_DATA_SYNC))	{
+	            if (frame_dmr==1)	{
+	            	if (Arrays.equals(synctest,DMR_DATA_SYNC))	{
 	                    carrier=1;
 	                    offset=synctest_pos;
 	                    max=((max)+(lmax))/2;
@@ -300,7 +321,7 @@ public class DMRDecode {
 	                        return (11);
 	                      }
 	                  }
-	                if (synctest.equals(DMR_VOICE_SYNC))	{
+	                if (Arrays.equals(synctest,DMR_VOICE_SYNC))	{
 	                    carrier=1;
 	                    offset=synctest_pos;
 	                    max=((max)+lmax)/2;
@@ -318,7 +339,7 @@ public class DMRDecode {
 	              }
 
 	            if ((t==24)&&(lastsynctype!=-1))	{
-	              if ((lastsynctype==11)&&(synctest.equals(DMR_VOICE_SYNC)==false))	{
+	              if ((lastsynctype==11)&&(Arrays.equals(synctest,DMR_VOICE_SYNC)==false))	{
 	                    carrier=1;
 	                    offset=synctest_pos;
 	                    max=((max)+lmax)/2;
@@ -326,7 +347,7 @@ public class DMRDecode {
 	                    lastsynctype=-1;
 	                    return (11);
 	                  }
-	                else if ((lastsynctype == 12) && (synctest.equals(DMR_DATA_SYNC)==false))	{
+	                else if ((lastsynctype==12)&&(Arrays.equals(synctest,DMR_DATA_SYNC)==false))	{
 	                    carrier=1;
 	                    offset=synctest_pos;
 	                    max=((max)+lmax)/2;
@@ -346,12 +367,12 @@ public class DMRDecode {
 	            synctest_pos=0;
 	            synctest_p_counter=0;
 	            synctest_p=synctest_buf;
-	            noCarrier ();
+	            noCarrier();
 	          }
 
 	        if (carrier==1)	{
 	            if (synctest_pos>=1800)	{
-	                noCarrier ();
+	                noCarrier();
 	                return (-1);
 	              }
 	          }
@@ -372,6 +393,16 @@ public class DMRDecode {
 	  center=0;
 	  firstframe=false;
 	  }
+	  
+	public void addLine(String line) {
+	try {
+		doc.insertAfterStart(el,"<tr>"+line +"</tr>");
+		}
+	catch (Exception e) {
+		System.out.println("Exception:" + e.getMessage());
+		}
+			
+	}
 
 	  
 }
