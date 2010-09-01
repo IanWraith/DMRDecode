@@ -29,7 +29,8 @@ import java.util.Scanner;
 public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
 	private DMRDecode theApp;
-	public static final long serialVersionUID=1;	
+	public static final long serialVersionUID=1;
+	private JMenuItem inverted_item;
 	private JMenuItem exit_item;
 
 	// Constructor
@@ -42,6 +43,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		setJMenuBar(menuBar);
 		// Main
 		JMenu mainMenu=new JMenu("Main");
+		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted_dmr));
+		inverted_item.addActionListener(this);
 		mainMenu.add(exit_item=new JMenuItem("Exit"));
 		exit_item.addActionListener(this);
 		menuBar.add(mainMenu);
@@ -61,17 +64,26 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public void actionPerformed (ActionEvent event) {
 		String event_name=event.getActionCommand();
 
+		// Invert signal
+		if (event_name=="Invert Signal")	{
+			if (theApp.inverted_dmr==false) theApp.inverted_dmr=true;
+			 else theApp.inverted_dmr=false;
+		}
+		
 		// Exit 
 		if (event_name=="Exit") {
 			// Close the audio down //
-			//theApp.Line.close();
+			theApp.Line.close();
 			// Stop the program //
 			System.exit(0);	
 		}
+		
+		menuItemUpdate();
 	}
 
 	// Update all the menu items 
-	public void menu_item_update () {
+	public void menuItemUpdate () {
+		inverted_item.setSelected(theApp.inverted_dmr);
 	}
 
 }

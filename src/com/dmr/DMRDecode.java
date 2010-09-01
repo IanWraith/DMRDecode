@@ -68,7 +68,7 @@ public class DMRDecode {
 	private int frame_dmr=1;
 	private int carrier=0;
 	private int offset=0;
-	private boolean inverted_dmr=false;
+	public boolean inverted_dmr=false;
 	private boolean firstframe=false;
 	public JEditorPane editorPane;
 	public HTMLDocument doc;
@@ -258,8 +258,8 @@ public class DMRDecode {
 	        symbol=getSymbol();
 	        
 	        //if (symbol!=-1){
-	        	String disp=Integer.toString(symbol);
-	        	addLine(disp);
+	        	//String disp=Integer.toString(symbol);
+	        	//addLine(disp);
 	        //}
 	        
 	        lbuf[lidx]=symbol;
