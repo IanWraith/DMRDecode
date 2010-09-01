@@ -128,157 +128,50 @@ public class DMRDecode {
 	  // This code lifted straight from the DSD source code and needs a lot of tidying
 	  public int getSymbol()	{
 		  int sample,i,sum=0,symbol,count=0;
-		  for (i = 0; i < samplesPerSymbol; i++)
-		    {
+		  for (i=0;i<samplesPerSymbol;i++)	{
 		      // timing control
-		      if ((i == 0) && (have_sync == 0))
-		        {
-		          if (rf_mod == 1)
-		            {
-		              if ((jitter >= 0) && (jitter < symbolCenter))
-		                {
-		                  i++;          // fall back
-		                }
-		              else if ((jitter > symbolCenter) && (jitter < 10))
-		                {
-		                  i--;          // catch up
-		                }
+		      if ((i==0) && (have_sync==0))	{
+		        if (rf_mod==0)	{
+		              if ((jitter > 0) && (jitter <= symbolCenter)) i--;          // catch up  
+		              else if ((jitter > symbolCenter) && (jitter < samplesPerSymbol))  i++;          // fall back   
 		            }
-		          else if (rf_mod == 2)
-		            {
-		              if ((jitter >= symbolCenter - 1) && (jitter <= symbolCenter))
-		                {
-		                  i--;
-		                }
-		              else if ((jitter >= symbolCenter + 1) && (jitter <= symbolCenter + 2))
-		                {
-		                  i++;
-		                }
-		            }
-		          else if (rf_mod == 0)
-		            {
-		              if ((jitter > 0) && (jitter <= symbolCenter))
-		                {
-		                  i--;          // catch up
-		                }
-		              else if ((jitter > symbolCenter) && (jitter < samplesPerSymbol))
-		                {
-		                  i++;          // fall back
-		                }
-		            }
-		          jitter = -1;
+		         jitter=-1;
+		       }
+			  sample=getAudio();
+			  if ((sample>max)&&(have_sync==1)&&(rf_mod==0)) sample=max;  
+			   else if ((sample<min)&&(have_sync==1)&&(rf_mod==0)) sample=min;
+		      if (sample>center)	{
+		        if (lastsample<center) numflips+=1;
+		        if (sample>(maxref*1.25))	{
+		        	if (lastsample<(maxref*1.25)) numflips+=1;
+		          }
+		          else if ((jitter<0)&&(lastsample<center)&&(rf_mod!=1)) jitter=i;   
 		        }
-
-			      sample=getAudio();
-		      
-		      
-		      if ((sample > max) && (have_sync == 1) && (rf_mod == 0))
-		        {
-		          sample = max;
-		        }
-		      else if ((sample < min) && (have_sync == 1) && (rf_mod == 0))
-		        {
-		          sample = min;
-		        }
-
-		      if (sample > center)
-		        {
-		          if (lastsample < center)
-		            {
-		              numflips += 1;
+		      else	{                       // sample < 0
+		        if (lastsample>center) numflips+=1;
+		        if (sample<(minref*1.25))	{
+		        	if (lastsample>(minref*1.25)) numflips+=1;
+		            if ((jitter<0)&&(rf_mod==1)) jitter=i;
 		            }
-		          if (sample > (maxref * 1.25))
-		            {
-		              if (lastsample < (maxref * 1.25))
-		                {
-		                  numflips += 1;
-		                }
-		              if ((jitter < 0) && (rf_mod == 1))
-		                {               // first spike out of place
-		                  jitter = i;
-		                }
-		              if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
-		                {
-		                  //printf ("O");
-		                }
-		            }
-		          else
-		            {
-		              if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
-		                {
-		                  //printf ("+");
-		                }
-		              if ((jitter < 0) && (lastsample < center) && (rf_mod != 1))
-		                {               // first transition edge
-		                  jitter = i;
-		                }
+		          else	{
+		            if ((jitter < 0) && (lastsample > center) && (rf_mod != 1)) jitter = i;   
 		            }
 		        }
-		      else
-		        {                       // sample < 0
-		          if (lastsample > center)
-		            {
-		              numflips += 1;
-		            }
-		          if (sample < (minref * 1.25))
-		            {
-		              if (lastsample > (minref * 1.25))
-		                {
-		                  numflips += 1;
-		                }
-		              if ((jitter < 0) && (rf_mod == 1))
-		                {               // first spike out of place
-		                  jitter = i;
-		                }
-		              if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
-		                {
-		                  //printf ("X");
-		                }
-		            }
-		          else
-		            {
-		              if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
-		                {
-		                  //printf ("-");
-		                }
-		              if ((jitter < 0) && (lastsample > center) && (rf_mod != 1))
-		                {               // first transition edge
-		                  jitter = i;
-		                }
-		            }
-		        }
-		      if (samplesPerSymbol == 5)
-		        {
-		          if ((i >= 2) && (i <= 2))
-		            {
-		              sum += sample;
+		      if (samplesPerSymbol==5)	{
+		    	  if ((i>=2)&&(i<=2))	{
+		              sum+=sample;
 		              count++;
 		            }
 		        }
-		      else
-		        {
-		          if (((i >= symbolCenter - 1) && (i <= symbolCenter + 2) && (rf_mod == 0)) || (((i == symbolCenter) || (i == symbolCenter + 1)) && (rf_mod != 0)))
-		            {
-		              sum += sample;
+		      else	{
+		          if (((i>=symbolCenter-1)&&(i<=symbolCenter+2)&&(rf_mod==0))||(((i==symbolCenter)||(i==symbolCenter+1))&&(rf_mod!=0)))	{
+		              sum+=sample;
 		              count++;
 		            }
 		        }
-		      lastsample = sample;
+		      lastsample=sample;
 		    }
-		  symbol = (sum / count);
-
-		  if ((symboltiming == 1) && (have_sync == 0) && (lastsynctype != -1))
-		    {
-		      if (jitter >= 0)
-		        {
-		          //printf (" %i\n", jitter);
-		        }
-		      else
-		        {
-		          //printf ("\n");
-		        }
-		    }
-
+		  symbol=(sum/count);
 		  symbolcnt++;
 		  return symbol;
 	  }
@@ -301,31 +194,18 @@ public class DMRDecode {
 	  }
 	  
 	  public int getFrameSync ()	{
-	    /* detects frame sync and returns frame type
-	     * 0 = +p25p1
-	     * 1 = -p25p1
-	     * 2 = +X2-TDMA (non inverted signal data frame)
-	     * 3 = +X2-TDMA (inverted signal voice frame)
-	     * 4 = -X2-TDMA (non inverted signal voice frame)
-	     * 5 = -X2-TDMA (inverted signal data frame)
-	     * 6 = +D-STAR
-	     * 7 = -D-STAR
-	     * 8 = +NXDN96
-	     * 9 = -NXDN96
-	     * 10 = +DMR (non inverted singlan data frame)
-	     * 11 = -DMR (inverted signal voice frame)
-	     * 12 = +DMR (non inverted signal voice frame)
-	     * 13 = -DMR (inverted signal data frame)
-	     * 14 = +ProVoice
-	     * 15 = -ProVoice
-	     */
+	    // detects frame sync and returns frame type
+	    // 10 = +DMR (non inverted singlan data frame)
+	    // 11 = -DMR (inverted signal voice frame)
+	    // 12 = +DMR (non inverted signal voice frame)
+	    // 13 = -DMR (inverted signal data frame)
 
-	    int i, j, t, o, dibit, sync, symbol, synctest_pos, lastt;
+
+	    int i,j,t,o,dibit,sync,symbol,synctest_pos,lastt;
 	    int synctest[]=new int[25];
 	    int synctest18[]=new int[19];
 	    int synctest32[]=new int[33];
 	    int modulation[]=new int[8];
-	    //char *synctest_p;
 	    int synctest_buf[]=new int [10240];
 	    int synctest_p[]=new int [10240];
 	    int synctest_p_counter=0;
@@ -334,201 +214,72 @@ public class DMRDecode {
 	    int lbuf2[]=new int[24];
 	    int lsum;
 	    int spectrum[]=new int[64];
+	    Quicksort qsort=new Quicksort();
 
 	    // detect frame sync
-	    t = 0;
-	    synctest[24] = 0;
-	    synctest18[18] = 0;
-	    synctest32[32] = 0;
-	    synctest_pos = 0;
+	    t=0;
+	    synctest[24]=0;
+	    synctest18[18]=0;
+	    synctest32[32]=0;
+	    synctest_pos=0;
 	    synctest_p=synctest_buf;
 	   
-	    sync = 0;
-	    lmin = 0;
-	    lmax = 0;
-	    lidx = 0;
-	    lastt = 0;
-	    numflips = 0;
+	    sync=0;
+	    lmin=0;
+	    lmax=0;
+	    lidx=0;
+	    lastt=0;
+	    numflips=0;
 
-	    while (sync == 0)
+	    while (sync==0)
 	      {
 	        t++;
 	        symbol=getSymbol();
-	        lbuf[lidx] = symbol;
-	        sbuf[sidx] = symbol;
-	        if (lidx == 23)
-	          {
-	            lidx = 0;
-	          }
-	        else
-	          {
-	            lidx++;
-	          }
-	        if (sidx == (ssize - 1))
-	          {
-	            sidx = 0;
-	          }
-	        else
-	          {
-	            sidx++;
-	          }
+	        lbuf[lidx]=symbol;
+	        sbuf[sidx]=symbol;
+	        
+	        if (lidx==23) lidx=0;
+	         else lidx++;
+	        
+	        if (sidx==(ssize-1)) sidx=0;
+	          else sidx++;
+	          
 
-	        if (lastt == 23)
-	          {
-	            lastt = 0;
-	            if (numflips > mod_threshold)
-	              {
-
-	              }
-	            else if (numflips > 18)
-	              {
-
-	              }
-	            else
-	              {
-
-	              }
-	            numflips = 0;
+	        if (lastt==23)	{
+	            lastt=0;
+	            numflips=0;
 	          }
-	        else
-	          {
-	            lastt++;
-	          }
+	        else lastt++;
+	          
 
 	        //determine dibit state
 	        if (symbol > 0)
 	          {
-	            *dibit_buf_p = 1;
-	            dibit_buf_p++;
+	            //*dibit_buf_p = 1;
+	            //dibit_buf_p++;
 	            dibit = 49;
 	          }
 	        else
 	          {
-	            *dibit_buf_p = 3;
-	            dibit_buf_p++;
+	            //*dibit_buf_p = 3;
+	            //dibit_buf_p++;
 	            dibit = 51;
 	          }
 
 	        synctest_p[synctest_p_counter]=dibit;
-	        if (t >= 24)
-	          {
-	            for (i = 0; i < 24; i++)
-	              {
-	                lbuf2[i] = lbuf[i];
+	        if (t>=24) {
+	            for (i=0;i<24;i++) {
+	              lbuf2[i]=lbuf[i];
 	              }
-	            qsort (lbuf2, 24, sizeof (int), comp);
-	            lmin = (lbuf2[2] + lbuf2[3] + lbuf2[4]) / 3;
-	            lmax = (lbuf2[21] + lbuf2[20] + lbuf2[19]) / 3;
-
-	            if (rf_mod == 1)
-	              {
-	                minbuf[midx] = lmin;
-	                maxbuf[midx] = lmax;
-	                if (midx == (msize - 1))
-	                  {
-	                    midx = 0;
-	                  }
-	                else
-	                  {
-	                    midx++;
-	                  }
-	                lsum = 0;
-	                for (i = 0; i < msize; i++)
-	                  {
-	                    lsum += minbuf[i];
-	                  }
-	                min = lsum / msize;
-	                lsum = 0;
-	                for (i = 0; i < msize; i++)
-	                  {
-	                    lsum += maxbuf[i];
-	                  }
-	                max = lsum / msize;
-	                center = ((max) + (min)) / 2;
-	                maxref = ((max) * 0.80);
-	                minref = ((min) * 0.80);
-	              }
-	            else
-	              {
-	                maxref = max;
-	                minref = min;
-	              }
-
-	            if (datascope == 1)
-	              {
-	                if (lidx == 0)
-	                  {
-	                    for (i = 0; i < 64; i++)
-	                      {
-	                        spectrum[i] = 0;
-	                      }
-	                    for (i = 0; i < 24; i++)
-	                      {
-	                        o = (lbuf2[i] + 32768) / 1024;
-	                        spectrum[o]++;
-	                      }
-	                    if (symbolcnt > (4800 / scoperate))
-	                      {
-	                        symbolcnt = 0;
-	                        //printf ("\n");
-	                        //printf ("Demod mode:     %s                Nac:                     %4X\n", modulation, nac);
-	                        //printf ("Frame Type:    %s        Talkgroup:            %7i\n", ftype, lasttg);
-	                        //printf ("Frame Subtype: %s       Source:          %12i\n", fsubtype, lastsrc);
-	                        //printf ("TDMA activity:  %s %s     Voice errors: %s\n", slot0light, slot1light, err_str);
-	                        //printf ("+----------------------------------------------------------------+\n");
-	                        for (i = 0; i < 10; i++)
-	                          {
-	                            //printf ("|");
-	                            for (j = 0; j < 64; j++)
-	                              {
-	                                if (i == 0)
-	                                  {
-	                                    if ((j == ((min) + 32768) / 1024) || (j == ((max) + 32768) / 1024))
-	                                      {
-	                                        //printf ("#");
-	                                      }
-	                                    else if (j == (center + 32768) / 1024)
-	                                      {
-	                                        //printf ("!");
-	                                      }
-	                                    else
-	                                      {
-	                                        if (j == 32)
-	                                          {
-	                                            //printf ("|");
-	                                          }
-	                                        else
-	                                          {
-	                                            //printf (" ");
-	                                          }
-	                                      }
-	                                  }
-	                                else
-	                                  {
-	                                    if (spectrum[j] > 9 - i)
-	                                      {
-	                                        //printf ("*");
-	                                      }
-	                                    else
-	                                      {
-	                                        if (j == 32)
-	                                          {
-	                                            //printf ("|");
-	                                          }
-	                                        else
-	                                          {
-	                                           //printf (" ");
-	                                          }
-	                                      }
-	                                  }
-	                              }
-	                            //printf ("|\n");
-	                          }
-	                        //printf ("+----------------------------------------------------------------+\n");
-	                      }
-	                  }
-	              }
-
+	            qsort.sort(lbuf2);
+	            lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
+	            lmax=(lbuf2[21]+lbuf2[20]+lbuf2[19])/3;
+	            maxref=max;
+	            minref=min;
+	              
+	            // Copy 24 ints from synctest_p into synctest
+	            
+	            
 	            strncpy (synctest, (synctest_p - 23), 24);
 
 
@@ -543,18 +294,15 @@ public class DMRDecode {
 	                    if (inverted_dmr == 0)
 	                      {
 	                        // data frame
-	                        sprintf (ftype, " DMR         ");
-	                        if (errorbars == 1)
-	                          {
-	                            //printFrameSync (opts, state, " +DMR      ", synctest_pos + 1, modulation);
-	                          }
+	                        //sprintf (ftype, " DMR         ");
+	                        
 	                        lastsynctype = 10;
 	                        return (10);
 	                      }
 	                    else
 	                      {
 	                        // inverted voice frame
-	                        sprintf (ftype, " DMR         ");
+	                        //sprintf (ftype, " DMR         ");
 	                        if (errorbars == 1)
 	                          {
 	                            //printFrameSync (opts, state, " -DMR      ", synctest_pos + 1, modulation);
@@ -576,11 +324,7 @@ public class DMRDecode {
 	                    if (inverted_dmr == 0)
 	                      {
 	                        // voice frame
-	                        sprintf (ftype, " DMR         ");
-	                        if (errorbars == 1)
-	                          {
-	                           // printFrameSync (opts, state, " +DMR      ", synctest_pos + 1, modulation);
-	                          }
+	                        //sprintf (ftype, " DMR         ");
 	                        if (lastsynctype != 12)
 	                          {
 	                            firstframe = 1;
@@ -591,11 +335,8 @@ public class DMRDecode {
 	                    else
 	                      {
 	                        // inverted data frame
-	                        sprintf (ftype, " DMR         ");
-	                        if (errorbars == 1)
-	                          {
-	                            //printFrameSync (opts, state, " -DMR      ", synctest_pos + 1, modulation);
-	                          }
+	                        //sprintf (ftype, " DMR         ");
+
 	                        lastsynctype = 13;
 	                        return (13);
 	                      }
@@ -610,7 +351,7 @@ public class DMRDecode {
 	                    offset = synctest_pos;
 	                    max = ((max) + lmax) / 2;
 	                    min = ((min) + lmin) / 2;
-	                    sprintf (ftype, "(DMR)        ");
+	                    //sprintf (ftype, "(DMR)        ");
 	                    if (errorbars == 1)
 	                      {
 	                        //printFrameSync (opts, state, "(-DMR)     ", synctest_pos + 1, modulation);
@@ -665,7 +406,7 @@ public class DMRDecode {
 	                        //printf ("Sync: no sync\n");
 	                      }
 	                  }
-	                noCarrier (opts, state);
+	                //noCarrier (opts, state);
 	                return (-1);
 	              }
 	          }
