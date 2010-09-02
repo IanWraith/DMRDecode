@@ -64,7 +64,6 @@ public class DMRDecode {
 	private int mod_threshold=26;
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
-	private int frame_dmr=1;
 	private int carrier=0;
 	private int offset=0;
 	public boolean inverted_dmr=false;
@@ -79,7 +78,6 @@ public class DMRDecode {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
 		theApp.prepare_audio();
-		theApp.addLine("Running ..");
 		while (RUNNING)	{
 			if (theApp.audioReady==true) theApp.decode();
 		}
@@ -125,7 +123,7 @@ public class DMRDecode {
 	
 
 	// Setup the audio interface
-	  public void prepare_audio() {
+	public void prepare_audio() {
 		  try {
 			  format=new AudioFormat(48000,16,1,true,true);
 			  DataLine.Info info=new DataLine.Info(TargetDataLine.class,format);
@@ -139,15 +137,15 @@ public class DMRDecode {
 	   		}
 	   	}
 	  
-	  // The main routine for decoding DMR data
-	  public void decode()	{
+	// The main routine for decoding DMR data
+	public void decode()	{
 		  noCarrier();
 		  int fret=getFrameSync();
 		  if (fret==10) addLine("DMR_DATA_SYNC");
-		  else if (fret==13) addLine("DMR_DATA_SYNC (Inverted)");
-		  else if (fret==12) addLine("DMR_VOICE_SYNC");
-		  else if (fret==11) addLine("DMR_VOICE_SYNC (Inverted)");
-		  else addLine("Unknown !");
+		   else if (fret==13) addLine("DMR_DATA_SYNC (Inverted)");
+		   else if (fret==12) addLine("DMR_VOICE_SYNC");
+		   else if (fret==11) addLine("DMR_VOICE_SYNC (Inverted)");
+		   else addLine("Unknown !");
 		  
 	      center=((max)+(min))/2;
 	      umid=(((max)-center)*5/8)+center;
@@ -155,8 +153,8 @@ public class DMRDecode {
 		  
 	  }
 	  
-	  // This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
-	  public int getSymbol()	{
+	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
+	public int getSymbol()	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<samplesPerSymbol;i++)	{
 		      // timing control
@@ -213,7 +211,7 @@ public class DMRDecode {
 		  return sample;
 	  }
 	  
-	  public int getFrameSync ()	{
+	public int getFrameSync ()	{
 	    // detects frame sync and returns frame type
 	    // 10 = +DMR (non inverted signal data frame)
 	    // 11 = -DMR (inverted signal voice frame)
@@ -233,6 +231,8 @@ public class DMRDecode {
 	    int lbuf2[]=new int[24];
 	    int lsum;
 	    int spectrum[]=new int[64];
+	    int dataSyncCount;
+	    int voiceSyncCount;
 	    Quicksort qsort=new Quicksort();
 
 	    // detect frame sync
@@ -280,12 +280,14 @@ public class DMRDecode {
 		        if (symbol > 0)	{
 	            //*dibit_buf_p = 1;
 	            //dibit_buf_p++;
-	            dibit=49;
+	            //dibit=49;
+		        dibit=1;
 	          }
 		       else	{
 	            //*dibit_buf_p = 3;
 	            //dibit_buf_p++;
-	            dibit=51;
+	            //dibit=51;
+		    	dibit=3;
 	          }
 
 	        synctest_p[synctest_p_counter]=dibit;
@@ -301,8 +303,22 @@ public class DMRDecode {
 	              
 	            // Copy 24 ints from synctest_p into synctest
 	            System.arraycopy(synctest_p,0,synctest,0,24);
-	
-	            if (frame_dmr==1)	{
+	            dataSyncCount=syncCompare(synctest,DMR_DATA_SYNC);
+	            voiceSyncCount=syncCompare(synctest,DMR_VOICE_SYNC);
+	            
+	            // Test Code ///////////////////////////////////////////////////////
+	            if (dataSyncCount>20)	{
+	            	String line="DMR_DATA_SYNC detected with a count="+Integer.toString(dataSyncCount);
+	            	if (inverted_dmr==true) line=line+" (I)";
+	            	addLine(line);
+	            }
+	            if (voiceSyncCount>20)	{
+	            	String line="DMR_VOICE_SYNC detected with a count="+Integer.toString(voiceSyncCount);
+	            	if (inverted_dmr==true) line=line+" (I)";
+	            	addLine(line);
+	            }	            
+	            /////////////////////////////////////////////////////////////////////
+	            
 	            	if (Arrays.equals(synctest,DMR_DATA_SYNC))	{
 	                    carrier=1;
 	                    offset=synctest_pos;
@@ -373,32 +389,44 @@ public class DMRDecode {
 	                return (-1);
 	              }
 	          }
-	      }
+	      
 
 	    return (-1);
 	  }
 	  
-	  void noCarrier ()
-	  {
-	  //dibit_buf_p = dibit_buf + 200;
-	  //memset (dibit_buf, 0, sizeof (int) * 200);
-	  jitter=-1;
-	  lastsynctype=-1;
-	  carrier=0;
-	  max=15000;
-	  min=-15000;
-	  center=0;
-	  firstframe=false;
-	  }
+	void noCarrier ()	{
+		 	//dibit_buf_p = dibit_buf + 200;
+		  //memset (dibit_buf, 0, sizeof (int) * 200);
+		  jitter=-1;
+		  lastsynctype=-1;
+		  carrier=0;
+		  max=15000;
+		  min=-15000;
+		  center=0;
+		  firstframe=false;
+	  	}
+	  
+	// Compare the sync held in an array with the contents of another array
+	public int syncCompare(int c1[],int c2[])	{
+		int count=0;
+		int len1=c1.length;
+		int len2=c2.length;
+		int len,i;
+		if (len1>len2) len=len2;
+		 else len=len1;
+		for (i=0;i<len;i++)	{
+			if (c1[i]==c2[i]) count++;
+		}
+		return count;
+	}
 	  
 	public void addLine(String line) {
-	try {
-		doc.insertAfterStart(el,"<tr>"+line +"</tr>");
-		}
-	catch (Exception e) {
-		System.out.println("Exception:" + e.getMessage());
-		}
-			
+		  try {
+			  doc.insertAfterStart(el,"<tr>"+line +"</tr>");
+		  }
+		  catch (Exception e) {
+			  System.out.println("Exception:" + e.getMessage());
+		  }		
 	}
 
 	  
