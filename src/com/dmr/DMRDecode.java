@@ -45,8 +45,7 @@ public class DMRDecode {
 	private boolean audioReady=false;
 	private static boolean RUNNING=true;
 	private int have_sync=0;
-	private int samplesPerSymbol=10;
-	private int rf_mod=0;
+	private final int samplesPerSymbol=10;
 	private int jitter=-1;
 	private int symbolCenter=4;
 	private int max=15000;
@@ -73,6 +72,8 @@ public class DMRDecode {
 	public JEditorPane editorPane;
 	public HTMLDocument doc;
 	public Element el;
+	private int lmid=0;
+	private int umid=0;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -140,58 +141,54 @@ public class DMRDecode {
 	  
 	  // The main routine for decoding DMR data
 	  public void decode()	{
+		  noCarrier();
 		  int fret=getFrameSync();
 		  if (fret==10) addLine("DMR_DATA_SYNC");
 		  else if (fret==13) addLine("DMR_DATA_SYNC (Inverted)");
 		  else if (fret==12) addLine("DMR_VOICE_SYNC");
 		  else if (fret==11) addLine("DMR_VOICE_SYNC (Inverted)");
 		  else addLine("Unknown !");
+		  
+	      center=((max)+(min))/2;
+	      umid=(((max)-center)*5/8)+center;
+	      lmid=(((min)-center)*5/8)+center;
+		  
 	  }
 	  
-	  // This code lifted straight from the DSD source code and needs a lot of tidying
+	  // This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
 	  public int getSymbol()	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<samplesPerSymbol;i++)	{
 		      // timing control
-		      if ((i==0) && (have_sync==0))	{
-		        if (rf_mod==0)	{
-		              if ((jitter > 0) && (jitter <= symbolCenter)) i--;          // catch up  
-		              else if ((jitter > symbolCenter) && (jitter < samplesPerSymbol))  i++;          // fall back   
-		            }
-		         jitter=-1;
+		      if ((i==0)&&(have_sync==0))	{
+		        if ((jitter>0)&&(jitter<=symbolCenter)) i--;          // catch up  
+		         else if ((jitter>symbolCenter)&&(jitter<samplesPerSymbol)) i++;          // fall back   
+		        jitter=-1;
 		       }
 			  sample=getAudio();
-			  if ((sample>max)&&(have_sync==1)&&(rf_mod==0)) sample=max;  
-			   else if ((sample<min)&&(have_sync==1)&&(rf_mod==0)) sample=min;
+			  if ((sample>max)&&(have_sync==1)) sample=max;  
+			   else if ((sample<min)&&(have_sync==1)) sample=min;
 		      if (sample>center)	{
 		        if (lastsample<center) numflips+=1;
 		        if (sample>(maxref*1.25))	{
 		        	if (lastsample<(maxref*1.25)) numflips+=1;
 		          }
-		          else if ((jitter<0)&&(lastsample<center)&&(rf_mod!=1)) jitter=i;   
+		          else if ((jitter<0)&&(lastsample<center)) jitter=i;   
 		        }
 		      else	{                       // sample < 0
 		        if (lastsample>center) numflips+=1;
 		        if (sample<(minref*1.25))	{
 		        	if (lastsample>(minref*1.25)) numflips+=1;
-		            if ((jitter<0)&&(rf_mod==1)) jitter=i;
+		            if (jitter<0) jitter=i;
 		            }
 		          else	{
-		            if ((jitter < 0) && (lastsample > center) && (rf_mod != 1)) jitter = i;   
+		            if ((jitter<0)&&(lastsample>center)) jitter=i;   
 		            }
-		        }
-		      if (samplesPerSymbol==5)	{
-		    	  if ((i>=2)&&(i<=2))	{
-		              sum+=sample;
-		              count++;
-		            }
-		        }
-		      else	{
-		          if (((i>=symbolCenter-1)&&(i<=symbolCenter+2)&&(rf_mod==0))||(((i==symbolCenter)||(i==symbolCenter+1))&&(rf_mod!=0)))	{
-		              sum+=sample;
-		              count++;
-		            }
-		        }
+		        } 
+		      if (((i>=symbolCenter-1)&&(i<=symbolCenter+2)))	{
+		    	  sum+=sample;
+		          count++;
+		          }
 		      lastsample=sample;
 		    }
 		  symbol=(sum/count);
