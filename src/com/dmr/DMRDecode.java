@@ -251,6 +251,7 @@ public class DMRDecode {
 	    numflips=0;
 
 	    while (sync==0)	{
+	    	// TODO : Find out why t is never reset and what it does
 	        t++;
 	        symbol=getSymbol();
 	        
@@ -300,19 +301,26 @@ public class DMRDecode {
 	            lmax=(lbuf2[21]+lbuf2[20]+lbuf2[19])/3;
 	            maxref=max;
 	            minref=min;
-	              
+	            
+	            // TODO : Ensure the correct bits are transfered to synctest
 	            // Copy 24 ints from synctest_p into synctest
-	            System.arraycopy(synctest_p,0,synctest,0,24);
+	            try	{
+	            if (synctest_p_counter>22) System.arraycopy(synctest_p,(synctest_p_counter-23),synctest,0,24);
+	            } catch (Exception e){
+	            	max++;
+	            }
+	            
+	            
 	            dataSyncCount=syncCompare(synctest,DMR_DATA_SYNC);
 	            voiceSyncCount=syncCompare(synctest,DMR_VOICE_SYNC);
 	            
 	            // Test Code ///////////////////////////////////////////////////////
-	            if (dataSyncCount>20)	{
+	            if (dataSyncCount>21)	{
 	            	String line="DMR_DATA_SYNC detected with a count="+Integer.toString(dataSyncCount);
 	            	if (inverted_dmr==true) line=line+" (I)";
 	            	addLine(line);
 	            }
-	            if (voiceSyncCount>20)	{
+	            if (voiceSyncCount>21)	{
 	            	String line="DMR_VOICE_SYNC detected with a count="+Integer.toString(voiceSyncCount);
 	            	if (inverted_dmr==true) line=line+" (I)";
 	            	addLine(line);
@@ -369,7 +377,7 @@ public class DMRDecode {
 	                    return (12);
 	                  }
 	              }
-	          }
+	          
 
 	        if (synctest_pos<10200)	{
 	            synctest_pos++;
@@ -390,7 +398,8 @@ public class DMRDecode {
 	              }
 	          }
 	      
-
+	    }
+	        
 	    return (-1);
 	  }
 	  
