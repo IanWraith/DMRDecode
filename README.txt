@@ -6,8 +6,10 @@ The core of the program is based around the open source DSD program by an unknow
 author. This program was written in C and runs under Linux only so the first job is to
 convert that code to Java and remove all sections that don't relate to DMR.
 
-Milestone 1 will simply be to detect both kinds of DMR frame sync.
+Milestone 1 - To detect voice and data sync words reached (3rd September 2010)
 
-Ian Wraith (1st September 2010)
+Milestone 2 - To be decided !!!!
+
+Ian Wraith (3rd September 2010)
 
 
