@@ -24,13 +24,14 @@ import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
-import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.Element;
 import javax.swing.text.html.HTML;
 import javax.swing.text.StyleConstants;
 import javax.swing.JEditorPane;
+import java.text.DateFormat;
+import java.util.Date;
 
 public class DMRDecode {
 	private DisplayModel display_model;
@@ -141,11 +142,11 @@ public class DMRDecode {
 	public void decode()	{
 		  noCarrier();
 		  int fret=getFrameSync();
-		  if (fret==10) addLine("DMR_DATA_SYNC");
-		   else if (fret==13) addLine("DMR_DATA_SYNC (Inverted)");
-		   else if (fret==12) addLine("DMR_VOICE_SYNC");
-		   else if (fret==11) addLine("DMR_VOICE_SYNC (Inverted)");
-		   else addLine("Unknown !");
+		  if (fret==10) addLine(getTimeStamp()+" DMR_DATA_SYNC");
+		   else if (fret==13) addLine(getTimeStamp()+" DMR_DATA_SYNC (Inverted)");
+		   else if (fret==12) addLine(getTimeStamp()+" DMR_VOICE_SYNC");
+		   else if (fret==11) addLine(getTimeStamp()+" DMR_VOICE_SYNC (Inverted)");
+		   else addLine(getTimeStamp()+" Unknown !");
 		  
 	      center=((max)+(min))/2;
 	      umid=(((max)-center)*5/8)+center;
@@ -231,8 +232,8 @@ public class DMRDecode {
 	    int lbuf2[]=new int[24];
 	    int lsum;
 	    int spectrum[]=new int[64];
-	    boolean dataSync;
-	    boolean voiceSync;
+	    boolean dataSync=false;
+	    boolean voiceSync=false;
 	    Quicksort qsort=new Quicksort();
 
 	    // detect frame sync
@@ -254,11 +255,6 @@ public class DMRDecode {
 	    	// TODO : Find out why t is never reset and what it does
 	        t++;
 	        symbol=getSymbol();
-	        
-	        //if (symbol!=-1){
-	        	//String disp=Integer.toString(symbol);
-	        	//addLine(disp);
-	        //}
 	        
 	        lbuf[lidx]=symbol;
 	        sbuf[sidx]=symbol;
@@ -302,32 +298,12 @@ public class DMRDecode {
 	            maxref=max;
 	            minref=min;
 	            
-	            // TODO : Ensure the correct bits are transfered to synctest
-	            // Copy 24 ints from synctest_p into synctest
-	            try	{
-	            if (synctest_p_counter>22) System.arraycopy(synctest_p,(synctest_p_counter-23),synctest,0,24);
-	            } catch (Exception e){
-	            	max++;
-	            }
-	            
-	            
+
+	            System.arraycopy(synctest_p,(synctest_p_counter-23),synctest,0,24);            
 	            dataSync=syncCompare(synctest,DMR_DATA_SYNC);
 	            voiceSync=syncCompare(synctest,DMR_VOICE_SYNC);
 	            
-	            // Test Code ///////////////////////////////////////////////////////
-	            if (dataSync==true)	{
-	            	String line="DMR_DATA_SYNC detected";
-	            	if (inverted_dmr==true) line=line+" (I)";
-	            	addLine(line);
-	            }
-	            if (voiceSync==true)	{
-	            	String line="DMR_VOICE_SYNC detected";
-	            	if (inverted_dmr==true) line=line+" (I)";
-	            	addLine(line);
-	            }	            
-	            /////////////////////////////////////////////////////////////////////
-	            
-	            	if (Arrays.equals(synctest,DMR_DATA_SYNC))	{
+	            	if (dataSync==true)	{
 	                    carrier=1;
 	                    offset=synctest_pos;
 	                    max=((max)+(lmax))/2;
@@ -342,7 +318,7 @@ public class DMRDecode {
 	                        return (11);
 	                      }
 	                  }
-	                if (Arrays.equals(synctest,DMR_VOICE_SYNC))	{
+	                if (voiceSync==true)	{
 	                    carrier=1;
 	                    offset=synctest_pos;
 	                    max=((max)+lmax)/2;
@@ -360,7 +336,7 @@ public class DMRDecode {
 	              }
 
 	            if ((t==24)&&(lastsynctype!=-1))	{
-	              if ((lastsynctype==11)&&(Arrays.equals(synctest,DMR_VOICE_SYNC)==false))	{
+	              if ((lastsynctype==11)&&(voiceSync==false))	{
 	                    carrier=1;
 	                    offset=synctest_pos;
 	                    max=((max)+lmax)/2;
@@ -368,7 +344,7 @@ public class DMRDecode {
 	                    lastsynctype=-1;
 	                    return (11);
 	                  }
-	                else if ((lastsynctype==12)&&(Arrays.equals(synctest,DMR_DATA_SYNC)==false))	{
+	                else if ((lastsynctype==12)&&(dataSync==false))	{
 	                    carrier=1;
 	                    offset=synctest_pos;
 	                    max=((max)+lmax)/2;
@@ -388,6 +364,7 @@ public class DMRDecode {
 	            synctest_pos=0;
 	            synctest_p_counter=0;
 	            synctest_p=synctest_buf;
+	            t=0;
 	            noCarrier();
 	          }
 
@@ -404,15 +381,15 @@ public class DMRDecode {
 	  }
 	  
 	void noCarrier ()	{
-		 	//dibit_buf_p = dibit_buf + 200;
-		  //memset (dibit_buf, 0, sizeof (int) * 200);
-		  jitter=-1;
-		  lastsynctype=-1;
-		  carrier=0;
-		  max=15000;
-		  min=-15000;
-		  center=0;
-		  firstframe=false;
+		//dibit_buf_p = dibit_buf + 200;
+		//memset (dibit_buf, 0, sizeof (int) * 200);
+		jitter=-1;
+		lastsynctype=-1;
+		carrier=0;
+		max=15000;
+		min=-15000;
+		center=0;
+		firstframe=false;
 	  	}
 	  
 	// Compare the sync held in an array with the contents of another array
@@ -428,6 +405,7 @@ public class DMRDecode {
 		return true;
 	}
 	  
+	// Adds a line to the display
 	public void addLine(String line) {
 		  try {
 			  doc.insertAfterStart(el,"<tr>"+line +"</tr>");
@@ -437,5 +415,11 @@ public class DMRDecode {
 		  }		
 	}
 
-	  
+	// Return a time stamp
+	public String getTimeStamp() {
+		Date now=new Date();
+		DateFormat df=DateFormat.getTimeInstance();
+		return df.format(now);
+	}	
+	
 }
