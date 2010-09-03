@@ -231,8 +231,8 @@ public class DMRDecode {
 	    int lbuf2[]=new int[24];
 	    int lsum;
 	    int spectrum[]=new int[64];
-	    int dataSyncCount;
-	    int voiceSyncCount;
+	    boolean dataSync;
+	    boolean voiceSync;
 	    Quicksort qsort=new Quicksort();
 
 	    // detect frame sync
@@ -311,17 +311,17 @@ public class DMRDecode {
 	            }
 	            
 	            
-	            dataSyncCount=syncCompare(synctest,DMR_DATA_SYNC);
-	            voiceSyncCount=syncCompare(synctest,DMR_VOICE_SYNC);
+	            dataSync=syncCompare(synctest,DMR_DATA_SYNC);
+	            voiceSync=syncCompare(synctest,DMR_VOICE_SYNC);
 	            
 	            // Test Code ///////////////////////////////////////////////////////
-	            if (dataSyncCount>21)	{
-	            	String line="DMR_DATA_SYNC detected with a count="+Integer.toString(dataSyncCount);
+	            if (dataSync==true)	{
+	            	String line="DMR_DATA_SYNC detected";
 	            	if (inverted_dmr==true) line=line+" (I)";
 	            	addLine(line);
 	            }
-	            if (voiceSyncCount>21)	{
-	            	String line="DMR_VOICE_SYNC detected with a count="+Integer.toString(voiceSyncCount);
+	            if (voiceSync==true)	{
+	            	String line="DMR_VOICE_SYNC detected";
 	            	if (inverted_dmr==true) line=line+" (I)";
 	            	addLine(line);
 	            }	            
@@ -416,17 +416,16 @@ public class DMRDecode {
 	  	}
 	  
 	// Compare the sync held in an array with the contents of another array
-	public int syncCompare(int c1[],int c2[])	{
-		int count=0;
+	public boolean syncCompare(int c1[],int c2[])	{
 		int len1=c1.length;
 		int len2=c2.length;
 		int len,i;
 		if (len1>len2) len=len2;
 		 else len=len1;
 		for (i=0;i<len;i++)	{
-			if (c1[i]==c2[i]) count++;
+			if (c1[i]!=c2[i]) return false;
 		}
-		return count;
+		return true;
 	}
 	  
 	public void addLine(String line) {
