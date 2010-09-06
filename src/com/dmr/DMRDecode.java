@@ -38,7 +38,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 0";
+	public String program_version="DMR Decoder V0.00 Build 1";
 	public TargetDataLine Line;
 	public AudioFormat format;
 	public int vertical_scrollbar_value=0;
@@ -74,6 +74,7 @@ public class DMRDecode {
 	public Element el;
 	private int lmid=0;
 	private int umid=0;
+	private int synctype;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -141,17 +142,17 @@ public class DMRDecode {
 	// The main routine for decoding DMR data
 	public void decode()	{
 		  noCarrier();
-		  int fret=getFrameSync();
-		  if (fret==10) addLine(getTimeStamp()+" DMR_DATA_SYNC");
-		   else if (fret==13) addLine(getTimeStamp()+" DMR_DATA_SYNC (Inverted)");
-		   else if (fret==12) addLine(getTimeStamp()+" DMR_VOICE_SYNC");
-		   else if (fret==11) addLine(getTimeStamp()+" DMR_VOICE_SYNC (Inverted)");
-		   else addLine(getTimeStamp()+" Unknown !");
-		  
+		  synctype=getFrameSync();
 	      center=((max)+(min))/2;
 	      umid=(((max)-center)*5/8)+center;
 	      lmid=(((min)-center)*5/8)+center;
-		  
+	      while (synctype!=-1)	{
+	          processFrame();
+	          synctype=getFrameSync();
+		      center=((max)+(min))/2;
+		      umid=(((max)-center)*5/8)+center;
+		      lmid=(((min)-center)*5/8)+center;    
+	        }  
 	  }
 	  
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
@@ -421,5 +422,389 @@ public class DMRDecode {
 		DateFormat df=DateFormat.getTimeInstance();
 		return df.format(now);
 	}	
+	
+	void processFrame ()
+	{
+
+	  int i, j, dibit;
+	  char duid[3];
+	  char nac[13];
+	  int level;
+
+	  duid[2] = 0;
+	  j = 0;
+
+	  if (state->rf_mod == 1)
+	    {
+	      state->maxref = (state->max * 0.80);
+	      state->minref = (state->min * 0.80);
+	    }
+	  else
+	    {
+	      state->maxref = state->max;
+	      state->minref = state->min;
+	    }
+
+	  if ((state->synctype == 8) || (state->synctype == 9))
+	    {
+	      state->nac = 0;
+	      state->lastsrc = 0;
+	      state->lasttg = 0;
+	      if (opts->errorbars == 1)
+	        {
+	          if (opts->verbose > 0)
+	            {
+	              level = (int) (((float) state->max / (float) 32768) * (float) 100);
+	              printf ("input: %2i%% ", level);
+	            }
+	        }
+	      state->nac = 0;
+	      if ((opts->mbe_out_dir[0] != 0) && (opts->mbe_out_f == NULL))
+	        {
+	          openMbeOutFile (opts, state);
+	        }
+	      sprintf (state->fsubtype, " VOICE        ");
+	      processNXDN96 (opts, state);
+	      return;
+	    }
+	  else if ((state->synctype == 6) || (state->synctype == 7))
+	    {
+	      state->nac = 0;
+	      state->lastsrc = 0;
+	      state->lasttg = 0;
+	      if (opts->errorbars == 1)
+	        {
+	          if (opts->verbose > 0)
+	            {
+	              level = (int) (((float) state->max / (float) 32768) * (float) 100);
+	              printf ("input: %2i%% ", level);
+	            }
+	        }
+	      state->nac = 0;
+	      if ((opts->mbe_out_dir[0] != 0) && (opts->mbe_out_f == NULL))
+	        {
+	          openMbeOutFile (opts, state);
+	        }
+	      sprintf (state->fsubtype, " VOICE        ");
+	      processDSTAR (opts, state);
+	      return;
+	    }
+	  else if ((state->synctype >= 10) && (state->synctype <= 13))
+	    {
+	      state->nac = 0;
+	      state->lastsrc = 0;
+	      state->lasttg = 0;
+	      if (opts->errorbars == 1)
+	        {
+	          if (opts->verbose > 0)
+	            {
+	              level = (int) (((float) state->max / (float) 32768) * (float) 100);
+	              printf ("input: %2i%% ", level);
+	            }
+	        }
+	      if ((state->synctype == 11) || (state->synctype == 12))
+	        {
+	          if ((opts->mbe_out_dir[0] != 0) && (opts->mbe_out_f == NULL))
+	            {
+	              openMbeOutFile (opts, state);
+	            }
+	          sprintf (state->fsubtype, " VOICE        ");
+	          processDMRvoice (opts, state);
+	        }
+	      else
+	        {
+	          closeMbeOutFile (opts, state);
+	          state->err_str[0] = 0;
+	          processDMRdata (opts, state);
+	        }
+	      return;
+	    }
+	  else if ((state->synctype >= 2) && (state->synctype <= 5))
+	    {
+	      state->nac = 0;
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	        }
+	      if ((state->synctype == 3) || (state->synctype == 4))
+	        {
+	          if ((opts->mbe_out_dir[0] != 0) && (opts->mbe_out_f == NULL))
+	            {
+	              openMbeOutFile (opts, state);
+	            }
+	          sprintf (state->fsubtype, " VOICE        ");
+	          processX2TDMAvoice (opts, state);
+	        }
+	      else
+	        {
+	          closeMbeOutFile (opts, state);
+	          state->err_str[0] = 0;
+	          processX2TDMAdata (opts, state);
+	        }
+	      return;
+	    }
+	  else if ((state->synctype == 14) || (state->synctype == 15))
+	    {
+	      state->nac = 0;
+	      state->lastsrc = 0;
+	      state->lasttg = 0;
+	      if (opts->errorbars == 1)
+	        {
+	          if (opts->verbose > 0)
+	            {
+	              level = (int) (((float) state->max / (float) 32768) * (float) 100);
+	              printf ("input: %2i%% ", level);
+	            }
+	        }
+	      if ((opts->mbe_out_dir[0] != 0) && (opts->mbe_out_f == NULL))
+	        {
+	          openMbeOutFile (opts, state);
+	        }
+	      sprintf (state->fsubtype, " VOICE        ");
+	      processProVoice (opts, state);
+	      return;
+	    }
+	  else
+	    {
+	      j = 0;
+	      for (i = 0; i < 6; i++)
+	        {
+	          dibit = getDibit (opts, state);
+	          nac[j] = (1 & (dibit >> 1)) + 48;     // bit 1
+	          j++;
+	          nac[j] = (1 & dibit) + 48;    // bit 0
+	          j++;
+	        }
+	      nac[12] = 0;
+	      state->nac = strtol (nac, NULL, 2);
+
+	      for (i = 0; i < 2; i++)
+	        {
+	          duid[i] = getDibit (opts, state) + 48;
+	        }
+	    }
+
+	  if (strcmp (duid, "00") == 0)
+	    {
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf (" HDU\n");
+	        }
+	      if (opts->mbe_out_dir[0] != 0)
+	        {
+	          closeMbeOutFile (opts, state);
+	          openMbeOutFile (opts, state);
+	        }
+	      mbe_initMbeParms (state->cur_mp, state->prev_mp, state->prev_mp_enhanced);
+	      state->lastp25type = 2;
+	      sprintf (state->fsubtype, " HDU          ");
+	      processHDU (opts, state);
+	    }
+	  else if (strcmp (duid, "11") == 0)
+	    {
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf (" LDU1  ");
+	        }
+	      if (opts->mbe_out_dir[0] != 0)
+	        {
+	          if (opts->mbe_out_f == NULL)
+	            {
+	              openMbeOutFile (opts, state);
+	            }
+	        }
+	      state->lastp25type = 1;
+	      sprintf (state->fsubtype, " LDU1         ");
+	      state->numtdulc = 0;
+	      processLDU1 (opts, state);
+	    }
+	  else if (strcmp (duid, "22") == 0)
+	    {
+	      if (state->lastp25type != 1)
+	        {
+	          if (opts->errorbars == 1)
+	            {
+	              printFrameInfo (opts, state);
+	              printf (" Ignoring LDU2 not preceeded by LDU1\n");
+	            }
+	          state->lastp25type = 0;
+	          sprintf (state->fsubtype, "              ");
+	        }
+	      else
+	        {
+	          if (opts->errorbars == 1)
+	            {
+	              printFrameInfo (opts, state);
+	              printf (" LDU2  ");
+	            }
+	          if (opts->mbe_out_dir[0] != 0)
+	            {
+	              if (opts->mbe_out_f == NULL)
+	                {
+	                  openMbeOutFile (opts, state);
+	                }
+	            }
+	          state->lastp25type = 2;
+	          sprintf (state->fsubtype, " LDU2         ");
+	          state->numtdulc = 0;
+	          processLDU2 (opts, state);
+	        }
+	    }
+	  else if (strcmp (duid, "33") == 0)
+	    {
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf (" TDULC\n");
+	        }
+	      if (opts->mbe_out_dir[0] != 0)
+	        {
+	          closeMbeOutFile (opts, state);
+	        }
+	      mbe_initMbeParms (state->cur_mp, state->prev_mp, state->prev_mp_enhanced);
+	      state->lasttg = 0;
+	      state->lastsrc = 0;
+	      state->tgcount = 0;
+	      state->lastp25type = 0;
+	      state->err_str[0] = 0;
+	      sprintf (state->fsubtype, " TDULC        ");
+	      state->numtdulc++;
+	      if ((opts->resume > 0) && (state->numtdulc > opts->resume))
+	        {
+	          resumeScan (opts, state);
+	        }
+	      processTDULC (opts, state);
+	      state->err_str[0] = 0;
+	    }
+	  else if (strcmp (duid, "03") == 0)
+	    {
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf (" TDU\n");
+	        }
+	      if (opts->mbe_out_dir[0] != 0)
+	        {
+	          closeMbeOutFile (opts, state);
+	        }
+	      mbe_initMbeParms (state->cur_mp, state->prev_mp, state->prev_mp_enhanced);
+	      state->lasttg = 0;
+	      state->lastsrc = 0;
+	      state->tgcount = 0;
+	      state->lastp25type = 0;
+	      state->err_str[0] = 0;
+	      sprintf (state->fsubtype, " TDU          ");
+	      skipDibit (opts, state, 40);
+	    }
+	  else if (strcmp (duid, "13") == 0)
+	    {
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf (" TSDU\n");
+	        }
+	      if (opts->resume > 0)
+	        {
+	          resumeScan (opts, state);
+	        }
+	      state->lasttg = 0;
+	      state->lastsrc = 0;
+	      state->lastp25type = 3;
+	      sprintf (state->fsubtype, " TSDU         ");
+	      skipDibit (opts, state, 328);
+	    }
+	  else if (strcmp (duid, "30") == 0)
+	    {
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf (" PDU\n");
+	        }
+	      if (opts->resume > 0)
+	        {
+	          resumeScan (opts, state);
+	        }
+	      if (opts->mbe_out_dir[0] != 0)
+	        {
+	          if (opts->mbe_out_f == NULL)
+	            {
+	              openMbeOutFile (opts, state);
+	            }
+	        }
+	      state->lastp25type = 4;
+	      sprintf (state->fsubtype, " PDU          ");
+	    }
+	  // try to guess based on previous frame if unknown type
+	  else if (state->lastp25type == 1)
+	    {
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf ("(LDU2) ");
+	        }
+	      if (opts->mbe_out_dir[0] != 0)
+	        {
+	          if (opts->mbe_out_f == NULL)
+	            {
+	              openMbeOutFile (opts, state);
+	            }
+	        }
+	      state->lastp25type = 0;
+	      sprintf (state->fsubtype, "(LDU2)        ");
+	      state->numtdulc = 0;
+	      processLDU2 (opts, state);
+	    }
+	  else if (state->lastp25type == 2)
+	    {
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf ("(LDU1) ");
+	        }
+	      if (opts->mbe_out_dir[0] != 0)
+	        {
+	          if (opts->mbe_out_f == NULL)
+	            {
+	              openMbeOutFile (opts, state);
+	            }
+	        }
+	      state->lastp25type = 0;
+	      sprintf (state->fsubtype, "(LDU1)        ");
+	      state->numtdulc = 0;
+	      processLDU1 (opts, state);
+	    }
+	  else if (state->lastp25type == 3)
+	    {
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf (" (TSDU)\n");
+	        }
+	      state->lastp25type = 0;
+	      sprintf (state->fsubtype, "(TSDU)        ");
+	      skipDibit (opts, state, 328);
+	    }
+	  else if (state->lastp25type == 4)
+	    {
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf (" (PDU)\n");
+	        }
+	      state->lastp25type = 0;
+	    }
+	  else
+	    {
+	      state->lastp25type = 0;
+	      sprintf (state->fsubtype, "              ");
+	      if (opts->errorbars == 1)
+	        {
+	          printFrameInfo (opts, state);
+	          printf (" duid:%s *Unknown DUID*\n", duid);
+	        }
+	    }
+	}
 	
 }
