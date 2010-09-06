@@ -59,8 +59,6 @@ public class DMRDecode {
 	private int lastsynctype=-1;
 	private int symboltiming=0;
 	private int symbolcnt=0;
-	private int sbuf[]=new int[128];
-	private int sidx=0;
 	private int ssize=36;
 	private int mod_threshold=26;
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
@@ -75,6 +73,8 @@ public class DMRDecode {
 	private int lmid=0;
 	private int umid=0;
 	private int synctype;
+	private int dibit_buf[]=new int[132];
+	
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -220,53 +220,36 @@ public class DMRDecode {
 	    // 12 = +DMR (non inverted signal voice frame)
 	    // 13 = -DMR (inverted signal data frame)
 
-	    int i,j,t,o,dibit,sync,symbol,synctest_pos,lastt;
-	    int synctest[]=new int[25];
-	    int synctest18[]=new int[19];
-	    int synctest32[]=new int[33];
-	    int modulation[]=new int[8];
-	    int synctest_buf[]=new int [10240];
-	    int synctest_p[]=new int [10240];
-	    int synctest_p_counter=0;
+	    int i,t,dibit,sync,symbol,synctest_pos,lastt;
 	    int lmin, lmax, lidx;
 	    int lbuf[]=new int[24]; 
 	    int lbuf2[]=new int[24];
-	    int lsum;
-	    int spectrum[]=new int[64];
 	    boolean dataSync=false;
 	    boolean voiceSync=false;
 	    Quicksort qsort=new Quicksort();
 
 	    // detect frame sync
 	    t=0;
-	    synctest[24]=0;
-	    synctest18[18]=0;
-	    synctest32[32]=0;
-	    synctest_pos=0;
-	    synctest_p=synctest_buf;
-	   
+	    synctest_pos=0;	   
 	    sync=0;
 	    lmin=0;
 	    lmax=0;
 	    lidx=0;
 	    lastt=0;
 	    numflips=0;
-
+	    dibit_buf[55]=0;
+	    dibit_buf[56]=0;
+	    dibit_buf[57]=0;
+	    
 	    while (sync==0)	{
-	    	// TODO : Find out why t is never reset and what it does
 	        t++;
 	        symbol=getSymbol();
 	        
 	        lbuf[lidx]=symbol;
-	        sbuf[sidx]=symbol;
 	        
 	        if (lidx==23) lidx=0;
 	         else lidx++;
 	        
-	        if (sidx==(ssize-1)) sidx=0;
-	          else sidx++;
-	          
-
 	        if (lastt==23)	{
 	            lastt=0;
 	            numflips=0;
@@ -274,21 +257,12 @@ public class DMRDecode {
 	        else lastt++;
 	          
 
-	        //determine dibit state
-		        if (symbol > 0)	{
-	            //*dibit_buf_p = 1;
-	            //dibit_buf_p++;
-	            //dibit=49;
-		        dibit=1;
-	          }
-		       else	{
-	            //*dibit_buf_p = 3;
-	            //dibit_buf_p++;
-	            //dibit=51;
-		    	dibit=3;
-	          }
-
-	        synctest_p[synctest_p_counter]=dibit;
+	        // Get the dibit state
+		    if (symbol>0) dibit=1;
+	          else dibit=3;
+		    addToDitbitBuf(dibit);
+		    
+		    
 	        if (t>=24) {
 	            for (i=0;i<24;i++) {
 	              lbuf2[i]=lbuf[i];
@@ -298,11 +272,9 @@ public class DMRDecode {
 	            lmax=(lbuf2[21]+lbuf2[20]+lbuf2[19])/3;
 	            maxref=max;
 	            minref=min;
-	            
-
-	            System.arraycopy(synctest_p,(synctest_p_counter-23),synctest,0,24);            
-	            dataSync=syncCompare(synctest,DMR_DATA_SYNC);
-	            voiceSync=syncCompare(synctest,DMR_VOICE_SYNC);
+	                    
+	            dataSync=syncCompare(DMR_DATA_SYNC);
+	            voiceSync=syncCompare(DMR_VOICE_SYNC);
 	            
 	            	if (dataSync==true)	{
 	                    carrier=1;
@@ -336,38 +308,32 @@ public class DMRDecode {
 	                  }
 	              }
 
-	            if ((t==24)&&(lastsynctype!=-1))	{
-	              if ((lastsynctype==11)&&(voiceSync==false))	{
-	                    carrier=1;
-	                    offset=synctest_pos;
-	                    max=((max)+lmax)/2;
-	                    min=((min)+lmin)/2;
-	                    lastsynctype=-1;
-	                    return (11);
-	                  }
-	                else if ((lastsynctype==12)&&(dataSync==false))	{
-	                    carrier=1;
-	                    offset=synctest_pos;
-	                    max=((max)+lmax)/2;
-	                    min=((min)+lmin)/2;
-	                    lastsynctype=-1;
-	                    return (12);
-	                  }
-	              }
+	            //if ((t==24)&&(lastsynctype!=-1))	{
+	              //if ((lastsynctype==11)&&(voiceSync==false))	{
+	                    //carrier=1;
+	                    //offset=synctest_pos;
+	                    //max=((max)+lmax)/2;
+	                    //min=((min)+lmin)/2;
+	                    //lastsynctype=-1;
+	                    //return (11);
+	                  //}
+	                //else if ((lastsynctype==12)&&(dataSync==false))	{
+	                    //carrier=1;
+	                    //offset=synctest_pos;
+	                    //max=((max)+lmax)/2;
+	                    //min=((min)+lmin)/2;
+	                    //lastsynctype=-1;
+	                    //return (12);
+	                  //}
+	              //}
 	          
 
-	        if (synctest_pos<10200)	{
-	            synctest_pos++;
-	            synctest_p_counter++;
-	          }
-	        else	{
+	        if (t>12000)	{
 	            // buffer reset
-	            synctest_pos=0;
-	            synctest_p_counter=0;
-	            synctest_p=synctest_buf;
 	            t=0;
 	            noCarrier();
-	          }
+	        }
+	          
 
 	        if (carrier==1)	{
 	            if (synctest_pos>=1800)	{
@@ -381,9 +347,17 @@ public class DMRDecode {
 	    return (-1);
 	  }
 	  
+	// Add a dibit to the dibit buffer
+	void addToDitbitBuf (int dibit)	{
+		int a;
+		// Rotate the dibit buffer to the left
+		for (a=0;a<131;a++)	{
+			dibit_buf[a]=dibit_buf[a+1];
+		}
+		dibit_buf[131]=dibit;
+	}
+	
 	void noCarrier ()	{
-		//dibit_buf_p = dibit_buf + 200;
-		//memset (dibit_buf, 0, sizeof (int) * 200);
 		jitter=-1;
 		lastsynctype=-1;
 		carrier=0;
@@ -393,15 +367,11 @@ public class DMRDecode {
 		firstframe=false;
 	  	}
 	  
-	// Compare the sync held in an array with the contents of another array
-	public boolean syncCompare(int c1[],int c2[])	{
-		int len1=c1.length;
-		int len2=c2.length;
-		int len,i;
-		if (len1>len2) len=len2;
-		 else len=len1;
-		for (i=0;i<len;i++)	{
-			if (c1[i]!=c2[i]) return false;
+	// Compare the sync held in an array with the contents of the dibit_buf
+	public boolean syncCompare(int c[])	{
+		int i;
+		for (i=0;i<24;i++)	{
+			if (dibit_buf[i+54]!=c[i]) return false;
 		}
 		return true;
 	}
@@ -423,388 +393,22 @@ public class DMRDecode {
 		return df.format(now);
 	}	
 	
-	void processFrame ()
-	{
-
-	  int i, j, dibit;
-	  char duid[3];
-	  char nac[13];
-	  int level;
-
-	  duid[2] = 0;
-	  j = 0;
-
-	  if (state->rf_mod == 1)
-	    {
-	      state->maxref = (state->max * 0.80);
-	      state->minref = (state->min * 0.80);
-	    }
-	  else
-	    {
-	      state->maxref = state->max;
-	      state->minref = state->min;
+	// Handle an incoming DMR Frame
+	void processFrame ()	{
+	    maxref=max;
+	    minref=min;
+	    if ((synctype==11)||(synctype==12)) processDMRvoice ();
+	     else processDMRdata ();
 	    }
 
-	  if ((state->synctype == 8) || (state->synctype == 9))
-	    {
-	      state->nac = 0;
-	      state->lastsrc = 0;
-	      state->lasttg = 0;
-	      if (opts->errorbars == 1)
-	        {
-	          if (opts->verbose > 0)
-	            {
-	              level = (int) (((float) state->max / (float) 32768) * (float) 100);
-	              printf ("input: %2i%% ", level);
-	            }
-	        }
-	      state->nac = 0;
-	      if ((opts->mbe_out_dir[0] != 0) && (opts->mbe_out_f == NULL))
-	        {
-	          openMbeOutFile (opts, state);
-	        }
-	      sprintf (state->fsubtype, " VOICE        ");
-	      processNXDN96 (opts, state);
-	      return;
-	    }
-	  else if ((state->synctype == 6) || (state->synctype == 7))
-	    {
-	      state->nac = 0;
-	      state->lastsrc = 0;
-	      state->lasttg = 0;
-	      if (opts->errorbars == 1)
-	        {
-	          if (opts->verbose > 0)
-	            {
-	              level = (int) (((float) state->max / (float) 32768) * (float) 100);
-	              printf ("input: %2i%% ", level);
-	            }
-	        }
-	      state->nac = 0;
-	      if ((opts->mbe_out_dir[0] != 0) && (opts->mbe_out_f == NULL))
-	        {
-	          openMbeOutFile (opts, state);
-	        }
-	      sprintf (state->fsubtype, " VOICE        ");
-	      processDSTAR (opts, state);
-	      return;
-	    }
-	  else if ((state->synctype >= 10) && (state->synctype <= 13))
-	    {
-	      state->nac = 0;
-	      state->lastsrc = 0;
-	      state->lasttg = 0;
-	      if (opts->errorbars == 1)
-	        {
-	          if (opts->verbose > 0)
-	            {
-	              level = (int) (((float) state->max / (float) 32768) * (float) 100);
-	              printf ("input: %2i%% ", level);
-	            }
-	        }
-	      if ((state->synctype == 11) || (state->synctype == 12))
-	        {
-	          if ((opts->mbe_out_dir[0] != 0) && (opts->mbe_out_f == NULL))
-	            {
-	              openMbeOutFile (opts, state);
-	            }
-	          sprintf (state->fsubtype, " VOICE        ");
-	          processDMRvoice (opts, state);
-	        }
-	      else
-	        {
-	          closeMbeOutFile (opts, state);
-	          state->err_str[0] = 0;
-	          processDMRdata (opts, state);
-	        }
-	      return;
-	    }
-	  else if ((state->synctype >= 2) && (state->synctype <= 5))
-	    {
-	      state->nac = 0;
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	        }
-	      if ((state->synctype == 3) || (state->synctype == 4))
-	        {
-	          if ((opts->mbe_out_dir[0] != 0) && (opts->mbe_out_f == NULL))
-	            {
-	              openMbeOutFile (opts, state);
-	            }
-	          sprintf (state->fsubtype, " VOICE        ");
-	          processX2TDMAvoice (opts, state);
-	        }
-	      else
-	        {
-	          closeMbeOutFile (opts, state);
-	          state->err_str[0] = 0;
-	          processX2TDMAdata (opts, state);
-	        }
-	      return;
-	    }
-	  else if ((state->synctype == 14) || (state->synctype == 15))
-	    {
-	      state->nac = 0;
-	      state->lastsrc = 0;
-	      state->lasttg = 0;
-	      if (opts->errorbars == 1)
-	        {
-	          if (opts->verbose > 0)
-	            {
-	              level = (int) (((float) state->max / (float) 32768) * (float) 100);
-	              printf ("input: %2i%% ", level);
-	            }
-	        }
-	      if ((opts->mbe_out_dir[0] != 0) && (opts->mbe_out_f == NULL))
-	        {
-	          openMbeOutFile (opts, state);
-	        }
-	      sprintf (state->fsubtype, " VOICE        ");
-	      processProVoice (opts, state);
-	      return;
-	    }
-	  else
-	    {
-	      j = 0;
-	      for (i = 0; i < 6; i++)
-	        {
-	          dibit = getDibit (opts, state);
-	          nac[j] = (1 & (dibit >> 1)) + 48;     // bit 1
-	          j++;
-	          nac[j] = (1 & dibit) + 48;    // bit 0
-	          j++;
-	        }
-	      nac[12] = 0;
-	      state->nac = strtol (nac, NULL, 2);
-
-	      for (i = 0; i < 2; i++)
-	        {
-	          duid[i] = getDibit (opts, state) + 48;
-	        }
-	    }
-
-	  if (strcmp (duid, "00") == 0)
-	    {
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf (" HDU\n");
-	        }
-	      if (opts->mbe_out_dir[0] != 0)
-	        {
-	          closeMbeOutFile (opts, state);
-	          openMbeOutFile (opts, state);
-	        }
-	      mbe_initMbeParms (state->cur_mp, state->prev_mp, state->prev_mp_enhanced);
-	      state->lastp25type = 2;
-	      sprintf (state->fsubtype, " HDU          ");
-	      processHDU (opts, state);
-	    }
-	  else if (strcmp (duid, "11") == 0)
-	    {
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf (" LDU1  ");
-	        }
-	      if (opts->mbe_out_dir[0] != 0)
-	        {
-	          if (opts->mbe_out_f == NULL)
-	            {
-	              openMbeOutFile (opts, state);
-	            }
-	        }
-	      state->lastp25type = 1;
-	      sprintf (state->fsubtype, " LDU1         ");
-	      state->numtdulc = 0;
-	      processLDU1 (opts, state);
-	    }
-	  else if (strcmp (duid, "22") == 0)
-	    {
-	      if (state->lastp25type != 1)
-	        {
-	          if (opts->errorbars == 1)
-	            {
-	              printFrameInfo (opts, state);
-	              printf (" Ignoring LDU2 not preceeded by LDU1\n");
-	            }
-	          state->lastp25type = 0;
-	          sprintf (state->fsubtype, "              ");
-	        }
-	      else
-	        {
-	          if (opts->errorbars == 1)
-	            {
-	              printFrameInfo (opts, state);
-	              printf (" LDU2  ");
-	            }
-	          if (opts->mbe_out_dir[0] != 0)
-	            {
-	              if (opts->mbe_out_f == NULL)
-	                {
-	                  openMbeOutFile (opts, state);
-	                }
-	            }
-	          state->lastp25type = 2;
-	          sprintf (state->fsubtype, " LDU2         ");
-	          state->numtdulc = 0;
-	          processLDU2 (opts, state);
-	        }
-	    }
-	  else if (strcmp (duid, "33") == 0)
-	    {
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf (" TDULC\n");
-	        }
-	      if (opts->mbe_out_dir[0] != 0)
-	        {
-	          closeMbeOutFile (opts, state);
-	        }
-	      mbe_initMbeParms (state->cur_mp, state->prev_mp, state->prev_mp_enhanced);
-	      state->lasttg = 0;
-	      state->lastsrc = 0;
-	      state->tgcount = 0;
-	      state->lastp25type = 0;
-	      state->err_str[0] = 0;
-	      sprintf (state->fsubtype, " TDULC        ");
-	      state->numtdulc++;
-	      if ((opts->resume > 0) && (state->numtdulc > opts->resume))
-	        {
-	          resumeScan (opts, state);
-	        }
-	      processTDULC (opts, state);
-	      state->err_str[0] = 0;
-	    }
-	  else if (strcmp (duid, "03") == 0)
-	    {
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf (" TDU\n");
-	        }
-	      if (opts->mbe_out_dir[0] != 0)
-	        {
-	          closeMbeOutFile (opts, state);
-	        }
-	      mbe_initMbeParms (state->cur_mp, state->prev_mp, state->prev_mp_enhanced);
-	      state->lasttg = 0;
-	      state->lastsrc = 0;
-	      state->tgcount = 0;
-	      state->lastp25type = 0;
-	      state->err_str[0] = 0;
-	      sprintf (state->fsubtype, " TDU          ");
-	      skipDibit (opts, state, 40);
-	    }
-	  else if (strcmp (duid, "13") == 0)
-	    {
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf (" TSDU\n");
-	        }
-	      if (opts->resume > 0)
-	        {
-	          resumeScan (opts, state);
-	        }
-	      state->lasttg = 0;
-	      state->lastsrc = 0;
-	      state->lastp25type = 3;
-	      sprintf (state->fsubtype, " TSDU         ");
-	      skipDibit (opts, state, 328);
-	    }
-	  else if (strcmp (duid, "30") == 0)
-	    {
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf (" PDU\n");
-	        }
-	      if (opts->resume > 0)
-	        {
-	          resumeScan (opts, state);
-	        }
-	      if (opts->mbe_out_dir[0] != 0)
-	        {
-	          if (opts->mbe_out_f == NULL)
-	            {
-	              openMbeOutFile (opts, state);
-	            }
-	        }
-	      state->lastp25type = 4;
-	      sprintf (state->fsubtype, " PDU          ");
-	    }
-	  // try to guess based on previous frame if unknown type
-	  else if (state->lastp25type == 1)
-	    {
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf ("(LDU2) ");
-	        }
-	      if (opts->mbe_out_dir[0] != 0)
-	        {
-	          if (opts->mbe_out_f == NULL)
-	            {
-	              openMbeOutFile (opts, state);
-	            }
-	        }
-	      state->lastp25type = 0;
-	      sprintf (state->fsubtype, "(LDU2)        ");
-	      state->numtdulc = 0;
-	      processLDU2 (opts, state);
-	    }
-	  else if (state->lastp25type == 2)
-	    {
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf ("(LDU1) ");
-	        }
-	      if (opts->mbe_out_dir[0] != 0)
-	        {
-	          if (opts->mbe_out_f == NULL)
-	            {
-	              openMbeOutFile (opts, state);
-	            }
-	        }
-	      state->lastp25type = 0;
-	      sprintf (state->fsubtype, "(LDU1)        ");
-	      state->numtdulc = 0;
-	      processLDU1 (opts, state);
-	    }
-	  else if (state->lastp25type == 3)
-	    {
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf (" (TSDU)\n");
-	        }
-	      state->lastp25type = 0;
-	      sprintf (state->fsubtype, "(TSDU)        ");
-	      skipDibit (opts, state, 328);
-	    }
-	  else if (state->lastp25type == 4)
-	    {
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf (" (PDU)\n");
-	        }
-	      state->lastp25type = 0;
-	    }
-	  else
-	    {
-	      state->lastp25type = 0;
-	      sprintf (state->fsubtype, "              ");
-	      if (opts->errorbars == 1)
-	        {
-	          printFrameInfo (opts, state);
-	          printf (" duid:%s *Unknown DUID*\n", duid);
-	        }
-	    }
+	// Handle a DMR Voice Frame
+	void processDMRvoice ()	{
+		addLine (getTimeStamp()+" DMR Voice Frame");
+	}
+	
+	// Handle a DMR Data Frame
+	void processDMRdata ()	{
+		addLine (getTimeStamp()+" DMR Data Frame");
 	}
 	
 }
