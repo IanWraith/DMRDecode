@@ -73,7 +73,7 @@ public class DMRDecode {
 	private int lmid=0;
 	private int umid=0;
 	private int synctype;
-	private int dibit_buf[]=new int[132];
+	private int dibit_buf[]=new int[144];
 	
 	
 	public static void main(String[] args) {
@@ -351,10 +351,10 @@ public class DMRDecode {
 	void addToDitbitBuf (int dibit)	{
 		int a;
 		// Rotate the dibit buffer to the left
-		for (a=0;a<131;a++)	{
+		for (a=0;a<143;a++)	{
 			dibit_buf[a]=dibit_buf[a+1];
 		}
-		dibit_buf[131]=dibit;
+		dibit_buf[143]=dibit;
 	}
 	
 	void noCarrier ()	{
@@ -371,7 +371,7 @@ public class DMRDecode {
 	public boolean syncCompare(int c[])	{
 		int i;
 		for (i=0;i<24;i++)	{
-			if (dibit_buf[i+54]!=c[i]) return false;
+			if (dibit_buf[i+66]!=c[i]) return false;
 		}
 		return true;
 	}
@@ -402,13 +402,24 @@ public class DMRDecode {
 	    }
 
 	// Handle a DMR Voice Frame
-	void processDMRvoice ()	{
+	void processDMRvoice ()	{	
 		addLine (getTimeStamp()+" DMR Voice Frame");
 	}
 	
 	// Handle a DMR Data Frame
 	void processDMRdata ()	{
-		addLine (getTimeStamp()+" DMR Data Frame");
+		DMRDataDecode DMRdata=new DMRDataDecode();
+		String line[]=new String[10];
+		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted_dmr);
+		displayLines(line);
+	}
+
+	void displayLines (String line[])	{
+		int a;
+		int len=line.length;
+		for (a=0;a<len;a++)	{
+			if (line[a]!=null) addLine(line[a]);
+		}
 	}
 	
 }
