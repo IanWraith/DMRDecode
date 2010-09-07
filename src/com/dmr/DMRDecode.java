@@ -74,7 +74,7 @@ public class DMRDecode {
 	private int umid=0;
 	private int synctype;
 	private int dibit_buf[]=new int[144];
-	
+	private boolean lastwithSync;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -293,6 +293,7 @@ public class DMRDecode {
 	            	if (dataSync==true)	{
 	                    carrier=1;
 	                    offset=synctest_pos;
+	                    lastwithSync=true;
 	                    max=((max)+(lmax))/2;
 	                    min=((min)+(lmin))/2;
 	                    if (inverted_dmr==false)	{
@@ -308,6 +309,7 @@ public class DMRDecode {
 	                if (voiceSync==true)	{
 	                    carrier=1;
 	                    offset=synctest_pos;
+	                    lastwithSync=true;
 	                    max=((max)+lmax)/2;
 	                    min=((min)+lmin)/2;
 	                    if (inverted_dmr==false)	{
@@ -326,6 +328,7 @@ public class DMRDecode {
 	        	if ((lastsynctype==11)&&(voiceSync==false))	{
 	        		carrier=1;
 	                offset=synctest_pos;
+	                lastwithSync=false;
 	                max=((max)+lmax)/2;
 	                min=((min)+lmin)/2;
 	                lastsynctype=-1;
@@ -334,6 +337,7 @@ public class DMRDecode {
 	             else if ((lastsynctype==12)&&(dataSync==false))	{
 	                carrier=1;
 	                offset=synctest_pos;
+	                lastwithSync=false;
 	                max=((max)+lmax)/2;
 	                min=((min)+lmin)/2;
 	                lastsynctype=-1;
@@ -417,6 +421,8 @@ public class DMRDecode {
 
 	// Handle a DMR Voice Frame
 	void processDMRvoice ()	{	
+		String l=getTimeStamp()+" DMR Voice Frame";
+		if (lastwithSync==true) l=l+" (S)";
 		addLine (getTimeStamp()+" DMR Voice Frame");
 	}
 	
@@ -425,13 +431,14 @@ public class DMRDecode {
 		DMRDataDecode DMRdata=new DMRDataDecode();
 		String line[]=new String[10];
 		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted_dmr);
+		if (lastwithSync==true) line[0]=line[0]+" (S)";
 		displayLines(line);
 	}
 
 	void displayLines (String line[])	{
 		int a;
 		int len=line.length;
-		for (a=0;a<len;a++)	{
+		for (a=(len-1);a>=0;a--)	{
 			if (line[a]!=null) addLine(line[a]);
 		}
 	}
