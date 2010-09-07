@@ -219,6 +219,8 @@ public class DMRDecode {
 	    // 11 = -DMR (inverted signal voice frame)
 	    // 12 = +DMR (non inverted signal voice frame)
 	    // 13 = -DMR (inverted signal data frame)
+		
+		// TODO : Need to work out what offset is doing
 
 	    int i,t,dibit,sync,symbol,synctest_pos,lastt;
 	    int lmin, lmax, lidx;
@@ -382,6 +384,7 @@ public class DMRDecode {
 		max=15000;
 		min=-15000;
 		center=0;
+		// TODO : Need to work out the purpose of firstframe
 		firstframe=false;
 	  	}
 	  
@@ -435,6 +438,7 @@ public class DMRDecode {
 		displayLines(line);
 	}
 
+	// Display a group of lines
 	void displayLines (String line[])	{
 		int a;
 		int len=line.length;
@@ -442,5 +446,7 @@ public class DMRDecode {
 			if (line[a]!=null) addLine(line[a]);
 		}
 	}
+	
+	// TODO : Need to add code to save decoded data to a file
 	
 }
