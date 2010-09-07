@@ -175,7 +175,7 @@ public class DMRDecode {
 		          }
 		          else if ((jitter<0)&&(lastsample<center)) jitter=i;   
 		        }
-		      else	{                       // sample < 0
+		      else	{                       
 		        if (lastsample>center) numflips+=1;
 		        if (sample<(minref*1.25))	{
 		        	if (lastsample>(minref*1.25)) numflips+=1;
@@ -258,8 +258,22 @@ public class DMRDecode {
 	          
 
 	        // Get the dibit state
-		    if (symbol>0) dibit=1;
+	        if (lastsynctype==-1)	{
+		     if (symbol>0) dibit=1;
 	          else dibit=3;
+	         }
+	         else	{
+	        	 if (symbol>center)	{
+	        		 if (symbol>umid) dibit=1;
+	        		  else dibit=0;
+	        	 }
+	        	 else	{
+	        		 if (symbol<lmid) dibit=3;
+	        		  else dibit=2;	        	
+	        	 }
+	         }
+	        
+	        
 		    addToDitbitBuf(dibit);
 		    
 		    
@@ -308,24 +322,24 @@ public class DMRDecode {
 	                  }
 	              }
 
-	            //if ((t==24)&&(lastsynctype!=-1))	{
-	              //if ((lastsynctype==11)&&(voiceSync==false))	{
-	                    //carrier=1;
-	                    //offset=synctest_pos;
-	                    //max=((max)+lmax)/2;
-	                    //min=((min)+lmin)/2;
-	                    //lastsynctype=-1;
-	                    //return (11);
-	                  //}
-	                //else if ((lastsynctype==12)&&(dataSync==false))	{
-	                    //carrier=1;
-	                    //offset=synctest_pos;
-	                    //max=((max)+lmax)/2;
-	                    //min=((min)+lmin)/2;
-	                    //lastsynctype=-1;
-	                    //return (12);
-	                  //}
-	              //}
+	        if ((synctest_pos==144)&&(lastsynctype!=-1))	{
+	        	if ((lastsynctype==11)&&(voiceSync==false))	{
+	        		carrier=1;
+	                offset=synctest_pos;
+	                max=((max)+lmax)/2;
+	                min=((min)+lmin)/2;
+	                lastsynctype=-1;
+	                return (11);
+	               	}
+	             else if ((lastsynctype==12)&&(dataSync==false))	{
+	                carrier=1;
+	                offset=synctest_pos;
+	                max=((max)+lmax)/2;
+	                min=((min)+lmin)/2;
+	                lastsynctype=-1;
+	                return (12);
+	                }
+	              }
 	          
 
 	        if (t>12000)	{
@@ -333,7 +347,7 @@ public class DMRDecode {
 	            t=0;
 	            noCarrier();
 	        }
-	          
+	        synctest_pos++;
 
 	        if (carrier==1)	{
 	            if (synctest_pos>=1800)	{
