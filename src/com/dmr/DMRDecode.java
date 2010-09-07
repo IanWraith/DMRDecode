@@ -423,7 +423,7 @@ public class DMRDecode {
 	void processDMRvoice ()	{	
 		String l=getTimeStamp()+" DMR Voice Frame";
 		if (lastwithSync==true) l=l+" (S)";
-		addLine (getTimeStamp()+" DMR Voice Frame");
+		addLine (l);
 	}
 	
 	// Handle a DMR Data Frame
