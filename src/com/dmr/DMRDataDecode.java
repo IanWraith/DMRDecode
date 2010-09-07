@@ -63,11 +63,7 @@ public class DMRDataDecode {
 			if (tact[a]==false) line[2]=line[2]+"0";
 			 else  line[2]=line[2]+"1";
 		}
-		
-		// Don't display anything for now
-		line[1]=null;
-		line[2]=null;
-		
+				
 		return true;
 	}
 	
