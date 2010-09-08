@@ -150,6 +150,10 @@ public class DMRDecode {
 		      center=((max)+(min))/2;
 		      umid=(((max)-center)*5/8)+center;
 		      lmid=(((min)-center)*5/8)+center;    
+		      
+		      String line="center="+Integer.toString(center);
+		      addLine(line);
+		      
 	        }  
 	  }
 	  
@@ -350,8 +354,6 @@ public class DMRDecode {
 	        
 	        if (t>32000)	{
 	            // buffer reset
-	        	String l=getTimeStamp()+" Time out !";
-	        	addLine(l);
 	            t=0;
 	            synctest_pos=0;
 	        }
