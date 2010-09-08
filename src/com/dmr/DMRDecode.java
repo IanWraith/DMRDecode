@@ -58,7 +58,6 @@ public class DMRDecode {
 	private int minref=-12000;
 	private int lastsynctype=-1;
 	private int symbolcnt=0;
-	private int ssize=36;
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private int carrier=0;
