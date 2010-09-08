@@ -377,7 +377,6 @@ public class DMRDecode {
 		max=15000;
 		min=-15000;
 		center=0;
-		// TODO : Need to work out the purpose of firstframe
 		firstframe=false;
 	  	}
 	  
