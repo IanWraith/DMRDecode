@@ -71,6 +71,8 @@ public class DMRDecode {
 	private int synctype;
 	private int dibit_buf[]=new int[144];
 	private boolean frameSync;
+	public boolean saveToFile=false;
+	public String saveFileName;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -418,6 +420,7 @@ public class DMRDecode {
 	void processDMRvoice ()	{	
 		String l=getTimeStamp()+" DMR Voice Frame";
 		if (frameSync==true) l=l+" (Sync)";
+		if (firstframe==true) l=l+" (FF)";
 		addLine (l);
 	}
 	
@@ -427,6 +430,7 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted_dmr);
 		if (frameSync==true) line[0]=line[0]+" (Sync)";
+		if (firstframe==true) line[0]=line[0]+" (FF)";
 		displayLines(line);
 	}
 

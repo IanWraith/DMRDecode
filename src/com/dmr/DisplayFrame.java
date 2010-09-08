@@ -30,7 +30,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
 	private DMRDecode theApp;
 	public static final long serialVersionUID=1;
-	private JMenuItem inverted_item;
+	private JMenuItem save_to_file,inverted_item;
 	private JMenuItem exit_item;
 
 	// Constructor
@@ -45,7 +45,9 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		JMenu mainMenu=new JMenu("Main");
 		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted_dmr));
 		inverted_item.addActionListener(this);
-		mainMenu.add(exit_item=new JMenuItem("Exit"));
+		mainMenu.add(save_to_file=new JRadioButtonMenuItem("Save to File",theApp.saveToFile));
+		save_to_file.addActionListener(this);
+		mainMenu.add(exit_item=new JMenuItem("Exit"));		
 		exit_item.addActionListener(this);
 		menuBar.add(mainMenu);
 		// View
@@ -69,6 +71,15 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			if (theApp.inverted_dmr==false) theApp.inverted_dmr=true;
 			 else theApp.inverted_dmr=false;
 		}
+		
+		// Save to File
+		if (event_name=="Save to File")	{
+			if (theApp.saveToFile==false)	{
+				// TODO : Add code to bring up a dialog box for the user to select a filename
+				theApp.saveToFile=true;
+			}
+			 else theApp.saveToFile=false;
+		}		
 		
 		// Exit 
 		if (event_name=="Exit") {
