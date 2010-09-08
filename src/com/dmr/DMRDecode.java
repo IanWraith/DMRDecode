@@ -64,7 +64,6 @@ public class DMRDecode {
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private int carrier=0;
-	private int offset=0;
 	public boolean inverted_dmr=false;
 	private boolean firstframe=false;
 	public JEditorPane editorPane;
@@ -220,8 +219,6 @@ public class DMRDecode {
 	    // 12 = +DMR (non inverted signal voice frame)
 	    // 13 = -DMR (inverted signal data frame)
 		
-		// TODO : Need to work out what offset is doing
-
 	    int i,t,dibit,sync,symbol,synctest_pos,lastt;
 	    int lmin, lmax, lidx;
 	    int lbuf[]=new int[24]; 
@@ -293,8 +290,7 @@ public class DMRDecode {
 	            voiceSync=syncCompare(DMR_VOICE_SYNC);
 	            
 	            	if (dataSync==true)	{
-	                    carrier=1;
-	                    offset=synctest_pos;
+	                    carrier=1;	                 
 	                    lastwithSync=true;
 	                    max=((max)+(lmax))/2;
 	                    min=((min)+(lmin))/2;
@@ -310,7 +306,6 @@ public class DMRDecode {
 	                  }
 	                if (voiceSync==true)	{
 	                    carrier=1;
-	                    offset=synctest_pos;
 	                    lastwithSync=true;
 	                    max=((max)+lmax)/2;
 	                    min=((min)+lmin)/2;
@@ -329,7 +324,6 @@ public class DMRDecode {
 	        if ((synctest_pos==144)&&(lastsynctype!=-1))	{
 	        	if ((lastsynctype==11)&&(voiceSync==false))	{
 	        		carrier=1;
-	                offset=synctest_pos;
 	                lastwithSync=false;
 	                max=((max)+lmax)/2;
 	                min=((min)+lmin)/2;
@@ -338,7 +332,6 @@ public class DMRDecode {
 	               	}
 	             else if ((lastsynctype==12)&&(dataSync==false))	{
 	                carrier=1;
-	                offset=synctest_pos;
 	                lastwithSync=false;
 	                max=((max)+lmax)/2;
 	                min=((min)+lmin)/2;
