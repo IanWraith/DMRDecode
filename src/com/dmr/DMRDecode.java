@@ -57,7 +57,6 @@ public class DMRDecode {
 	private int maxref=12000;
 	private int minref=-12000;
 	private int lastsynctype=-1;
-	private int symboltiming=0;
 	private int symbolcnt=0;
 	private int ssize=36;
 	private int mod_threshold=26;
