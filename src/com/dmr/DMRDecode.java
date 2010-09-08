@@ -60,7 +60,7 @@ public class DMRDecode {
 	private int symbolcnt=0;
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
-	private int carrier=0;
+	private boolean carrier=false;
 	public boolean inverted_dmr=false;
 	private boolean firstframe=false;
 	public JEditorPane editorPane;
@@ -70,7 +70,7 @@ public class DMRDecode {
 	private int umid=0;
 	private int synctype;
 	private int dibit_buf[]=new int[144];
-	private boolean lastwithSync;
+	private boolean frameSync;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -287,8 +287,8 @@ public class DMRDecode {
 	            voiceSync=syncCompare(DMR_VOICE_SYNC);
 	            
 	            	if (dataSync==true)	{
-	                    carrier=1;	                 
-	                    lastwithSync=true;
+	                    carrier=true;	                 
+	                    frameSync=true;
 	                    max=((max)+(lmax))/2;
 	                    min=((min)+(lmin))/2;
 	                    if (inverted_dmr==false)	{
@@ -302,8 +302,8 @@ public class DMRDecode {
 	                      }
 	                  }
 	                if (voiceSync==true)	{
-	                    carrier=1;
-	                    lastwithSync=true;
+	                    carrier=true;
+	                    frameSync=true;
 	                    max=((max)+lmax)/2;
 	                    min=((min)+lmin)/2;
 	                    if (inverted_dmr==false)	{
@@ -320,16 +320,16 @@ public class DMRDecode {
 
 	        if ((synctest_pos==144)&&(lastsynctype!=-1))	{
 	        	if ((lastsynctype==11)&&(voiceSync==false))	{
-	        		carrier=1;
-	                lastwithSync=false;
+	        		carrier=true;
+	                frameSync=false;
 	                max=((max)+lmax)/2;
 	                min=((min)+lmin)/2;
 	                lastsynctype=-1;
 	                return (11);
 	               	}
 	             else if ((lastsynctype==12)&&(dataSync==false))	{
-	                carrier=1;
-	                lastwithSync=false;
+	                carrier=true;
+	                frameSync=false;
 	                max=((max)+lmax)/2;
 	                min=((min)+lmin)/2;
 	                lastsynctype=-1;
@@ -337,20 +337,23 @@ public class DMRDecode {
 	                }
 	              }
 	          
-
-	        if (t>12000)	{
-	            // buffer reset
-	            t=0;
-	            noCarrier();
-	        }
-	        synctest_pos++;
-
-	        if (carrier==1)	{
+	        // We had a signal but appear to have lost it
+	        if (carrier==true)	{
 	            if (synctest_pos>=1800)	{
+	            	addLine("Carrier Lost !");
 	                noCarrier();
 	                return (-1);
 	              }
 	          }
+	        
+	        if (t>32000)	{
+	            // buffer reset
+	        	String l=getTimeStamp()+" Time out !";
+	        	addLine(l);
+	            t=0;
+	            synctest_pos=0;
+	        }
+	        else synctest_pos++;
 	      
 	    }
 	        
@@ -370,7 +373,7 @@ public class DMRDecode {
 	void noCarrier ()	{
 		jitter=-1;
 		lastsynctype=-1;
-		carrier=0;
+		carrier=false;
 		max=15000;
 		min=-15000;
 		center=0;
@@ -414,7 +417,7 @@ public class DMRDecode {
 	// Handle a DMR Voice Frame
 	void processDMRvoice ()	{	
 		String l=getTimeStamp()+" DMR Voice Frame";
-		if (lastwithSync==true) l=l+" (S)";
+		if (frameSync==true) l=l+" (Sync)";
 		addLine (l);
 	}
 	
@@ -423,7 +426,7 @@ public class DMRDecode {
 		DMRDataDecode DMRdata=new DMRDataDecode();
 		String line[]=new String[10];
 		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted_dmr);
-		if (lastwithSync==true) line[0]=line[0]+" (S)";
+		if (frameSync==true) line[0]=line[0]+" (Sync)";
 		displayLines(line);
 	}
 
