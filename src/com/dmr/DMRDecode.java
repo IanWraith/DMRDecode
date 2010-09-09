@@ -24,6 +24,7 @@ import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
+import java.io.FileWriter;
 import javax.swing.*;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.Element;
@@ -45,7 +46,7 @@ public class DMRDecode {
 	public int horizontal_scrollbar_value=0;
 	private boolean audioReady=false;
 	private static boolean RUNNING=true;
-	private int have_sync=0;
+	private boolean have_sync=false;
 	private final int samplesPerSymbol=10;
 	private int jitter=-1;
 	private int symbolCenter=4;
@@ -72,7 +73,10 @@ public class DMRDecode {
 	private int dibit_buf[]=new int[144];
 	private boolean frameSync;
 	public boolean saveToFile=false;
-	public String saveFileName;
+	public FileWriter file;
+	public boolean logging=false;
+	private int symbolsSinceLastFrame=0;
+	
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -149,27 +153,26 @@ public class DMRDecode {
 	          synctype=getFrameSync();
 		      center=((max)+(min))/2;
 		      umid=(((max)-center)*5/8)+center;
-		      lmid=(((min)-center)*5/8)+center;    
-		      
-		      String line="center="+Integer.toString(center);
-		      addLine(line);
-		      
+		      lmid=(((min)-center)*5/8)+center;    		      
 	        }  
 	  }
 	  
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
 	public int getSymbol()	{
+		
+		// TODO : Find the purpose of the variable numflips
+		
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<samplesPerSymbol;i++)	{
 		      // timing control
-		      if ((i==0)&&(have_sync==0))	{
+		      if ((i==0)&&(have_sync==false))	{
 		        if ((jitter>0)&&(jitter<=symbolCenter)) i--;          // catch up  
 		         else if ((jitter>symbolCenter)&&(jitter<samplesPerSymbol)) i++;          // fall back   
 		        jitter=-1;
 		       }
 			  sample=getAudio();
-			  if ((sample>max)&&(have_sync==1)) sample=max;  
-			   else if ((sample<min)&&(have_sync==1)) sample=min;
+			  if ((sample>max)&&(have_sync==true)) sample=max;  
+			   else if ((sample<min)&&(have_sync==true)) sample=min;
 		      if (sample>center)	{
 		        if (lastsample<center) numflips+=1;
 		        if (sample>(maxref*1.25))	{
@@ -216,152 +219,159 @@ public class DMRDecode {
 	  }
 	  
 	public int getFrameSync ()	{
-	    // detects frame sync and returns frame type
-	    // 10 = +DMR (non inverted signal data frame)
-	    // 11 = -DMR (inverted signal voice frame)
-	    // 12 = +DMR (non inverted signal voice frame)
-	    // 13 = -DMR (inverted signal data frame)
+		 // detects frame sync and returns frame type
+		// 10 = +DMR (non inverted signal data frame)
+		// 11 = -DMR (inverted signal voice frame)
+		// 12 = +DMR (non inverted signal voice frame)
+		// 13 = -DMR (inverted signal data frame)
+
+		int i,t,dibit,sync,symbol,synctest_pos,lastt;
+		int lmin, lmax, lidx;
+		int lbuf[]=new int[24];
+		int lbuf2[]=new int[24];
+		boolean dataSync=false;
+		boolean voiceSync=false;
+		Quicksort qsort=new Quicksort();
+
+		// detect frame sync
+		t=0;
+		synctest_pos=0;
+		sync=0;
+		lmin=0;
+		lmax=0;
+		lidx=0;
+		lastt=0;
+		numflips=0;
+		dibit_buf[55]=0;
+		dibit_buf[56]=0;
+		dibit_buf[57]=0;
+
+		while (sync==0) {
+			t++;
+			symbol=getSymbol();
+
+			lbuf[lidx]=symbol;
+
+			if (lidx==23) lidx=0;
+			else lidx++;
+
+			if (lastt==23) {
+				lastt=0;
+				numflips=0;
+			}
+			else lastt++;
+
+
+			// Get the dibit state
+			if (frameSync==false) {
+				if (symbol>0) dibit=1;
+				else dibit=3;
+			}
+			else {
+				if (symbol>center) {
+					if (symbol>umid) dibit=1;
+					else dibit=0;
+				}
+				else {
+					if (symbol<lmid) dibit=3;
+					else dibit=2;
+				}
+			}
+
+
+			addToDitbitBuf(dibit);
+			symbolsSinceLastFrame++;
+
+			if (t>=24) {
+				for (i=0;i<24;i++) {
+					lbuf2[i]=lbuf[i];
+				}
+				qsort.sort(lbuf2);
+				lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
+				lmax=(lbuf2[21]+lbuf2[20]+lbuf2[19])/3;
+				maxref=max;
+				minref=min;
+
+				//if (symbolsSinceLastFrame>=144)	{
+				
+				dataSync=syncCompare(DMR_DATA_SYNC);
+				voiceSync=syncCompare(DMR_VOICE_SYNC);
+
+				if (dataSync==true) {
+					carrier=true;
+					frameSync=true;
+					max=((max)+(lmax))/2;
+					min=((min)+(lmin))/2;
+					if (inverted_dmr==false) {
+						if (lastsynctype!=10) firstframe=true;
+						lastsynctype=10;
+						return (10);
+					}
+					else {
+						if (lastsynctype!=11) firstframe=true;
+						lastsynctype=11;
+						return (11);
+					}
+				}
+				if (voiceSync==true) {
+					carrier=true;
+					frameSync=true;
+					max=((max)+lmax)/2;
+					min=((min)+lmin)/2;
+					if (inverted_dmr==false) {
+						if (lastsynctype!=12) firstframe=true;
+						lastsynctype=12;
+						return (12);
+					}
+					else {
+						if (lastsynctype!=13) firstframe=true;
+						lastsynctype=13;
+						return (13);
+					}
+				}
+		}
+
+		if ((synctest_pos==144)&&(lastsynctype!=-1)) {
+			if ((lastsynctype==11)&&(voiceSync==false)) {
+				//carrier=true;
+				//frameSync=false;
+				//max=((max)+lmax)/2;
+				//min=((min)+lmin)/2;
+				//lastsynctype=-1;
+				//return (11);
+			}
+			else if ((lastsynctype==12)&&(dataSync==false)) {
+				//carrier=true;
+				//frameSync=false;
+				//max=((max)+lmax)/2;
+				//min=((min)+lmin)/2;
+				//lastsynctype=-1;
+				//return (12);
+			}
+		}
 		
-	    int i,t,dibit,sync,symbol,synctest_pos,lastt;
-	    int lmin, lmax, lidx;
-	    int lbuf[]=new int[24]; 
-	    int lbuf2[]=new int[24];
-	    boolean dataSync=false;
-	    boolean voiceSync=false;
-	    Quicksort qsort=new Quicksort();
+			
 
-	    // detect frame sync
-	    t=0;
-	    synctest_pos=0;	   
-	    sync=0;
-	    lmin=0;
-	    lmax=0;
-	    lidx=0;
-	    lastt=0;
-	    numflips=0;
-	    dibit_buf[55]=0;
-	    dibit_buf[56]=0;
-	    dibit_buf[57]=0;
-	    
-	    while (sync==0)	{
-	        t++;
-	        symbol=getSymbol();
-	        
-	        lbuf[lidx]=symbol;
-	        
-	        if (lidx==23) lidx=0;
-	         else lidx++;
-	        
-	        if (lastt==23)	{
-	            lastt=0;
-	            numflips=0;
-	          }
-	        else lastt++;
-	          
+		// We had a signal but appear to have lost it
+		if (carrier==true) {
+			if (synctest_pos>=1800) {
+				addLine(getTimeStamp()+" Carrier Lost !");
+				frameSync=false;
+				noCarrier();
+				return (-1);
+				}
+			}
 
-	        // Get the dibit state
-	        if (lastsynctype==-1)	{
-		     if (symbol>0) dibit=1;
-	          else dibit=3;
-	         }
-	         else	{
-	        	 if (symbol>center)	{
-	        		 if (symbol>umid) dibit=1;
-	        		  else dibit=0;
-	        	 }
-	        	 else	{
-	        		 if (symbol<lmid) dibit=3;
-	        		  else dibit=2;	        	
-	        	 }
-	         }
-	        
-	        
-		    addToDitbitBuf(dibit);
-		    
-		    
-	        if (t>=24) {
-	            for (i=0;i<24;i++) {
-	              lbuf2[i]=lbuf[i];
-	              }
-	            qsort.sort(lbuf2);
-	            lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
-	            lmax=(lbuf2[21]+lbuf2[20]+lbuf2[19])/3;
-	            maxref=max;
-	            minref=min;
-	                    
-	            dataSync=syncCompare(DMR_DATA_SYNC);
-	            voiceSync=syncCompare(DMR_VOICE_SYNC);
-	            
-	            	if (dataSync==true)	{
-	                    carrier=true;	                 
-	                    frameSync=true;
-	                    max=((max)+(lmax))/2;
-	                    min=((min)+(lmin))/2;
-	                    if (inverted_dmr==false)	{
-	                        lastsynctype=10;
-	                        return (10);
-	                      }
-	                    else	{
-	                        if (lastsynctype!=11) firstframe=true;
-	                        lastsynctype=11;
-	                        return (11);
-	                      }
-	                  }
-	                if (voiceSync==true)	{
-	                    carrier=true;
-	                    frameSync=true;
-	                    max=((max)+lmax)/2;
-	                    min=((min)+lmin)/2;
-	                    if (inverted_dmr==false)	{
-	                        if (lastsynctype!=12) firstframe=true;
-	                        lastsynctype=12;
-	                        return (12);
-	                      }
-	                    else	{
-	                    	lastsynctype=13;
-	                        return (13);
-	                      }
-	                  }
-	              }
+		if (t>32000) {
+			// buffer reset
+			t=0;
+			synctest_pos=0;
+			}
+		else synctest_pos++;
 
-	        if ((synctest_pos==144)&&(lastsynctype!=-1))	{
-	        	if ((lastsynctype==11)&&(voiceSync==false))	{
-	        		carrier=true;
-	                frameSync=false;
-	                max=((max)+lmax)/2;
-	                min=((min)+lmin)/2;
-	                lastsynctype=-1;
-	                return (11);
-	               	}
-	             else if ((lastsynctype==12)&&(dataSync==false))	{
-	                carrier=true;
-	                frameSync=false;
-	                max=((max)+lmax)/2;
-	                min=((min)+lmin)/2;
-	                lastsynctype=-1;
-	                return (12);
-	                }
-	              }
-	          
-	        // We had a signal but appear to have lost it
-	        if (carrier==true)	{
-	            if (synctest_pos>=1800)	{
-	            	addLine("Carrier Lost !");
-	                noCarrier();
-	                return (-1);
-	              }
-	          }
-	        
-	        if (t>32000)	{
-	            // buffer reset
-	            t=0;
-	            synctest_pos=0;
-	        }
-	        else synctest_pos++;
-	      
-	    }
-	        
-	    return (-1);
+		}
+
+		return (-1);
 	  }
 	  
 	// Add a dibit to the dibit buffer
@@ -410,10 +420,19 @@ public class DMRDecode {
 		return df.format(now);
 	}	
 	
+
+	
 	// Handle an incoming DMR Frame
 	void processFrame ()	{
 	    maxref=max;
 	    minref=min;
+	    if (firstframe==true)	{
+	    	String l=getTimeStamp()+" Sync Acquired";
+	    	l=l+" : center="+Integer.toString(center)+" jitter="+Integer.toString(jitter);
+			addLine(l);
+			fileWrite(l);
+			return;
+	    }
 	    if ((synctype==11)||(synctype==12)) processDMRvoice ();
 	     else processDMRdata ();
 	    }
@@ -422,8 +441,9 @@ public class DMRDecode {
 	void processDMRvoice ()	{	
 		String l=getTimeStamp()+" DMR Voice Frame";
 		if (frameSync==true) l=l+" (Sync)";
-		if (firstframe==true) l=l+" (FF)";
-		addLine (l);
+		l=dispSymbolsSinceLastFrame(l);
+		addLine(l);
+		fileWrite(l);
 	}
 	
 	// Handle a DMR Data Frame
@@ -432,7 +452,7 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted_dmr);
 		if (frameSync==true) line[0]=line[0]+" (Sync)";
-		if (firstframe==true) line[0]=line[0]+" (FF)";
+		line[0]=dispSymbolsSinceLastFrame(line[0]);
 		displayLines(line);
 	}
 
@@ -443,8 +463,37 @@ public class DMRDecode {
 		for (a=(len-1);a>=0;a--)	{
 			if (line[a]!=null) addLine(line[a]);
 		}
+		// Log to disk if needed
+		if (logging==true)	{
+			for (a=0;a<len;a++)	{
+				if (line[a]!=null) fileWrite(line[a]);
+			}
+		}
 	}
 	
-	// TODO : Need to add code to save decoded data to a file
+	// Write to a string to the logging file
+	public boolean fileWrite(String fline) {
+		// Add a CR to the end of each line
+		fline=fline+"\r\n";
+		// If we aren't logging don't try to do anything
+		if (logging==false)
+			return false;
+		try {
+			file.write(fline);
+			file.flush();
+		} catch (Exception e) {
+			// Stop logging as we have a problem
+			logging=false;
+			System.out.println("\nError writing to the logging file");
+			return false;
+		}
+		return true;
+	}
+	
+	public String dispSymbolsSinceLastFrame (String l)	{
+		l=l+" (Symbols="+Integer.toString(symbolsSinceLastFrame)+")";
+		symbolsSinceLastFrame=0;
+		return l;
+	}
 	
 }
