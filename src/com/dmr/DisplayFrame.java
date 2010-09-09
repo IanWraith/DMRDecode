@@ -75,7 +75,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		// Save to File
 		if (event_name=="Save to File")	{
 			if (theApp.saveToFile==false)	{
-				// TODO : Add code to bring up a dialog box for the user to select a filename
+				if (saveDialogBox()==false) return;
 				theApp.saveToFile=true;
 			}
 			 else theApp.saveToFile=false;
@@ -95,6 +95,54 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	// Update all the menu items 
 	public void menuItemUpdate () {
 		inverted_item.setSelected(theApp.inverted_dmr);
+	}
+	
+	// Display a dialog box so the user can select a location and name for a log file
+	public boolean saveDialogBox ()	{
+		if (theApp.logging==true) return false;
+		String file_name;
+		// Bring up a dialog box that allows the user to select the name
+		// of the saved file
+		JFileChooser fc=new JFileChooser();
+		// The dialog box title //
+		fc.setDialogTitle("Select the log file name");
+		// Start in current directory
+		fc.setCurrentDirectory(new File("."));
+		// Don't all types of file to be selected //
+		fc.setAcceptAllFileFilterUsed(false);
+		// Only show .txt files //
+		fc.setFileFilter(new TextfileFilter());
+		// Show save dialog; this method does not return until the
+		// dialog is closed
+		int returnval=fc.showSaveDialog(this);
+		// If the user has selected cancel then quit
+		if (returnval==JFileChooser.CANCEL_OPTION) return false;
+		// Get the file name an path of the selected file
+		file_name=fc.getSelectedFile().getPath();
+		// Does the file name end in .txt ? //
+		// If not then automatically add a .txt ending //
+		int last_index=file_name.lastIndexOf(".txt");
+		if (last_index!=(file_name.length() - 4))
+			file_name=file_name + ".txt";
+		// Create a file with this name //
+		File tfile = new File(file_name);
+		// If the file exists ask the user if they want to overwrite it
+		if (tfile.exists()) {
+			int response = JOptionPane.showConfirmDialog(null,
+					"Overwrite existing file?", "Confirm Overwrite",
+					JOptionPane.OK_CANCEL_OPTION,
+					JOptionPane.QUESTION_MESSAGE);
+			if (response == JOptionPane.CANCEL_OPTION) return false;
+		}
+		// Open the file
+		try {
+			theApp.file = new FileWriter(tfile);
+		} catch (Exception e) {
+			System.out.println("\nError opening the logging file");
+			return false;
+		}
+		theApp.logging=true;
+		return true;
 	}
 
 }
