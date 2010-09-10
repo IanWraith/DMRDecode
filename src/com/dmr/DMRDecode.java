@@ -46,7 +46,6 @@ public class DMRDecode {
 	public int horizontal_scrollbar_value=0;
 	private boolean audioReady=false;
 	private static boolean RUNNING=true;
-	private boolean have_sync=false;
 	private final int samplesPerSymbol=10;
 	private int jitter=-1;
 	private int symbolCenter=4;
@@ -158,16 +157,13 @@ public class DMRDecode {
 	  }
 	  
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
-	public int getSymbol()	{
-		
-		// TODO : Find the purpose of the variable numflips
-		
+	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<samplesPerSymbol;i++)	{
 		      // timing control
 		      if ((i==0)&&(have_sync==false))	{
-		        if ((jitter>0)&&(jitter<=symbolCenter)) i--;          // catch up  
-		         else if ((jitter>symbolCenter)&&(jitter<samplesPerSymbol)) i++;          // fall back   
+		        if ((jitter>0)&&(jitter<=symbolCenter)) i--;          
+		         else if ((jitter>symbolCenter)&&(jitter<samplesPerSymbol)) i++;          
 		        jitter=-1;
 		       }
 			  sample=getAudio();
@@ -233,7 +229,6 @@ public class DMRDecode {
 		boolean voiceSync=false;
 		Quicksort qsort=new Quicksort();
 
-		// detect frame sync
 		t=0;
 		synctest_pos=0;
 		sync=0;
@@ -242,28 +237,21 @@ public class DMRDecode {
 		lidx=0;
 		lastt=0;
 		numflips=0;
-		dibit_buf[55]=0;
-		dibit_buf[56]=0;
-		dibit_buf[57]=0;
 
 		while (sync==0) {
 			t++;
-			symbol=getSymbol();
-
+			symbol=getSymbol(frameSync);
 			lbuf[lidx]=symbol;
-
 			if (lidx==23) lidx=0;
-			else lidx++;
-
-			if (lastt==23) {
-				lastt=0;
-				numflips=0;
-			}
-			else lastt++;
-
+			 else lidx++;
 
 			// Get the dibit state
 			if (frameSync==false) {
+				if (lastt==23) {
+					lastt=0;
+					numflips=0;
+				}
+				else lastt++;
 				if (symbol>0) dibit=1;
 				else dibit=3;
 			}
@@ -282,7 +270,7 @@ public class DMRDecode {
 			addToDitbitBuf(dibit);
 			symbolsSinceLastFrame++;
 
-			if (t>=24) {
+			if (t>=143) {
 				for (i=0;i<24;i++) {
 					lbuf2[i]=lbuf[i];
 				}
@@ -291,40 +279,43 @@ public class DMRDecode {
 				lmax=(lbuf2[21]+lbuf2[20]+lbuf2[19])/3;
 				maxref=max;
 				minref=min;
-
-				//if (symbolsSinceLastFrame>=144)	{
-				
+				// Check if this has a valid voice or data frame sync
 				dataSync=syncCompare(DMR_DATA_SYNC);
 				voiceSync=syncCompare(DMR_VOICE_SYNC);
-
+				// Data frame
 				if (dataSync==true) {
 					carrier=true;
 					frameSync=true;
 					max=((max)+(lmax))/2;
 					min=((min)+(lmin))/2;
 					if (inverted_dmr==false) {
-						if (lastsynctype!=10) firstframe=true;
+						if (lastsynctype==-1) firstframe=true;
+						 else firstframe=false;
 						lastsynctype=10;
 						return (10);
 					}
 					else {
-						if (lastsynctype!=11) firstframe=true;
+						if (lastsynctype==-1) firstframe=true;
+						 else firstframe=false;
 						lastsynctype=11;
 						return (11);
 					}
 				}
+				// Voice frame
 				if (voiceSync==true) {
 					carrier=true;
 					frameSync=true;
 					max=((max)+lmax)/2;
 					min=((min)+lmin)/2;
 					if (inverted_dmr==false) {
-						if (lastsynctype!=12) firstframe=true;
+						if (lastsynctype==-1) firstframe=true;
+						 else firstframe=false;
 						lastsynctype=12;
 						return (12);
 					}
 					else {
-						if (lastsynctype!=13) firstframe=true;
+						if (lastsynctype==-1) firstframe=true;
+						 else firstframe=false;
 						lastsynctype=13;
 						return (13);
 					}
