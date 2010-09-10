@@ -48,7 +48,7 @@ public class DMRDecode {
 	private static boolean RUNNING=true;
 	private final int samplesPerSymbol=10;
 	private int jitter=-1;
-	private int symbolCenter=4;
+	private final int symbolCenter=4;
 	private int max=15000;
 	private int min=-15000;
 	private int center=0;
@@ -74,8 +74,6 @@ public class DMRDecode {
 	public boolean saveToFile=false;
 	public FileWriter file;
 	public boolean logging=false;
-	private int symbolsSinceLastFrame=0;
-	
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -215,30 +213,18 @@ public class DMRDecode {
 	  }
 	  
 	public int getFrameSync ()	{
-		 // detects frame sync and returns frame type
-		// 10 = +DMR (non inverted signal data frame)
-		// 11 = -DMR (inverted signal voice frame)
-		// 12 = +DMR (non inverted signal voice frame)
-		// 13 = -DMR (inverted signal data frame)
 
-		int i,t,dibit,sync,symbol,synctest_pos,lastt;
-		int lmin, lmax, lidx;
+		int i,t=0,dibit,symbol,synctest_pos=0,lastt=0;
+		int lmin=0,lmax=0,lidx=0;
 		int lbuf[]=new int[24];
 		int lbuf2[]=new int[24];
 		boolean dataSync=false;
 		boolean voiceSync=false;
 		Quicksort qsort=new Quicksort();
 
-		t=0;
-		synctest_pos=0;
-		sync=0;
-		lmin=0;
-		lmax=0;
-		lidx=0;
-		lastt=0;
 		numflips=0;
 
-		while (sync==0) {
+		while (true) {
 			t++;
 			symbol=getSymbol(frameSync);
 			lbuf[lidx]=symbol;
@@ -252,10 +238,17 @@ public class DMRDecode {
 					numflips=0;
 				}
 				else lastt++;
-				if (symbol>0) dibit=1;
-				else dibit=3;
+				if (inverted_dmr==false)	{
+					if (symbol>0) dibit=1;
+					else dibit=3;
+				}
+				else	{
+					if (symbol>0) dibit=3;
+					else dibit=1;
+				}
 			}
 			else {
+				// TODO : Add inverted support for the main dibit value decision code
 				if (symbol>center) {
 					if (symbol>umid) dibit=1;
 					else dibit=0;
@@ -268,8 +261,7 @@ public class DMRDecode {
 
 
 			addToDitbitBuf(dibit);
-			symbolsSinceLastFrame++;
-
+		
 			if (t>=143) {
 				for (i=0;i<24;i++) {
 					lbuf2[i]=lbuf[i];
@@ -288,18 +280,10 @@ public class DMRDecode {
 					frameSync=true;
 					max=((max)+(lmax))/2;
 					min=((min)+(lmin))/2;
-					if (inverted_dmr==false) {
-						if (lastsynctype==-1) firstframe=true;
-						 else firstframe=false;
-						lastsynctype=10;
-						return (10);
-					}
-					else {
-						if (lastsynctype==-1) firstframe=true;
-						 else firstframe=false;
-						lastsynctype=11;
-						return (11);
-					}
+					if (lastsynctype==-1) firstframe=true;
+					 else firstframe=false;
+					lastsynctype=10;
+					return (10);
 				}
 				// Voice frame
 				if (voiceSync==true) {
@@ -307,23 +291,15 @@ public class DMRDecode {
 					frameSync=true;
 					max=((max)+lmax)/2;
 					min=((min)+lmin)/2;
-					if (inverted_dmr==false) {
-						if (lastsynctype==-1) firstframe=true;
-						 else firstframe=false;
-						lastsynctype=12;
-						return (12);
-					}
-					else {
-						if (lastsynctype==-1) firstframe=true;
-						 else firstframe=false;
-						lastsynctype=13;
-						return (13);
-					}
+					if (lastsynctype==-1) firstframe=true;
+					 else firstframe=false;
+					lastsynctype=12;
+					return (12);
 				}
 		}
 
 		if ((synctest_pos==144)&&(lastsynctype!=-1)) {
-			if ((lastsynctype==11)&&(voiceSync==false)) {
+			if ((lastsynctype==10)&&(voiceSync==false)) {
 				//carrier=true;
 				//frameSync=false;
 				//max=((max)+lmax)/2;
@@ -342,7 +318,6 @@ public class DMRDecode {
 		}
 		
 			
-
 		// We had a signal but appear to have lost it
 		if (carrier==true) {
 			if (synctest_pos>=1800) {
@@ -361,8 +336,6 @@ public class DMRDecode {
 		else synctest_pos++;
 
 		}
-
-		return (-1);
 	  }
 	  
 	// Add a dibit to the dibit buffer
@@ -482,8 +455,8 @@ public class DMRDecode {
 	}
 	
 	public String dispSymbolsSinceLastFrame (String l)	{
-		l=l+" (Symbols="+Integer.toString(symbolsSinceLastFrame)+")";
-		symbolsSinceLastFrame=0;
+		l=l+" (Symbols="+Integer.toString(symbolcnt)+")";
+		symbolcnt=0;
 		return l;
 	}
 	
