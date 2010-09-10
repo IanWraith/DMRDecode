@@ -8,8 +8,10 @@ convert that code to Java and remove all sections that don't relate to DMR.
 
 Milestone 1 - To detect voice and data sync words reached (3rd September 2010)
 
-Milestone 2 - To decode the CACH
+Milestone 2 - To reliably detect voice and data sync words.
 
-Ian Wraith (6th September 2010)
+Milestone 3 - To decode the CACH
+
+Ian Wraith (10th September 2010)
 
 
