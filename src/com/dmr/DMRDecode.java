@@ -70,7 +70,7 @@ public class DMRDecode {
 	private int umid=0;
 	private int synctype;
 	private int dibit_buf[]=new int[144];
-	private boolean frameSync;
+	private boolean frameSync=false;
 	public boolean saveToFile=false;
 	public FileWriter file;
 	public boolean logging=false;
@@ -142,19 +142,22 @@ public class DMRDecode {
 	public void decode()	{
 		  noCarrier();
 		  synctype=getFrameSync();
-	      center=((max)+(min))/2;
-	      umid=(((max)-center)*5/8)+center;
-	      lmid=(((min)-center)*5/8)+center;
+	      center=(max+min)/2;
+	      umid=((max-center)*5/8)+center;
+	      lmid=((min-center)*5/8)+center;
 	      while (synctype!=-1)	{
 	          processFrame();
 	          synctype=getFrameSync();
-		      center=((max)+(min))/2;
-		      umid=(((max)-center)*5/8)+center;
-		      lmid=(((min)-center)*5/8)+center;    		      
+		      center=(max+min)/2;
+		      umid=((max-center)*5/8)+center;
+		      lmid=((min-center)*5/8)+center;    		      
 	        }  
 	  }
 	  
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
+	
+	// TODO : Fix some kind of a bug which causes symbol never to be higher than umid and never lower than lmid
+	
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<samplesPerSymbol;i++)	{
@@ -165,8 +168,8 @@ public class DMRDecode {
 		        jitter=-1;
 		       }
 			  sample=getAudio();
-			  if ((sample>max)&&(have_sync==true)) sample=max;  
-			   else if ((sample<min)&&(have_sync==true)) sample=min;
+			  //if ((sample>max)&&(have_sync==true)) sample=max;  
+			   //else if ((sample<min)&&(have_sync==true)) sample=min;
 		      if (sample>center)	{
 		        if (lastsample<center) numflips+=1;
 		        if (sample>(maxref*1.25))	{
@@ -216,59 +219,79 @@ public class DMRDecode {
 
 		int i,t=0,dibit,symbol,synctest_pos=0,lastt=0;
 		int lmin=0,lmax=0,lidx=0;
-		int lbuf[]=new int[24];
-		int lbuf2[]=new int[24];
+		int lbufCount;
 		boolean dataSync=false;
 		boolean voiceSync=false;
 		Quicksort qsort=new Quicksort();
 
 		numflips=0;
-
+		
+		// Buffer size
+		if (frameSync==true) lbufCount=144;
+		 else lbufCount=23;
+		int lbuf[]=new int[lbufCount];
+		int lbuf2[]=new int[lbufCount];
+		
 		while (true) {
 			t++;
 			symbol=getSymbol(frameSync);
 			lbuf[lidx]=symbol;
-			if (lidx==23) lidx=0;
+			if (lidx==(lbufCount-1)) lidx=0;
 			 else lidx++;
 
 			// Get the dibit state
 			if (frameSync==false) {
-				if (lastt==23) {
+				if (lastt==lbufCount) {
 					lastt=0;
 					numflips=0;
 				}
 				else lastt++;
 				if (inverted_dmr==false)	{
+					// Sync Normal
 					if (symbol>0) dibit=1;
 					else dibit=3;
 				}
+				
 				else	{
+					// Sync Inverted
 					if (symbol>0) dibit=3;
 					else dibit=1;
 				}
 			}
 			else {
-				// TODO : Add inverted support for the main dibit value decision code
-				if (symbol>center) {
-					if (symbol>umid) dibit=1;
-					else dibit=0;
+				if (inverted_dmr==false)	{
+					// Frame Normal
+					if (symbol>center) {
+						if (symbol>umid) dibit=1;
+						else dibit=0;
+					}
+					else {
+						if (symbol<lmid) dibit=3;
+						else dibit=2;
+					}
 				}
-				else {
-					if (symbol<lmid) dibit=3;
-					else dibit=2;
-				}
+				else	{	
+					// Frame Inverted
+					if (symbol>center) {
+						if (symbol>umid) dibit=3;
+						else dibit=2;
+					}
+					else {
+						if (symbol<lmid) dibit=1;
+						else dibit=0;
+					}
+				}	
 			}
-
-
+				
 			addToDitbitBuf(dibit);
 		
-			if (t>=143) {
-				for (i=0;i<24;i++) {
+			if (t>=lbufCount) {
+				for (i=0;i<lbufCount;i++) {
 					lbuf2[i]=lbuf[i];
 				}
 				qsort.sort(lbuf2);
 				lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
-				lmax=(lbuf2[21]+lbuf2[20]+lbuf2[19])/3;
+				lmax=(lbuf2[lbufCount-4]+lbuf2[lbufCount-3]+lbuf2[lbufCount-2])/3;
 				maxref=max;
 				minref=min;
 				// Check if this has a valid voice or data frame sync
@@ -278,8 +301,8 @@ public class DMRDecode {
 				if (dataSync==true) {
 					carrier=true;
 					frameSync=true;
-					max=((max)+(lmax))/2;
-					min=((min)+(lmin))/2;
+					max=(max+lmax)/2;
+					min=(min+lmin)/2;
 					if (lastsynctype==-1) firstframe=true;
 					 else firstframe=false;
 					lastsynctype=10;
@@ -289,14 +312,27 @@ public class DMRDecode {
 				if (voiceSync==true) {
 					carrier=true;
 					frameSync=true;
-					max=((max)+lmax)/2;
-					min=((min)+lmin)/2;
+					max=(max+lmax)/2;
+					min=(min+lmin)/2;
 					if (lastsynctype==-1) firstframe=true;
 					 else firstframe=false;
 					lastsynctype=12;
 					return (12);
 				}
 		}
+			
+		if ((frameSync==true)&&(t==144))	{
+			int a;
+			String line[]=new String[10];
+			line[0]="No sync";
+			line[1]="";
+			for (a=0;a<144;a++)	{
+			 line[1]=line[1]+Integer.toString(dibit_buf[a])+",";
+			}
+			line[2]="center="+Integer.toString(center)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid)+" maxref="+Integer.toString(maxref)+" miniref="+Integer.toString(minref);
+			displayLines(line);
+		}
+		
 
 		if ((synctest_pos==144)&&(lastsynctype!=-1)) {
 			if ((lastsynctype==10)&&(voiceSync==false)) {
