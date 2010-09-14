@@ -155,9 +155,6 @@ public class DMRDecode {
 	  }
 	  
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
-	
-	// TODO : Fix some kind of a bug which causes symbol never to be higher than umid and never lower than lmid
-	
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<samplesPerSymbol;i++)	{
@@ -168,8 +165,8 @@ public class DMRDecode {
 		        jitter=-1;
 		       }
 			  sample=getAudio();
-			  //if ((sample>max)&&(have_sync==true)) sample=max;  
-			   //else if ((sample<min)&&(have_sync==true)) sample=min;
+			  if ((sample>max)&&(have_sync==true)) sample=max;  
+			   else if ((sample<min)&&(have_sync==true)) sample=min;
 		      if (sample>center)	{
 		        if (lastsample<center) numflips+=1;
 		        if (sample>(maxref*1.25))	{
@@ -187,7 +184,7 @@ public class DMRDecode {
 		            if ((jitter<0)&&(lastsample>center)) jitter=i;   
 		            }
 		        } 
-		      if (((i>=symbolCenter-1)&&(i<=symbolCenter+2)))	{
+		      if (((i>=symbolCenter-1)&&(i<=symbolCenter+2))||((i==symbolCenter)||(i==symbolCenter+1))) 	{
 		    	  sum+=sample;
 		          count++;
 		          }
@@ -321,19 +318,6 @@ public class DMRDecode {
 				}
 		}
 			
-		if ((frameSync==true)&&(t==144))	{
-			int a;
-			String line[]=new String[10];
-			line[0]="No sync";
-			line[1]="";
-			for (a=0;a<144;a++)	{
-			 line[1]=line[1]+Integer.toString(dibit_buf[a])+",";
-			}
-			line[2]="center="+Integer.toString(center)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid)+" maxref="+Integer.toString(maxref)+" miniref="+Integer.toString(minref);
-			displayLines(line);
-		}
-		
-
 		if ((synctest_pos==144)&&(lastsynctype!=-1)) {
 			if ((lastsynctype==10)&&(voiceSync==false)) {
 				//carrier=true;
