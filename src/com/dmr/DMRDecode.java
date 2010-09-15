@@ -53,7 +53,6 @@ public class DMRDecode {
 	private int min=-15000;
 	private int center=0;
 	private int lastsample=0;
-	private int numflips=0;
 	private int maxref=12000;
 	private int minref=-12000;
 	private int lastsynctype=-1;
@@ -74,6 +73,7 @@ public class DMRDecode {
 	public boolean saveToFile=false;
 	public FileWriter file;
 	public boolean logging=false;
+	
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -168,16 +168,10 @@ public class DMRDecode {
 			  if ((sample>max)&&(have_sync==true)) sample=max;  
 			   else if ((sample<min)&&(have_sync==true)) sample=min;
 		      if (sample>center)	{
-		        if (lastsample<center) numflips+=1;
-		        if (sample>(maxref*1.25))	{
-		        	if (lastsample<(maxref*1.25)) numflips+=1;
-		          }
-		          else if ((jitter<0)&&(lastsample<center)) jitter=i;   
+		    	  if ((jitter<0)&&(lastsample<center)&&(sample<(maxref*1.25))) jitter=i;   
 		        }
 		      else	{                       
-		        if (lastsample>center) numflips+=1;
 		        if (sample<(minref*1.25))	{
-		        	if (lastsample>(minref*1.25)) numflips+=1;
 		            if (jitter<0) jitter=i;
 		            }
 		          else	{
@@ -220,8 +214,6 @@ public class DMRDecode {
 		boolean dataSync=false;
 		boolean voiceSync=false;
 		Quicksort qsort=new Quicksort();
-
-		numflips=0;
 		
 		// Buffer size
 		if (frameSync==true) lbufCount=144;
@@ -240,7 +232,6 @@ public class DMRDecode {
 			if (frameSync==false) {
 				if (lastt==lbufCount) {
 					lastt=0;
-					numflips=0;
 				}
 				else lastt++;
 				if (inverted_dmr==false)	{
@@ -411,6 +402,9 @@ public class DMRDecode {
 	    maxref=max;
 	    minref=min;
 	    if (firstframe==true)	{
+	    	
+	    	audioDump();
+	    	
 	    	String l=getTimeStamp()+" Sync Acquired";
 	    	l=l+" : center="+Integer.toString(center)+" jitter="+Integer.toString(jitter);
 			addLine(l);
@@ -479,5 +473,30 @@ public class DMRDecode {
 		symbolcnt=0;
 		return l;
 	}
+	
+	// Grab 5 seconds worth of audio
+	public void audioDump ()	{
+		long a;
+		final long sample_max=48000*5;
+		int samples[]=new int[48000*5];
+		for (a=0;a<sample_max;a++)	{
+			samples[(int)a]=getAudio();
+		}	
+	    try	{
+	    	FileWriter dfile=new FileWriter("audiodump.csv");
+			for (a=0;a<sample_max;a++)	{
+				dfile.write(Integer.toString(samples[(int)a]));
+				dfile.write("\r\n");
+			}
+	    	dfile.flush();  
+	    	dfile.close();
+	    	}catch (Exception e)	{
+	    		System.err.println("Error: " + e.getMessage());
+	    		}
+	    
+	    System.exit(0);
+		}
+		
+	
 	
 }
