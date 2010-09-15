@@ -474,7 +474,7 @@ public class DMRDecode {
 		return l;
 	}
 	
-	// Grab 5 seconds worth of audio
+	// Grab 5 seconds worth of audio and write to the file "audiodump.csv"
 	public void audioDump ()	{
 		long a;
 		final long sample_max=48000*5;
