@@ -24,7 +24,10 @@ import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
 import javax.swing.*;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.Element;
@@ -69,16 +72,21 @@ public class DMRDecode {
 	private int umid=0;
 	private int synctype;
 	private int dibit_buf[]=new int[144];
-	private boolean frameSync=false;
+	private boolean frameSync=true;
 	public boolean saveToFile=false;
 	public FileWriter file;
 	public boolean logging=false;
+	private boolean audioSuck=true;
+	private BufferedReader br;
 	
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
 		theApp.prepare_audio();
+		
+		if (theApp.audioSuck==true) theApp.prepareAudioSuck();
+		
 		while (RUNNING)	{
 			if (theApp.audioReady==true) theApp.decode();
 		}
@@ -164,7 +172,8 @@ public class DMRDecode {
 		         else if ((jitter>symbolCenter)&&(jitter<samplesPerSymbol)) i++;          
 		        jitter=-1;
 		       }
-			  sample=getAudio();
+			  if (audioSuck==false) sample=getAudio();
+			   else sample=getSuckData();
 			  if ((sample>max)&&(have_sync==true)) sample=max;  
 			   else if ((sample<min)&&(have_sync==true)) sample=min;
 		      if (sample>center)	{
@@ -214,6 +223,10 @@ public class DMRDecode {
 		boolean dataSync=false;
 		boolean voiceSync=false;
 		Quicksort qsort=new Quicksort();
+		
+		// TODO : The bug in the symbol detection code is related to the values of umid and lmid
+		umid=500;
+		lmid=-500;
 		
 		// Buffer size
 		if (frameSync==true) lbufCount=144;
@@ -309,7 +322,7 @@ public class DMRDecode {
 				}
 		}
 			
-		if ((synctest_pos==144)&&(lastsynctype!=-1)) {
+		if ((synctest_pos==143)&&(lastsynctype!=-1)) {
 			if ((lastsynctype==10)&&(voiceSync==false)) {
 				//carrier=true;
 				//frameSync=false;
@@ -403,7 +416,7 @@ public class DMRDecode {
 	    minref=min;
 	    if (firstframe==true)	{
 	    	
-	    	audioDump();
+	    	//audioDump();
 	    	
 	    	String l=getTimeStamp()+" Sync Acquired";
 	    	l=l+" : center="+Integer.toString(center)+" jitter="+Integer.toString(jitter);
@@ -497,6 +510,26 @@ public class DMRDecode {
 	    System.exit(0);
 		}
 		
+	public void prepareAudioSuck ()	{
+		String fn="audiodump_test.csv";
+		try	{
+			br=new BufferedReader(new InputStreamReader(new FileInputStream(fn)));
+		} catch (Exception e)	{
+			e.printStackTrace();
+		}
+	}
 	
+	public int getSuckData ()	{
+		int data=0;
+		String line;
+		try	{
+			line=br.readLine();
+			data=Integer.parseInt(line);
+		} catch (Exception e)	{
+			audioSuck=false;
+			
+		}
+		return data;
+	}
 	
 }
