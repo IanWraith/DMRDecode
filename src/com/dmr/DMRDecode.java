@@ -72,10 +72,11 @@ public class DMRDecode {
 	private int umid=0;
 	private int synctype;
 	private int dibit_buf[]=new int[144];
-	private boolean frameSync=true;
+	private boolean frameSync=false;
 	public boolean saveToFile=false;
 	public FileWriter file;
 	public boolean logging=false;
+	public boolean pReady=false;
 	private boolean audioSuck=true;
 	private BufferedReader br;
 	
@@ -88,7 +89,7 @@ public class DMRDecode {
 		if (theApp.audioSuck==true) theApp.prepareAudioSuck("audiodump_test.csv");
 		// The main routine
 		while (RUNNING)	{
-			if (theApp.audioReady==true) theApp.decode();
+			if ((theApp.audioReady==true)&&(theApp.pReady==true)) theApp.decode();
 		}
 
 		}
@@ -111,6 +112,8 @@ public class DMRDecode {
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		window.getContentPane().add(scrollPane,BorderLayout.CENTER);
 		window.setVisible(true);
+		// Make certain the program knows the GUI is ready
+		pReady=true;
 		}
 
 	class WindowHandler extends WindowAdapter {
@@ -160,12 +163,9 @@ public class DMRDecode {
 	
 	// Calculate the waveform centre and mid points
 	public void calcMids()	{
-			// TODO : This code needs fixing the DSD author set the mid points at 5/8 or 0.625 of the max and min points
 			center=(max+min)/2;
-			//umid=((max-center)*5/8)+center;
-			//lmid=((min-center)*5/8)+center;
-			umid=(max-center)/7;
-			lmid=(min-center)/7;
+			umid=((max-center)*(5/8))+center;
+			lmid=((min-center)*(5/8))+center;
 	}
 	
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
@@ -193,7 +193,7 @@ public class DMRDecode {
 		            if ((jitter<0)&&(lastsample>center)) jitter=i;   
 		            }
 		        } 
-		      if (((i>=symbolCenter-1)&&(i<=symbolCenter+2))||((i==symbolCenter)||(i==symbolCenter+1))) 	{
+		      if ((i>=symbolCenter-1)&&(i<=symbolCenter+2)) {
 		    	  sum+=sample;
 		          count++;
 		          }
@@ -295,8 +295,8 @@ public class DMRDecode {
 					lbuf2[i]=lbuf[i];
 				}
 				qsort.sort(lbuf2);
-				lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
-				lmax=(lbuf2[lbufCount-4]+lbuf2[lbufCount-3]+lbuf2[lbufCount-2])/3;
+				lmin=(lbuf2[1]+lbuf2[2]+lbuf2[3])/3;
+				lmax=(lbuf2[lbufCount-1]+lbuf2[lbufCount-2]+lbuf2[lbufCount-3])/3;
 				maxref=max;
 				minref=min;
 				// Check if this has a valid voice or data frame sync
