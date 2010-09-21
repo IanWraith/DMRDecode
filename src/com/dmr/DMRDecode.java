@@ -51,10 +51,10 @@ public class DMRDecode {
 	private static boolean RUNNING=true;
 	private final int samplesPerSymbol=10;
 	private int jitter=-1;
-	private final int symbolCenter=4;
+	private final int symbolCentre=4;
 	private int max=15000;
 	private int min=-15000;
-	private int center=0;
+	private int centre=0;
 	private int lastsample=0;
 	private int maxref=12000;
 	private int minref=-12000;
@@ -163,37 +163,30 @@ public class DMRDecode {
 	
 	// Calculate the waveform centre and mid points
 	public void calcMids()	{
-			center=(max+min)/2;
-			umid=((max-center)*(5/8))+center;
-			lmid=((min-center)*(5/8))+center;
+			centre=(max+min)/2;
+			umid=((max-centre)*(5/8))+centre;
+			lmid=((min-centre)*(5/8))+centre;
 	}
 	
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<samplesPerSymbol;i++)	{
-		      // timing control
 		      if ((i==0)&&(have_sync==false))	{
-		        if ((jitter>0)&&(jitter<=symbolCenter)) i--;          
-		         else if ((jitter>symbolCenter)&&(jitter<samplesPerSymbol)) i++;          
+		        if ((jitter>0)&&(jitter<=symbolCentre)) i--;          
+		         else if ((jitter>symbolCentre)&&(jitter<samplesPerSymbol)) i++;          
 		        jitter=-1;
 		       }
 			  if (audioSuck==false) sample=getAudio();
 			   else sample=getSuckData();
 			  if ((sample>max)&&(have_sync==true)) sample=max;  
 			   else if ((sample<min)&&(have_sync==true)) sample=min;
-		      if (sample>center)	{
-		    	  if ((jitter<0)&&(lastsample<center)&&(sample<(maxref*1.25))) jitter=i;   
+		      if (sample>centre)	{
+		    	  if ((jitter<0)&&(lastsample<centre)&&(sample<(maxref*1.25))) jitter=i;   
 		        }
-		      else	{                       
-		        if (sample<(minref*1.25))	{
-		            if (jitter<0) jitter=i;
-		            }
-		          else	{
-		            if ((jitter<0)&&(lastsample>center)) jitter=i;   
-		            }
-		        } 
-		      if ((i>=symbolCenter-1)&&(i<=symbolCenter+2)) {
+		      else if ((sample>(minref*1.25))&&(jitter<0)&&(lastsample>centre)) jitter=i;
+		         
+		      if ((i>=symbolCentre-1)&&(i<=symbolCentre+2)) {
 		    	  sum+=sample;
 		          count++;
 		          }
@@ -265,7 +258,7 @@ public class DMRDecode {
 			else {
 				if (inverted_dmr==false)	{
 					// Frame Normal
-					if (symbol>center) {
+					if (symbol>centre) {
 						if (symbol>umid) dibit=1;
 						else dibit=0;
 					}
@@ -276,7 +269,7 @@ public class DMRDecode {
 				}
 				else	{	
 					// Frame Inverted
-					if (symbol>center) {
+					if (symbol>centre) {
 						if (symbol>umid) dibit=3;
 						else dibit=2;
 					}
@@ -361,7 +354,7 @@ public class DMRDecode {
 		carrier=false;
 		max=15000;
 		min=-15000;
-		center=0;
+		centre=0;
 		firstframe=false;
 	  	}
 	  
@@ -398,7 +391,7 @@ public class DMRDecode {
 	    if (firstframe==true)	{	
 	    	//audioDump();
 	    	String l=getTimeStamp()+" DMR Sync Acquired";
-	    	l=l+" : center="+Integer.toString(center)+" jitter="+Integer.toString(jitter);
+	    	l=l+" : center="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
 			addLine(l);
 			fileWrite(l);
 			return;
