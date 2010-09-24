@@ -63,7 +63,7 @@ public class DMRDecode {
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private boolean carrier=false;
-	public boolean inverted_dmr=false;
+	public boolean inverted_dmr=true;
 	private boolean firstframe=false;
 	public JEditorPane editorPane;
 	public HTMLDocument doc;
@@ -180,14 +180,14 @@ public class DMRDecode {
 			  if (audioSuck==false) sample=getAudio();
 			   else sample=getSuckData();
 			  if ((sample>max)&&(have_sync==true)) sample=max;  
-			   else if ((sample<min)&&(have_sync==true)) sample=min;
+			    else if ((sample<min)&&(have_sync==true)) sample=min;
 		      if (sample>centre)	{
 		    	  if ((jitter<0)&&(lastsample<centre)&&(sample<(maxref*1.25))) jitter=i;   
 		        }
 		      else if ((sample>(minref*1.25))&&(jitter<0)&&(lastsample>centre)) jitter=i;
-		         
+      
 		      if ((i>=symbolCentre-1)&&(i<=symbolCentre+2)) {
-		    	  sum+=sample;
+		    	  sum=sum+sample;
 		          count++;
 		          }
 		      lastsample=sample;
@@ -293,8 +293,8 @@ public class DMRDecode {
 				maxref=max;
 				minref=min;
 				// Check if this has a valid voice or data frame sync
-				dataSync=syncCompare(DMR_DATA_SYNC);
-				voiceSync=syncCompare(DMR_VOICE_SYNC);
+				dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
+				voiceSync=syncCompare(DMR_VOICE_SYNC,frameSync);
 				// Data frame
 				if (dataSync==true) {
 					carrier=true;
@@ -358,11 +358,14 @@ public class DMRDecode {
 		firstframe=false;
 	  	}
 	  
-	// Compare the sync held in an array with the contents of the dibit_buf
-	public boolean syncCompare(int c[])	{
+	// Compare the sync sequence held in an array with the contents of the dibit_buf
+	public boolean syncCompare(int c[],boolean sync)	{
 		int i;
+		int offset;
+		if (sync==true) offset=66;
+		 else offset=0;
 		for (i=0;i<24;i++)	{
-			if (dibit_buf[i+66]!=c[i]) return false;
+			if (dibit_buf[i+offset]!=c[i]) return false;
 		}
 		return true;
 	}
@@ -390,6 +393,8 @@ public class DMRDecode {
 	    minref=min;
 	    if (firstframe==true)	{	
 	    	//audioDump();
+			// As we don't have sync then skip the next 77 dibits as we can't do anything with them
+			skipDibit(77);
 	    	String l=getTimeStamp()+" DMR Sync Acquired";
 	    	l=l+" : center="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
 			addLine(l);
@@ -515,6 +520,16 @@ public class DMRDecode {
 			lb=lb+Integer.toString(dibit_buf[a]);
 		}
 		return lb;
+	}
+	
+	// Grab a certain number of symbols but ignore their content
+	public void skipDibit (int count)
+	{
+	  int i;
+	  for (i=0;i<count;i++)
+	    {
+		getSymbol(true);
+	    }
 	}
 	
 }
