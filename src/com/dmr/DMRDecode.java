@@ -63,7 +63,7 @@ public class DMRDecode {
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private boolean carrier=false;
-	public boolean inverted_dmr=true;
+	public boolean inverted_dmr=false;
 	private boolean firstframe=false;
 	public JEditorPane editorPane;
 	public HTMLDocument doc;
@@ -164,8 +164,8 @@ public class DMRDecode {
 	// Calculate the waveform centre and mid points
 	public void calcMids()	{
 			centre=(max+min)/2;
-			umid=((max-centre)*(5/8))+centre;
-			lmid=((min-centre)*(5/8))+centre;
+			umid=(((max)-centre)*5/8)+centre;
+		    lmid=(((min)-centre)*5/8)+centre;		
 	}
 	
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
