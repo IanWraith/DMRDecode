@@ -63,7 +63,7 @@ public class DMRDecode {
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private boolean carrier=false;
-	public boolean inverted_dmr=false;
+	public boolean inverted_dmr=true;
 	private boolean firstframe=false;
 	public JEditorPane editorPane;
 	public HTMLDocument doc;
@@ -164,8 +164,8 @@ public class DMRDecode {
 	// Calculate the waveform centre and mid points
 	public void calcMids()	{
 			centre=(max+min)/2;
-			umid=(((max)-centre)*5/8)+centre;
-		    lmid=(((min)-centre)*5/8)+centre;		
+			umid=((max-centre)*5/8)+centre;
+		    lmid=((min-centre)*5/8)+centre;		
 	}
 	
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
@@ -242,7 +242,9 @@ public class DMRDecode {
 				if (lastt==lbufCount) {
 					lastt=0;
 				}
-				else lastt++;
+				else	{
+					lastt++;
+				}
 				if (inverted_dmr==false)	{
 					// Sync Normal
 					if (symbol>0) dibit=1;
@@ -256,6 +258,8 @@ public class DMRDecode {
 				}
 			}
 			else {
+				maxref=max;
+				minref=min;
 				if (inverted_dmr==false)	{
 					// Frame Normal
 					if (symbol>centre) {
@@ -284,14 +288,18 @@ public class DMRDecode {
 		    // If we have received either 24 or 144 dibits (depending if we have sync)
 			// then check for a valid sync sequence
 			if (t>=lbufCount) {
-				for (i=0;i<lbufCount;i++) {
-					lbuf2[i]=lbuf[i];
+				
+				if (frameSync==false)	{
+					for (i=0;i<lbufCount;i++) {
+						lbuf2[i]=lbuf[i];
+					}
+					qsort.sort(lbuf2);
+					lmin=(lbuf2[1]+lbuf2[2]+lbuf2[3])/3;
+					lmax=(lbuf2[lbufCount-2]+lbuf2[lbufCount-3]+lbuf2[lbufCount-4])/3;
+					maxref=max;
+					minref=min;
 				}
-				qsort.sort(lbuf2);
-				lmin=(lbuf2[1]+lbuf2[2]+lbuf2[3])/3;
-				lmax=(lbuf2[lbufCount-1]+lbuf2[lbufCount-2]+lbuf2[lbufCount-3])/3;
-				maxref=max;
-				minref=min;
+				
 				// Check if this has a valid voice or data frame sync
 				dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
 				voiceSync=syncCompare(DMR_VOICE_SYNC,frameSync);
@@ -299,8 +307,10 @@ public class DMRDecode {
 				if (dataSync==true) {
 					carrier=true;
 					frameSync=true;
-					max=(max+lmax)/2;
-					min=(min+lmin)/2;
+					//max=(max+lmax)/2;
+					//min=(min+lmin)/2;
+					max=lmax;
+					min=lmin;
 					if (lastsynctype==-1) firstframe=true;
 					 else firstframe=false;
 					lastsynctype=10;
@@ -310,8 +320,10 @@ public class DMRDecode {
 				if (voiceSync==true) {
 					carrier=true;
 					frameSync=true;
-					max=(max+lmax)/2;
-					min=(min+lmin)/2;
+					//max=(max+lmax)/2;
+					//min=(min+lmin)/2;
+					max=lmax;
+					min=lmin;
 					if (lastsynctype==-1) firstframe=true;
 					 else firstframe=false;
 					lastsynctype=12;
