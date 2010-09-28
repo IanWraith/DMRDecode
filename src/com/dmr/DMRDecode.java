@@ -157,7 +157,7 @@ public class DMRDecode {
 	      while (synctype!=-1)	{
 	          processFrame();
 	          synctype=getFrameSync(); 
-	          calcMids();
+	          if (synctype!=-1) calcMids();
 	        }  
 	  }
 	
@@ -217,11 +217,10 @@ public class DMRDecode {
 	// Grab either 24 or 144 dibits depending on if you have sync
 	// Check if they have a sync pattern and if they do then process them accordingly
 	public int getFrameSync ()	{
-		int i,t=0,dibit,symbol,synctest_pos=0,lastt=0;
+		int i,t=0,dibit,symbol,synctest_pos=0;
 		int lmin=0,lmax=0,lidx=0;
 		int lbufCount;
-		boolean dataSync=false;
-		boolean voiceSync=false;
+		boolean dataSync=false,voiceSync=false;
 		Quicksort qsort=new Quicksort();
 
 		symbolcnt=0;
@@ -238,51 +237,7 @@ public class DMRDecode {
 			if (lidx==(lbufCount-1)) lidx=0;
 			 else lidx++;
 			// Set the dibit state
-			if (frameSync==false) {
-				if (lastt==lbufCount) {
-					lastt=0;
-				}
-				else	{
-					lastt++;
-				}
-				if (inverted_dmr==false)	{
-					// Sync Normal
-					if (symbol>0) dibit=1;
-					else dibit=3;
-				}
-				
-				else	{
-					// Sync Inverted
-					if (symbol>0) dibit=3;
-					else dibit=1;
-				}
-			}
-			else {
-				maxref=max;
-				minref=min;
-				if (inverted_dmr==false)	{
-					// Frame Normal
-					if (symbol>centre) {
-						if (symbol>umid) dibit=1;
-						else dibit=0;
-					}
-					else {
-						if (symbol<lmid) dibit=3;
-						else dibit=2;
-					}
-				}
-				else	{	
-					// Frame Inverted
-					if (symbol>centre) {
-						if (symbol>umid) dibit=3;
-						else dibit=2;
-					}
-					else {
-						if (symbol<lmid) dibit=1;
-						else dibit=0;
-					}
-				}	
-			}
+			dibit=symboltoDibit(symbol);
 			// Add the dibit to the dibit buffer
 			addToDitbitBuf(dibit);
 		    // If we have received either 24 or 144 dibits (depending if we have sync)
@@ -290,16 +245,16 @@ public class DMRDecode {
 			if (t>=lbufCount) {
 				
 				if (frameSync==false)	{
-					for (i=0;i<lbufCount;i++) {
+					for (i=0;i<23;i++) {
 						lbuf2[i]=lbuf[i];
 					}
 					qsort.sort(lbuf2);
-					lmin=(lbuf2[1]+lbuf2[2]+lbuf2[3])/3;
-					lmax=(lbuf2[lbufCount-2]+lbuf2[lbufCount-3]+lbuf2[lbufCount-4])/3;
+					lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
+					lmax=(lbuf2[18]+lbuf2[19]+lbuf2[20])/3;
 					maxref=max;
 					minref=min;
-				}
-				
+				} 
+
 				// Check if this has a valid voice or data frame sync
 				dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
 				voiceSync=syncCompare(DMR_VOICE_SYNC,frameSync);
@@ -307,10 +262,8 @@ public class DMRDecode {
 				if (dataSync==true) {
 					carrier=true;
 					frameSync=true;
-					//max=(max+lmax)/2;
-					//min=(min+lmin)/2;
-					max=lmax;
-					min=lmin;
+					max=(max+lmax)/2;
+					min=(min+lmin)/2;
 					if (lastsynctype==-1) firstframe=true;
 					 else firstframe=false;
 					lastsynctype=10;
@@ -320,10 +273,8 @@ public class DMRDecode {
 				if (voiceSync==true) {
 					carrier=true;
 					frameSync=true;
-					//max=(max+lmax)/2;
-					//min=(min+lmin)/2;
-					max=lmax;
-					min=lmin;
+					max=(max+lmax)/2;
+					min=(min+lmin)/2;
 					if (lastsynctype==-1) firstframe=true;
 					 else firstframe=false;
 					lastsynctype=12;
@@ -332,8 +283,8 @@ public class DMRDecode {
 		}					
 		// We had a signal but appear to have lost it
 		if (carrier==true) {
-			// If we have missed 5 frames then something is wrong
-			if (synctest_pos>=720) {
+			// If we have missed 12 frames then something is wrong
+			if (synctest_pos>=1728) {
 				addLine(getTimeStamp()+" Carrier Lost !");
 				frameSync=false;
 				noCarrier();
@@ -369,6 +320,46 @@ public class DMRDecode {
 		centre=0;
 		firstframe=false;
 	  	}
+	
+	// Given a symbol return a dibit
+	int symboltoDibit (int symbol)	{
+		// With Sync
+		if (frameSync==true)	{
+			if (inverted_dmr==false)	{
+				// Normal
+				if (symbol>centre) {
+					if (symbol>umid) return 1;
+					else return 0;
+				}
+				else {
+					if (symbol<lmid) return 3;
+					else return 2;
+				}
+			} else	{	
+				// Inverted
+				if (symbol>centre) {
+					if (symbol>umid) return 3;
+					else return 2;
+				}
+				else {
+					if (symbol<lmid) return 1;
+					else return 0;
+				}
+			}
+		} else	{
+				// No Sync
+				// Normal
+				if (inverted_dmr==false)	{
+					if (symbol>0) return 1;
+					else return 3;
+				}
+				// Inverted
+				else	{
+					if (symbol>0) return 3;
+					else return 1;
+				}
+			}
+	}
 	  
 	// Compare the sync sequence held in an array with the contents of the dibit_buf
 	public boolean syncCompare(int c[],boolean sync)	{
