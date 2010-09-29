@@ -77,7 +77,7 @@ public class DMRDecode {
 	public FileWriter file;
 	public boolean logging=false;
 	public boolean pReady=false;
-	private boolean audioSuck=true;
+	private boolean audioSuck=false;
 	private BufferedReader br;
 	
 	
@@ -285,7 +285,12 @@ public class DMRDecode {
 		if (carrier==true) {
 			// If we have missed 12 frames then something is wrong
 			if (synctest_pos>=1728) {
-				addLine(getTimeStamp()+" Carrier Lost !");
+				int level=(int)(((float)max/(float)32768)*(float)100);
+				String l=getTimeStamp()+" Sync Lost";
+		    	l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter)+" level="+Integer.toString(level)+"%";
+				l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
+		    	addLine(l);
+				fileWrite(l);
 				frameSync=false;
 				noCarrier();
 				return (-1);
@@ -392,15 +397,19 @@ public class DMRDecode {
 	
 	// Handle an incoming DMR Frame
 	void processFrame ()	{
+		String l;
 	    maxref=max;
 	    minref=min;
 	    if (firstframe==true)	{	
+	    	int level=(int)(((float)max/(float)32768)*(float)100);
 	    	//audioDump();
 			// As we don't have sync then skip the next 77 dibits as we can't do anything with them
 			skipDibit(77);
-	    	String l=getTimeStamp()+" DMR Sync Acquired";
-	    	l=l+" : center="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
-			addLine(l);
+	    	if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
+	    	 else l=getTimeStamp()+" DMR Data Sync Acquired";
+	    	l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter)+" level="+Integer.toString(level)+"%";
+			l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
+	    	addLine(l);
 			fileWrite(l);
 			return;
 	    }
@@ -468,16 +477,17 @@ public class DMRDecode {
 		return l;
 	}
 	
-	// Grab 5 seconds worth of audio and write to the file "audiodump.csv"
+	// Grab 5 seconds worth of audio and write to the file "audiodump_out.csv"
 	public void audioDump ()	{
 		long a;
 		final long sample_max=48000*5;
 		int samples[]=new int[48000*5];
 		for (a=0;a<sample_max;a++)	{
-			samples[(int)a]=getAudio();
+			if (audioSuck==false) samples[(int)a]=getAudio();
+			   else samples[(int)a]=getSuckData();
 		}	
 	    try	{
-	    	FileWriter dfile=new FileWriter("audiodump.csv");
+	    	FileWriter dfile=new FileWriter("audiodump_out.csv");
 			for (a=0;a<sample_max;a++)	{
 				dfile.write(Integer.toString(samples[(int)a]));
 				dfile.write("\r\n");
