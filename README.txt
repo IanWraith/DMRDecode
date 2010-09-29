@@ -12,6 +12,9 @@ Milestone 2 - To reliably detect voice and data sync words.
 
 Milestone 3 - To decode the CACH
 
+ I'm currently working on a bug which is preventing sync words being detected outside
+ of the special syncronisation mode.
+
 Ian Wraith (10th September 2010)
 
 
