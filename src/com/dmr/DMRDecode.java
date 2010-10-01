@@ -42,7 +42,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 2";
+	public String program_version="DMR Decoder V0.00 Build 3";
 	public TargetDataLine Line;
 	public AudioFormat format;
 	public int vertical_scrollbar_value=0;
@@ -63,7 +63,7 @@ public class DMRDecode {
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private boolean carrier=false;
-	public boolean inverted_dmr=true;
+	public boolean inverted=true;
 	private boolean firstframe=false;
 	public JEditorPane editorPane;
 	public HTMLDocument doc;
@@ -77,8 +77,10 @@ public class DMRDecode {
 	public FileWriter file;
 	public boolean logging=false;
 	public boolean pReady=false;
-	private boolean audioSuck=false;
+	private boolean audioSuck=true;
+	private boolean debug=true;
 	private BufferedReader br;
+	private int symbolBuffer[]=new int[24];
 	
 	
 	public static void main(String[] args) {
@@ -168,6 +170,7 @@ public class DMRDecode {
 		    lmid=((min-centre)*5/8)+centre;		
 	}
 	
+	
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
@@ -193,7 +196,7 @@ public class DMRDecode {
 		      lastsample=sample;
 		    }
 		  symbol=(sum/count);
-		  symbolcnt++;
+		  symbolcnt++;		  
 		  return symbol;
 	  }
 	  
@@ -218,7 +221,7 @@ public class DMRDecode {
 	// Check if they have a sync pattern and if they do then process them accordingly
 	public int getFrameSync ()	{
 		int i,t=0,dibit,symbol,synctest_pos=0;
-		int lmin=0,lmax=0,lidx=0;
+		int lmin=0,lmax=0;
 		int lbufCount;
 		boolean dataSync=false,voiceSync=false;
 		Quicksort qsort=new Quicksort();
@@ -227,26 +230,33 @@ public class DMRDecode {
 		// Buffer size
 		if (frameSync==true) lbufCount=144;
 		 else lbufCount=23;
-		int lbuf[]=new int[lbufCount];
-		int lbuf2[]=new int[lbufCount];
+		int lbuf2[]=new int[24];
 		
 		while (true) {
 			t++;
 			symbol=getSymbol(frameSync);
-			lbuf[lidx]=symbol;
-			if (lidx==(lbufCount-1)) lidx=0;
-			 else lidx++;
+			// Store this in the rotating symbol buffer
+			addToSymbolBuffer(symbol);
 			// Set the dibit state
 			dibit=symboltoDibit(symbol);
-			// Add the dibit to the dibit buffer
-			addToDitbitBuf(dibit);
+			// Add the dibit to the rotating dibit buffer
+			addToDitbitBuf(dibit,frameSync);
+			
+			if ((frameSync==true)&&(debug==true))	{
+				  String line;
+				  line=Integer.toString(symbol);
+			      line=line+","+Integer.toString(dibit);
+			      line=line+","+Integer.toString(symbolcnt);
+			      debugDump(line);		
+			  }
+			
 		    // If we have received either 24 or 144 dibits (depending if we have sync)
 			// then check for a valid sync sequence
 			if (t>=lbufCount) {
 				
 				if (frameSync==false)	{
-					for (i=0;i<23;i++) {
-						lbuf2[i]=lbuf[i];
+					for (i=0;i<24;i++) {
+						lbuf2[i]=symbolBuffer[i];
 					}
 					qsort.sort(lbuf2);
 					lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
@@ -258,6 +268,7 @@ public class DMRDecode {
 				// Check if this has a valid voice or data frame sync
 				dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
 				voiceSync=syncCompare(DMR_VOICE_SYNC,frameSync);
+				
 				// Data frame
 				if (dataSync==true) {
 					carrier=true;
@@ -306,13 +317,24 @@ public class DMRDecode {
 	  }
 	  
 	// Add a dibit to the rotating dibit buffer
-	void addToDitbitBuf (int dibit)	{
+	void addToDitbitBuf (int dibit,boolean sync)	{
 		int a;
+		int max;
+		if (sync==false) max=23;
+		 else max=143;
 		// Rotate the dibit buffer to the left
-		for (a=0;a<143;a++)	{
+		for (a=0;a<max;a++)	{
 			dibit_buf[a]=dibit_buf[a+1];
 		}
-		dibit_buf[143]=dibit;
+		dibit_buf[max]=dibit;
+	}
+	
+	void addToSymbolBuffer (int symbol)	{
+		int a;
+		for (a=0;a<23;a++)	{
+			symbolBuffer[a]=symbolBuffer[a+1];
+		}
+		symbolBuffer[23]=symbol;
 	}
 	
 	// No carrier or carrier lost so clear the variables
@@ -330,7 +352,7 @@ public class DMRDecode {
 	int symboltoDibit (int symbol)	{
 		// With Sync
 		if (frameSync==true)	{
-			if (inverted_dmr==false)	{
+			if (inverted==false)	{
 				// Normal
 				if (symbol>centre) {
 					if (symbol>umid) return 1;
@@ -354,7 +376,7 @@ public class DMRDecode {
 		} else	{
 				// No Sync
 				// Normal
-				if (inverted_dmr==false)	{
+				if (inverted==false)	{
 					if (symbol>0) return 1;
 					else return 3;
 				}
@@ -430,7 +452,7 @@ public class DMRDecode {
 	void processDMRdata ()	{
 		DMRDataDecode DMRdata=new DMRDataDecode();
 		String line[]=new String[10];
-		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted_dmr);
+		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted);
 		if (frameSync==true) line[0]=line[0]+" (Sync)";
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		line[9]=displayDibitBuffer();
@@ -499,6 +521,18 @@ public class DMRDecode {
 	    		}
 	    // Saved everything so shut down the program
 	    System.exit(0);
+		}
+	
+	public void debugDump (String line)	{
+	    try	{
+	    	FileWriter dfile=new FileWriter("debug.csv",true);
+	    	dfile.write(line);
+	    	dfile.write("\r\n");
+	    	dfile.flush();  
+	    	dfile.close();
+	    	}catch (Exception e)	{
+	    		System.err.println("Error: " + e.getMessage());
+	    		}
 		}
 		
 	// Open a file which contains data that can be sucked in

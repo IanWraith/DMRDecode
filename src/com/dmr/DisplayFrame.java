@@ -43,7 +43,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		setJMenuBar(menuBar);
 		// Main
 		JMenu mainMenu=new JMenu("Main");
-		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted_dmr));
+		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted));
 		inverted_item.addActionListener(this);
 		mainMenu.add(save_to_file=new JRadioButtonMenuItem("Save to File",theApp.saveToFile));
 		save_to_file.addActionListener(this);
@@ -68,8 +68,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 
 		// Invert signal
 		if (event_name=="Invert Signal")	{
-			if (theApp.inverted_dmr==false) theApp.inverted_dmr=true;
-			 else theApp.inverted_dmr=false;
+			if (theApp.inverted==false) theApp.inverted=true;
+			 else theApp.inverted=false;
 		}
 		
 		// Save to File
@@ -94,7 +94,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 
 	// Update all the menu items 
 	public void menuItemUpdate () {
-		inverted_item.setSelected(theApp.inverted_dmr);
+		inverted_item.setSelected(theApp.inverted);
 	}
 	
 	// Display a dialog box so the user can select a location and name for a log file
