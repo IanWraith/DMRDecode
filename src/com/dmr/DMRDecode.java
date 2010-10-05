@@ -77,8 +77,8 @@ public class DMRDecode {
 	public FileWriter file;
 	public boolean logging=false;
 	public boolean pReady=false;
-	private boolean audioSuck=true;
-	private boolean debug=true;
+	private boolean audioSuck=false;
+	private boolean debug=false;
 	private BufferedReader br;
 	private int symbolBuffer[]=new int[24];
 	
@@ -139,6 +139,7 @@ public class DMRDecode {
 	// Setup the audio interface
 	public void prepare_audio() {
 		  try {
+			  // Sample at 48000 Hz , 16 bit samples , 1 channel , signed with bigendian numbers
 			  format=new AudioFormat(48000,16,1,true,true);
 			  DataLine.Info info=new DataLine.Info(TargetDataLine.class,format);
 			  Line=(TargetDataLine) AudioSystem.getLine(info);
@@ -225,7 +226,7 @@ public class DMRDecode {
 		int lbufCount;
 		boolean dataSync=false,voiceSync=false;
 		Quicksort qsort=new Quicksort();
-
+		// Clear the symbol counter
 		symbolcnt=0;
 		// Buffer size
 		if (frameSync==true) lbufCount=144;
@@ -417,7 +418,7 @@ public class DMRDecode {
 	    if (firstframe==true)	{	
 	    	int level=(int)(((float)max/(float)32768)*(float)100);
 	    	//audioDump();
-			// As we don't have sync then skip the next 77 dibits as we can't do anything with them
+			// As we now have sync then skip the next 77 dibits as we can't do anything with them
 			skipDibit(77);
 	    	if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
 	    	 else l=getTimeStamp()+" DMR Data Sync Acquired";
@@ -501,7 +502,7 @@ public class DMRDecode {
 			   else samples[(int)a]=getSuckData();
 		}	
 	    try	{
-	    	FileWriter dfile=new FileWriter("audiodump_out.csv");
+	    	FileWriter dfile=new FileWriter("4800sine_audiodump_out.csv");
 			for (a=0;a<sample_max;a++)	{
 				dfile.write(Integer.toString(samples[(int)a]));
 				dfile.write("\r\n");
@@ -579,7 +580,7 @@ public class DMRDecode {
 	  int sample;
 	  int i, sum, symbol, count;
 	  int rf_mod=0,numflips=0;
-	  int symboltiming=1;
+	  int symboltiming=0;
 	  
 	  sum = 0;
 	  count = 0;
@@ -727,7 +728,7 @@ public class DMRDecode {
 	    {
 	      if (jitter >= 0)
 	        {
-	    	  System.out.printf (" %i\n", jitter);
+	    	  //System.out.printf (" %i\n", jitter);
 	        }
 	      else
 	        {
