@@ -172,7 +172,7 @@ public class DMRDecode {
 	
 	
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
-	public int getSymbol(boolean have_sync)	{
+	public int XgetSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<samplesPerSymbol;i++)	{
 		      if ((i==0)&&(have_sync==false))	{
@@ -241,15 +241,6 @@ public class DMRDecode {
 			dibit=symboltoDibit(symbol);
 			// Add the dibit to the rotating dibit buffer
 			addToDitbitBuf(dibit,frameSync);
-			
-			if ((frameSync==true)&&(debug==true))	{
-				  String line;
-				  line=Integer.toString(symbol);
-			      line=line+","+Integer.toString(dibit);
-			      line=line+","+Integer.toString(symbolcnt);
-			      debugDump(line);		
-			  }
-			
 		    // If we have received either 24 or 144 dibits (depending if we have sync)
 			// then check for a valid sync sequence
 			if (t>=lbufCount) {
@@ -316,7 +307,7 @@ public class DMRDecode {
 		}
 	  }
 	  
-	// Add a dibit to the rotating dibit buffer
+	// Add a dibit to the dibit buffer
 	void addToDitbitBuf (int dibit,boolean sync)	{
 		int a;
 		int max;
@@ -329,6 +320,7 @@ public class DMRDecode {
 		dibit_buf[max]=dibit;
 	}
 	
+	// Add a symbol to the symbol buffer
 	void addToSymbolBuffer (int symbol)	{
 		int a;
 		for (a=0;a<23;a++)	{
@@ -523,6 +515,7 @@ public class DMRDecode {
 	    System.exit(0);
 		}
 	
+	// Write a line to the debug file
 	public void debugDump (String line)	{
 	    try	{
 	    	FileWriter dfile=new FileWriter("debug.csv",true);
@@ -578,5 +571,173 @@ public class DMRDecode {
 		getSymbol(true);
 	    }
 	}
+	
+	// The original DSD getSymbol in here to help me debug
+	int getSymbol (boolean have_sync)
+	{
+
+	  int sample;
+	  int i, sum, symbol, count;
+	  int rf_mod=0,numflips=0;
+	  int symboltiming=1;
+	  
+	  sum = 0;
+	  count = 0;
+	  for (i = 0; i < samplesPerSymbol; i++)
+	    {
+	      // timing control
+	      if ((i == 0) && (have_sync == false))
+	        {
+	          if (rf_mod == 1)
+	            {
+	              if ((jitter >= 0) && (jitter < symbolCentre))
+	                {
+	                  i++;          // fall back
+	                }
+	              else if ((jitter > symbolCentre) && (jitter < 10))
+	                {
+	                  i--;          // catch up
+	                }
+	            }
+	          else if (rf_mod == 2)
+	            {
+	              if ((jitter >= symbolCentre - 1) && (jitter <= symbolCentre))
+	                {
+	                  i--;
+	                }
+	              else if ((jitter >= symbolCentre + 1) && (jitter <= symbolCentre + 2))
+	                {
+	                  i++;
+	                }
+	            }
+	          else if (rf_mod == 0)
+	            {
+	              if ((jitter > 0) && (jitter <= symbolCentre))
+	                {
+	                  i--;          // catch up
+	                }
+	              else if ((jitter > symbolCentre) && (jitter < samplesPerSymbol))
+	                {
+	                  i++;          // fall back
+	                }
+	            }
+	          jitter = -1;
+	        }
+
+	      //result = read (audio_in_fd, &sample, 2);
+		  if (audioSuck==false) sample=getAudio();
+		   else sample=getSuckData();
+	      
+	      if ((sample > max) && (have_sync == true) && (rf_mod == 0))
+	        {
+	          sample = max;
+	        }
+	      else if ((sample < min) && (have_sync == true) && (rf_mod == 0))
+	        {
+	          sample = min;
+	        }
+
+	      if (sample > centre)
+	        {
+	          if (lastsample < centre)
+	            {
+	              numflips += 1;
+	            }
+	          if (sample > (maxref * 1.25))
+	            {
+	              if (lastsample < (maxref * 1.25))
+	                {
+	                  numflips += 1;
+	                }
+	              if ((jitter < 0) && (rf_mod == 1))
+	                {               // first spike out of place
+	                  jitter = i;
+	                }
+	              if ((symboltiming == 1) && (have_sync == false) && (lastsynctype != -1))
+	                {
+	            	  System.out.printf ("O");
+	                }
+	            }
+	          else
+	            {
+	              if ((symboltiming == 1) && (have_sync == false) && (lastsynctype != -1))
+	                {
+	            	  System.out.printf ("+");
+	                }
+	              if ((jitter < 0) && (lastsample < centre) && (rf_mod != 1))
+	                {               // first transition edge
+	                  jitter = i;
+	                }
+	            }
+	        }
+	      else
+	        {                       // sample < 0
+	          if (lastsample > centre)
+	            {
+	              numflips += 1;
+	            }
+	          if (sample < (minref * 1.25))
+	            {
+	              if (lastsample > (minref * 1.25))
+	                {
+	                  numflips += 1;
+	                }
+	              if ((jitter < 0) && (rf_mod == 1))
+	                {               // first spike out of place
+	                  jitter = i;
+	                }
+	              if ((symboltiming == 1) && (have_sync == false) && (lastsynctype != -1))
+	                {
+	            	  System.out.printf ("X");
+	                }
+	            }
+	          else
+	            {
+	              if ((symboltiming == 1) && (have_sync == false) && (lastsynctype != -1))
+	                {
+	            	  System.out.printf ("-");
+	                }
+	              if ((jitter < 0) && (lastsample > centre) && (rf_mod != 1))
+	                {               // first transition edge
+	                  jitter = i;
+	                }
+	            }
+	        }
+	      if (samplesPerSymbol == 5)
+	        {
+	          if ((i >= 2) && (i <= 2))
+	            {
+	              sum += sample;
+	              count++;
+	            }
+	        }
+	      else
+	        {
+	          if (((i >= symbolCentre - 1) && (i <= symbolCentre + 2) && (rf_mod == 0)) || (((i == symbolCentre) || (i == symbolCentre + 1)) && (rf_mod != 0)))
+	            {
+	              sum += sample;
+	              count++;
+	            }
+	        }
+	      lastsample = sample;
+	    }
+	  symbol = (sum / count);
+
+	  if ((symboltiming == 1) && (have_sync == false) && (lastsynctype != -1))
+	    {
+	      if (jitter >= 0)
+	        {
+	    	  System.out.printf (" %i\n", jitter);
+	        }
+	      else
+	        {
+	    	  System.out.printf ("\n");
+	        }
+	    }
+
+	  symbolcnt++;
+	  return (symbol);
+	}
+	
 	
 }
