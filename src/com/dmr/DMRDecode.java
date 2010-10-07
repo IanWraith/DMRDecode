@@ -20,7 +20,6 @@
 
 package com.dmr;
 
-import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
@@ -43,11 +42,8 @@ public class DMRDecode {
 	private static DMRDecode theApp;
 	static DisplayFrame window;
 	public String program_version="DMR Decoder V0.00 Build 3";
-	public TargetDataLine Line;
-	public AudioFormat format;
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
-	private boolean audioReady=false;
 	private static boolean RUNNING=true;
 	private final int samplesPerSymbol=10;
 	private int jitter=-1;
@@ -81,17 +77,18 @@ public class DMRDecode {
 	private boolean debug=false;
 	private BufferedReader br;
 	private int symbolBuffer[]=new int[24];
+	public AudioInThread lineInThread=new AudioInThread(this);
 	
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
-		theApp.prepare_audio();
 		// If sucking in test data then open the file
 		if (theApp.audioSuck==true) theApp.prepareAudioSuck("audiodump_test.csv");
+		theApp.lineInThread.startAudio();
 		// The main routine
 		while (RUNNING)	{
-			if ((theApp.audioReady==true)&&(theApp.pReady==true)) theApp.decode();
+			if ((theApp.lineInThread.getAudioReady()==true)&&(theApp.pReady==true)) theApp.decode();
 		}
 
 		}
@@ -135,23 +132,7 @@ public class DMRDecode {
 		return display_view;	
 		}
 	
-
-	// Setup the audio interface
-	public void prepare_audio() {
-		  try {
-			  // Sample at 48000 Hz , 16 bit samples , 1 channel , signed with bigendian numbers
-			  format=new AudioFormat(48000,16,1,true,true);
-			  DataLine.Info info=new DataLine.Info(TargetDataLine.class,format);
-			  Line=(TargetDataLine) AudioSystem.getLine(info);
-			  Line.open(format);
-			  Line.start();
-			  audioReady=true;
-		  } catch (Exception e) {
-			  JOptionPane.showMessageDialog(null, "Fatal error in prepare_audio","DMRdecoder", JOptionPane.ERROR_MESSAGE);
-			  System.exit(0);
-	   		}
-	   	}
-	  
+  
 	// The main routine for decoding DMR data
 	public void decode()	{
 		  noCarrier();
@@ -181,7 +162,7 @@ public class DMRDecode {
 		         else if ((jitter>symbolCentre)&&(jitter<samplesPerSymbol)) i++;          
 		        jitter=-1;
 		       }
-			  if (audioSuck==false) sample=getAudio();
+			  if (audioSuck==false) sample=lineInThread.returnSample();
 			   else sample=getSuckData();
 			  if ((sample>max)&&(have_sync==true)) sample=max;  
 			    else if ((sample<min)&&(have_sync==true)) sample=min;
@@ -201,23 +182,7 @@ public class DMRDecode {
 		  return symbol;
 	  }
 	  
-	  // Grab and return a single byte from the audio line
-	  public int getAudio ()	{
-		  int sample,count,total=0;
-		  byte buffer[]=new byte[2];
-		  try	{
-			  while (total<1)	{
-				  count=Line.read(buffer,0,2);
-				  total=total+count;
-			  	}
-			  } catch (Exception e)	{
-			  String err=e.getMessage();
-			  JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
-		  }
-		  sample=(buffer[0]<<8)+buffer[1];
-		  return sample;
-	  }
-	  
+
 	// Grab either 24 or 144 dibits depending on if you have sync
 	// Check if they have a sync pattern and if they do then process them accordingly
 	public int getFrameSync ()	{
@@ -417,7 +382,7 @@ public class DMRDecode {
 	    minref=min;
 	    if (firstframe==true)	{	
 	    	int level=(int)(((float)max/(float)32768)*(float)100);
-			// As we now have sync then skip the next 77 dibits as we can't do anything with them
+	    	// As we now have sync then skip the next 77 dibits as we can't do anything with them
 			skipDibit(77);
 	    	if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
 	    	 else l=getTimeStamp()+" DMR Data Sync Acquired";
@@ -497,7 +462,7 @@ public class DMRDecode {
 		final long sample_max=48000*5;
 		int samples[]=new int[48000*5];
 		for (a=0;a<sample_max;a++)	{
-			if (audioSuck==false) samples[(int)a]=getAudio();
+			if (audioSuck==false) samples[(int)a]=lineInThread.returnSample();
 			   else samples[(int)a]=getSuckData();
 		}	
 	    try	{
@@ -625,7 +590,7 @@ public class DMRDecode {
 	        }
 
 	      //result = read (audio_in_fd, &sample, 2);
-		  if (audioSuck==false) sample=getAudio();
+		  if (audioSuck==false) sample=theApp.lineInThread.returnSample();
 		   else sample=getSuckData();
 	      
 	      if ((sample > max) && (have_sync == true) && (rf_mod == 0))
