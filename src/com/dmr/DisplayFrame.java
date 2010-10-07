@@ -84,7 +84,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		// Exit 
 		if (event_name=="Exit") {
 			// Close the audio down //
-			//theApp.Line.close();
+			theApp.lineInThread.shutDownAudio();
 			// Stop the program //
 			System.exit(0);	
 		}
