@@ -48,8 +48,10 @@ public class DMRDecode {
 	private final int samplesPerSymbol=10;
 	private int jitter=-1;
 	private final int symbolCentre=4;
-	private int max=15000;
-	private int min=-15000;
+	private static int maxStartValue=2500;
+	private static int minStartValue=-2500;
+	private int max=maxStartValue;
+	private int min=minStartValue;
 	private int centre=0;
 	private int lastsample=0;
 	private int maxref=12000;
@@ -59,7 +61,7 @@ public class DMRDecode {
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private boolean carrier=false;
-	public boolean inverted=true;
+	public boolean inverted=false;
 	private boolean firstframe=false;
 	public JEditorPane editorPane;
 	public HTMLDocument doc;
@@ -73,19 +75,19 @@ public class DMRDecode {
 	public FileWriter file;
 	public boolean logging=false;
 	public boolean pReady=false;
-	private boolean audioSuck=false;
+	private boolean audioSuck=true;
 	private boolean debug=false;
 	private BufferedReader br;
 	private int symbolBuffer[]=new int[24];
 	public AudioInThread lineInThread=new AudioInThread(this);
 	
-	
+
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
 		// If sucking in test data then open the file
-		if (theApp.audioSuck==true) theApp.prepareAudioSuck("audiodump_test.csv");
-		theApp.lineInThread.startAudio();
+		if (theApp.audioSuck==true) theApp.prepareAudioSuck("aor3000_audiodump_out.csv");
+		 else theApp.lineInThread.startAudio();
 		// The main routine
 		while (RUNNING)	{
 			if ((theApp.lineInThread.getAudioReady()==true)&&(theApp.pReady==true)) theApp.decode();
@@ -141,7 +143,7 @@ public class DMRDecode {
 	      while (synctype!=-1)	{
 	          processFrame();
 	          synctype=getFrameSync(); 
-	          if (synctype!=-1) calcMids();
+	          calcMids();
 	        }  
 	  }
 	
@@ -229,9 +231,11 @@ public class DMRDecode {
 				// Data frame
 				if (dataSync==true) {
 					carrier=true;
-					frameSync=true;
-					max=(max+lmax)/2;
-					min=(min+lmin)/2;
+					if (frameSync==false)	{
+						max=lmax;
+						min=lmin;
+						frameSync=true;
+					}
 					if (lastsynctype==-1) firstframe=true;
 					 else firstframe=false;
 					lastsynctype=10;
@@ -240,9 +244,11 @@ public class DMRDecode {
 				// Voice frame
 				if (voiceSync==true) {
 					carrier=true;
-					frameSync=true;
-					max=(max+lmax)/2;
-					min=(min+lmin)/2;
+					if (frameSync==false)	{
+						max=lmax;
+						min=lmin;
+						frameSync=true;
+					}
 					if (lastsynctype==-1) firstframe=true;
 					 else firstframe=false;
 					lastsynctype=12;
@@ -253,10 +259,9 @@ public class DMRDecode {
 		if (carrier==true) {
 			// If we have missed 12 frames then something is wrong
 			if (synctest_pos>=1728) {
-				int level=(int)(((float)max/(float)32768)*(float)100);
 				String l=getTimeStamp()+" Sync Lost";
-		    	l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter)+" level="+Integer.toString(level)+"%";
-				l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
+		    	//l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter)+" level="+Integer.toString(level)+"%";
+				//l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
 		    	addLine(l);
 				fileWrite(l);
 				frameSync=false;
@@ -300,8 +305,8 @@ public class DMRDecode {
 		jitter=-1;
 		lastsynctype=-1;
 		carrier=false;
-		max=15000;
-		min=-15000;
+		max=maxStartValue;
+		min=minStartValue;
 		centre=0;
 		firstframe=false;
 	  	}
@@ -381,13 +386,12 @@ public class DMRDecode {
 	    maxref=max;
 	    minref=min;
 	    if (firstframe==true)	{	
-	    	int level=(int)(((float)max/(float)32768)*(float)100);
 	    	// As we now have sync then skip the next 77 dibits as we can't do anything with them
 			skipDibit(77);
 	    	if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
 	    	 else l=getTimeStamp()+" DMR Data Sync Acquired";
-	    	l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter)+" level="+Integer.toString(level)+"%";
-			l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
+	    	//l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter)+" level="+Integer.toString(level)+"%";
+			//l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
 	    	addLine(l);
 			fileWrite(l);
 			return;
@@ -401,6 +405,7 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line[0]=getTimeStamp()+" DMR Voice Frame";
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
+		line[1]=returnDibitBufferPercentages();
 		line[9]=displayDibitBuffer();
 		displayLines(line);
 	}
@@ -410,7 +415,6 @@ public class DMRDecode {
 		DMRDataDecode DMRdata=new DMRDataDecode();
 		String line[]=new String[10];
 		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted);
-		if (frameSync==true) line[0]=line[0]+" (Sync)";
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		line[9]=displayDibitBuffer();
 		displayLines(line);
@@ -537,172 +541,26 @@ public class DMRDecode {
 	    }
 	}
 	
-	// The original DSD getSymbol in here to help me debug
-	int ORIGINAL_getSymbol (boolean have_sync)
-	{
-
-	  int sample;
-	  int i, sum, symbol, count;
-	  int rf_mod=0,numflips=0;
-	  int symboltiming=0;
-	  
-	  sum = 0;
-	  count = 0;
-	  for (i = 0; i < samplesPerSymbol; i++)
-	    {
-	      // timing control
-	      if ((i == 0) && (have_sync == false))
-	        {
-	          if (rf_mod == 1)
-	            {
-	              if ((jitter >= 0) && (jitter < symbolCentre))
-	                {
-	                  i++;          // fall back
-	                }
-	              else if ((jitter > symbolCentre) && (jitter < 10))
-	                {
-	                  i--;          // catch up
-	                }
-	            }
-	          else if (rf_mod == 2)
-	            {
-	              if ((jitter >= symbolCentre - 1) && (jitter <= symbolCentre))
-	                {
-	                  i--;
-	                }
-	              else if ((jitter >= symbolCentre + 1) && (jitter <= symbolCentre + 2))
-	                {
-	                  i++;
-	                }
-	            }
-	          else if (rf_mod == 0)
-	            {
-	              if ((jitter > 0) && (jitter <= symbolCentre))
-	                {
-	                  i--;          // catch up
-	                }
-	              else if ((jitter > symbolCentre) && (jitter < samplesPerSymbol))
-	                {
-	                  i++;          // fall back
-	                }
-	            }
-	          jitter = -1;
-	        }
-
-	      //result = read (audio_in_fd, &sample, 2);
-		  if (audioSuck==false) sample=theApp.lineInThread.returnSample();
-		   else sample=getSuckData();
-	      
-	      if ((sample > max) && (have_sync == true) && (rf_mod == 0))
-	        {
-	          sample = max;
-	        }
-	      else if ((sample < min) && (have_sync == true) && (rf_mod == 0))
-	        {
-	          sample = min;
-	        }
-
-	      if (sample > centre)
-	        {
-	          if (lastsample < centre)
-	            {
-	              numflips += 1;
-	            }
-	          if (sample > (maxref * 1.25))
-	            {
-	              if (lastsample < (maxref * 1.25))
-	                {
-	                  numflips += 1;
-	                }
-	              if ((jitter < 0) && (rf_mod == 1))
-	                {               // first spike out of place
-	                  jitter = i;
-	                }
-	              if ((symboltiming == 1) && (have_sync == false) && (lastsynctype != -1))
-	                {
-	            	  System.out.printf ("O");
-	                }
-	            }
-	          else
-	            {
-	              if ((symboltiming == 1) && (have_sync == false) && (lastsynctype != -1))
-	                {
-	            	  System.out.printf ("+");
-	                }
-	              if ((jitter < 0) && (lastsample < centre) && (rf_mod != 1))
-	                {               // first transition edge
-	                  jitter = i;
-	                }
-	            }
-	        }
-	      else
-	        {                       // sample < 0
-	          if (lastsample > centre)
-	            {
-	              numflips += 1;
-	            }
-	          if (sample < (minref * 1.25))
-	            {
-	              if (lastsample > (minref * 1.25))
-	                {
-	                  numflips += 1;
-	                }
-	              if ((jitter < 0) && (rf_mod == 1))
-	                {               // first spike out of place
-	                  jitter = i;
-	                }
-	              if ((symboltiming == 1) && (have_sync == false) && (lastsynctype != -1))
-	                {
-	            	  System.out.printf ("X");
-	                }
-	            }
-	          else
-	            {
-	              if ((symboltiming == 1) && (have_sync == false) && (lastsynctype != -1))
-	                {
-	            	  System.out.printf ("-");
-	                }
-	              if ((jitter < 0) && (lastsample > centre) && (rf_mod != 1))
-	                {               // first transition edge
-	                  jitter = i;
-	                }
-	            }
-	        }
-	      if (samplesPerSymbol == 5)
-	        {
-	          if ((i >= 2) && (i <= 2))
-	            {
-	              sum += sample;
-	              count++;
-	            }
-	        }
-	      else
-	        {
-	          if (((i >= symbolCentre - 1) && (i <= symbolCentre + 2) && (rf_mod == 0)) || (((i == symbolCentre) || (i == symbolCentre + 1)) && (rf_mod != 0)))
-	            {
-	              sum += sample;
-	              count++;
-	            }
-	        }
-	      lastsample = sample;
-	    }
-	  symbol = (sum / count);
-
-	  if ((symboltiming == 1) && (have_sync == false) && (lastsynctype != -1))
-	    {
-	      if (jitter >= 0)
-	        {
-	    	  //System.out.printf (" %i\n", jitter);
-	        }
-	      else
-	        {
-	    	  System.out.printf ("\n");
-	        }
-	    }
-
-	  symbolcnt++;
-	  return (symbol);
+	// Return a string showing the percentages of each dibit in the dibit buffer
+	public String returnDibitBufferPercentages ()	{
+		String dline;
+		int a,c0=0,c1=0,c2=0,c3=0;
+		for (a=0;a<144;a++)	{
+			if (dibit_buf[a]==0) c0++;
+			if (dibit_buf[a]==1) c1++;
+			if (dibit_buf[a]==2) c2++;
+			if (dibit_buf[a]==3) c3++;
+		}
+		c0=(int)(((float)c0/(float)144.0)*(float)100);
+		c1=(int)(((float)c1/(float)144.0)*(float)100);
+		c2=(int)(((float)c2/(float)144.0)*(float)100);
+		c3=(int)(((float)c3/(float)144.0)*(float)100);
+		// Write this to a line
+		dline="Dibit 0="+Integer.toString(c0)+"% ";	
+		dline=dline+"Dibit 1="+Integer.toString(c1)+"% ";	
+		dline=dline+"Dibit 2="+Integer.toString(c2)+"% ";	
+		dline=dline+"Dibit 3="+Integer.toString(c3)+"% ";	
+		return dline;
 	}
-	
-	
+		
 }
