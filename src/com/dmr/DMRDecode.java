@@ -75,7 +75,7 @@ public class DMRDecode {
 	public FileWriter file;
 	public boolean logging=false;
 	public boolean pReady=false;
-	private boolean audioSuck=true;
+	private boolean audioSuck=false;
 	private boolean debug=false;
 	private BufferedReader br;
 	private int symbolBuffer[]=new int[24];
@@ -86,7 +86,7 @@ public class DMRDecode {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
 		// If sucking in test data then open the file
-		if (theApp.audioSuck==true) theApp.prepareAudioSuck("aor3000_audiodump_out.csv");
+		if (theApp.audioSuck==true) theApp.prepareAudioSuck("audiodump_in.csv");
 		 else theApp.lineInThread.startAudio();
 		// The main routine
 		while (RUNNING)	{
@@ -280,8 +280,7 @@ public class DMRDecode {
 	  
 	// Add a dibit to the dibit buffer
 	void addToDitbitBuf (int dibit,boolean sync)	{
-		int a;
-		int max;
+		int a,max;
 		if (sync==false) max=23;
 		 else max=143;
 		// Rotate the dibit buffer to the left
