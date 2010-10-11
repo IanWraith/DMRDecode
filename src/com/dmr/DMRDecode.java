@@ -45,13 +45,13 @@ public class DMRDecode {
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
-	private final int samplesPerSymbol=10;
+	private static final int SAMPLESPERSYMBOL=10;
 	private int jitter=-1;
-	private final int symbolCentre=4;
-	private static int maxStartValue=2500;
-	private static int minStartValue=-2500;
-	private int max=maxStartValue;
-	private int min=minStartValue;
+	private static final int SYMBOLCENTRE=4;
+	private static final int MAXSTARTVALUE=2500;
+	private static final int MINSTARTVALUE=-2500;
+	private int max=MAXSTARTVALUE;
+	private int min=MINSTARTVALUE;
 	private int centre=0;
 	private int lastsample=0;
 	private int maxref=12000;
@@ -69,6 +69,7 @@ public class DMRDecode {
 	private int lmid=0;
 	private int umid=0;
 	private int synctype;
+	private BufferedReader br;
 	private int dibit_buf[]=new int[144];
 	private boolean frameSync=false;
 	public boolean saveToFile=false;
@@ -77,16 +78,16 @@ public class DMRDecode {
 	public boolean pReady=false;
 	private boolean audioSuck=false;
 	private boolean debug=false;
-	private BufferedReader br;
 	private int symbolBuffer[]=new int[24];
 	public AudioInThread lineInThread=new AudioInThread(this);
+	private int frameCounter=0;
 	
 
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
 		// If sucking in test data then open the file
-		if (theApp.audioSuck==true) theApp.prepareAudioSuck("audiodump_in.csv");
+		if (theApp.audioSuck==true) theApp.prepareAudioSuck("aor3000_audiodump.csv");
 		 else theApp.lineInThread.startAudio();
 		// The main routine
 		while (RUNNING)	{
@@ -158,14 +159,22 @@ public class DMRDecode {
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
-		  for (i=0;i<samplesPerSymbol;i++)	{
+		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
 		      if ((i==0)&&(have_sync==false))	{
-		        if ((jitter>0)&&(jitter<=symbolCentre)) i--;          
-		         else if ((jitter>symbolCentre)&&(jitter<samplesPerSymbol)) i++;          
+		        if ((jitter>0)&&(jitter<=SYMBOLCENTRE)) i--;          
+		         else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i++;          
 		        jitter=-1;
 		       }
-			  if (audioSuck==false) sample=lineInThread.returnSample();
-			   else sample=getSuckData();
+			  if (audioSuck==false)	{ 
+				  // Get the sample from the sound card via the sound thread
+				  sample=lineInThread.returnSample();
+			  }
+			  else	{
+				  // Get the data from the suck file
+				  int fsample=getSuckData();
+				  // Push this through a root raised filter
+				  sample=lineInThread.rootRaisedFilter(fsample);
+			  }
 			  if ((sample>max)&&(have_sync==true)) sample=max;  
 			    else if ((sample<min)&&(have_sync==true)) sample=min;
 		      if (sample>centre)	{
@@ -173,7 +182,7 @@ public class DMRDecode {
 		        }
 		      else if ((sample>(minref*1.25))&&(jitter<0)&&(lastsample>centre)) jitter=i;
       
-		      if ((i>=symbolCentre-1)&&(i<=symbolCentre+2)) {
+		      if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2)) {
 		    	  sum=sum+sample;
 		          count++;
 		          }
@@ -304,8 +313,8 @@ public class DMRDecode {
 		jitter=-1;
 		lastsynctype=-1;
 		carrier=false;
-		max=maxStartValue;
-		min=minStartValue;
+		max=MAXSTARTVALUE;
+		min=MINSTARTVALUE;
 		centre=0;
 		firstframe=false;
 	  	}
@@ -387,9 +396,12 @@ public class DMRDecode {
 	    if (firstframe==true)	{	
 	    	// As we now have sync then skip the next 77 dibits as we can't do anything with them
 			skipDibit(77);
+			
+			//audioDump();
+			
 	    	if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
 	    	 else l=getTimeStamp()+" DMR Data Sync Acquired";
-	    	//l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter)+" level="+Integer.toString(level)+"%";
+	    	l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
 			//l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
 	    	addLine(l);
 			fileWrite(l);
@@ -397,6 +409,11 @@ public class DMRDecode {
 	    }
 	    if (synctype==12) processDMRvoice ();
 	     else processDMRdata ();
+	    
+	    frameCounter++;
+	    l="frameCounter="+Integer.toString(frameCounter);
+	    addLine(l);
+	    
 	    }
 
 	// Handle a DMR Voice Frame
@@ -465,8 +482,7 @@ public class DMRDecode {
 		final long sample_max=48000*5;
 		int samples[]=new int[48000*5];
 		for (a=0;a<sample_max;a++)	{
-			if (audioSuck==false) samples[(int)a]=lineInThread.returnSample();
-			   else samples[(int)a]=getSuckData();
+			samples[(int)a]=lineInThread.returnSample();
 		}	
 	    try	{
 	    	FileWriter dfile=new FileWriter("audiodump_out.csv");
@@ -496,30 +512,6 @@ public class DMRDecode {
 	    		}
 		}
 		
-	// Open a file which contains data that can be sucked in
-	public void prepareAudioSuck (String fn)	{
-		try	{
-			br=new BufferedReader(new InputStreamReader(new FileInputStream(fn)));
-		} catch (Exception e)	{
-			e.printStackTrace();
-			audioSuck=false;
-		}
-	}
-	
-	// Read in a line from the suck file and return the int it contains
-	public int getSuckData ()	{
-		int data=0;
-		String line;
-		try	{
-			line=br.readLine();
-			data=Integer.parseInt(line);
-		} catch (Exception e)	{
-			// We have a problem so stop sucking
-			audioSuck=false;
-		}
-		return data;
-	}
-	
 	// Display the dibit buffer as a string
 	public String displayDibitBuffer ()	{
 		String lb="";
@@ -560,6 +552,31 @@ public class DMRDecode {
 		dline=dline+"Dibit 2="+Integer.toString(c2)+"% ";	
 		dline=dline+"Dibit 3="+Integer.toString(c3)+"% ";	
 		return dline;
+	}
+	
+	// Open a file which contains data that can be sucked in
+	public void prepareAudioSuck (String fn)	{
+		try	{
+			br=new BufferedReader(new InputStreamReader(new FileInputStream(fn)));
+		} catch (Exception e)	{
+			e.printStackTrace();
+			audioSuck=false;
+		}
+		audioSuck=true;
+	}
+
+	// Read in a line from the suck file and return the int it contains
+	private int getSuckData ()	{
+		int data=0;
+		String line;
+		try	{
+			line=br.readLine();
+			data=Integer.parseInt(line);
+		} catch (Exception e)	{
+			// We have a problem so stop sucking
+			audioSuck=false;
+		}
+		return data;
 	}
 		
 }
