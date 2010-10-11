@@ -12,9 +12,10 @@ Milestone 2 - To reliably detect voice and data sync words.
 
 Milestone 3 - To decode the CACH
 
- I'm currently working on a bug which is preventing sync words being detected outside
- of the special syncronisation mode.
+Still not at milestone 3 as I'm not happy with the demodulation code. However moving
+over to a sound thread did fix the main bug with the basic demodulation. However I
+now need to add a root raised cosine filter to improve performance further.
 
-Ian Wraith (10th September 2010)
+Ian Wraith (11th October 2010)
 
 
