@@ -77,7 +77,7 @@ public class DMRDecode {
 	public boolean logging=false;
 	public boolean pReady=false;
 	private boolean audioSuck=false;
-	private boolean debug=false;
+	private boolean debug=true;
 	private int symbolBuffer[]=new int[24];
 	public AudioInThread lineInThread=new AudioInThread(this);
 	private int frameCounter=0;
@@ -394,11 +394,9 @@ public class DMRDecode {
 	    maxref=max;
 	    minref=min;
 	    if (firstframe==true)	{	
-	    	// As we now have sync then skip the next 77 dibits as we can't do anything with them
-			skipDibit(77);
-			
+	    	// As we now have sync then skip the next 54 dibits as we can't do anything with them
+			skipDibit(54);			
 			//audioDump();
-			
 	    	if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
 	    	 else l=getTimeStamp()+" DMR Data Sync Acquired";
 	    	l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
