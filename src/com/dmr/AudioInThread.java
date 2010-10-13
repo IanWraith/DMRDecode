@@ -110,7 +110,11 @@ public class AudioInThread extends Thread {
     public int returnSample ()	{
     	if (run==false) return -1;
     	// If the writePos hasn't changed since the last time then there is nothing to return
-    	if (writePos==lastWritePos) Thread.yield();
+    	if (writePos==lastWritePos)	{
+    		String err="AudioInThread returnSample() has caught up with itself !";
+    		JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+    		System.exit(0);
+    	}
     	int sample=audioBuffer[readPos];
     	lastWritePos=writePos;
     	// Increment the read buffer counter
@@ -156,7 +160,11 @@ public class AudioInThread extends Thread {
     	return (int)sum;
     }
 
-
+    // Return true only if there are samples waiting
+    public boolean sampleReady ()	{
+    	if (writePos==lastWritePos) return false;
+    	 else return true;
+    }
 	
 
     
