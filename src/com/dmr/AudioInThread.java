@@ -59,6 +59,11 @@ public class AudioInThread extends Thread {
     		// If the audio device is ready , the program wants to and we aren't already then
     		// get data from the audio device.
     		if ((audioReady==true)&&(run==true)&&(gettingAudio==false)) getSample();
+    		// Sleep for 10 ns
+    		//try	{
+    		//Thread.sleep(0,10);
+    		//} catch (Exception e)	{}
+    		
     	}
     }
 	
