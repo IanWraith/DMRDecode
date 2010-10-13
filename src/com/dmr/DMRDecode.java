@@ -166,6 +166,8 @@ public class DMRDecode {
 		        jitter=-1;
 		       }
 			  if (audioSuck==false)	{ 
+				  // Loop until a sample is ready
+				  while (lineInThread.sampleReady()==false)	{}
 				  // Get the sample from the sound card via the sound thread
 				  sample=lineInThread.returnSample();
 			  }
