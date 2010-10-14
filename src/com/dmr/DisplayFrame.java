@@ -24,7 +24,6 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.Scanner;
 
 public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
@@ -74,6 +73,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		
 		// Save to File
 		if (event_name=="Save to File")	{
+			// TODO : Suspend the AudioInThread when the user selects this option
 			if (theApp.saveToFile==false)	{
 				if (saveDialogBox()==false) return;
 				theApp.saveToFile=true;

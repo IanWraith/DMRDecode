@@ -59,12 +59,7 @@ public class AudioInThread extends Thread {
     		// If the audio device is ready , the program wants to and we aren't already then
     		// get data from the audio device.
     		if ((audioReady==true)&&(run==true)&&(gettingAudio==false)) getSample();
-    		// Sleep for 10 ns
-    		//try	{
-    		//Thread.sleep(0,10);
-    		//} catch (Exception e)	{}
-    		
-    	}
+     	}
     }
 	
     // Prepare the input audio device
@@ -78,7 +73,7 @@ public class AudioInThread extends Thread {
 			  Line.start();
 			  audioReady=true;
 		  } catch (Exception e) {
-			  JOptionPane.showMessageDialog(null, "Fatal error in prepare_audio","DMRdecoder", JOptionPane.ERROR_MESSAGE);
+			  JOptionPane.showMessageDialog(null, "Fatal error in setupAudio()","DMRdecoder", JOptionPane.ERROR_MESSAGE);
 			  System.exit(0);
 	   		}
     }
@@ -114,6 +109,9 @@ public class AudioInThread extends Thread {
     // then increment the read buffer counter
     public int returnSample ()	{
     	if (run==false) return -1;
+    	
+    	// TODO : We need to check if readpos has got ahead of write pos in some way
+    	
     	// If the writePos hasn't changed since the last time then there is nothing to return
     	if (writePos==lastWritePos)	{
     		String err="AudioInThread returnSample() has caught up with itself !";

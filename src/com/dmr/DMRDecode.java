@@ -48,8 +48,8 @@ public class DMRDecode {
 	private static final int SAMPLESPERSYMBOL=10;
 	private int jitter=-1;
 	private static final int SYMBOLCENTRE=4;
-	private static final int MAXSTARTVALUE=2500;
-	private static final int MINSTARTVALUE=-2500;
+	private static final int MAXSTARTVALUE=1500;
+	private static final int MINSTARTVALUE=-1500;
 	private int max=MAXSTARTVALUE;
 	private int min=MINSTARTVALUE;
 	private int centre=0;
@@ -77,10 +77,8 @@ public class DMRDecode {
 	public boolean logging=false;
 	public boolean pReady=false;
 	private boolean audioSuck=false;
-	private boolean debug=true;
 	private int symbolBuffer[]=new int[24];
 	public AudioInThread lineInThread=new AudioInThread(this);
-	private int frameCounter=0;
 	
 
 	public static void main(String[] args) {
@@ -155,6 +153,14 @@ public class DMRDecode {
 		    lmid=((min-centre)*5/8)+centre;		
 	}
 	
+	// A function containing the calculations required when a frame is detected
+	private void frameCalcs (int lmin,int lmax)	{
+		max=(lmax+max)/2;
+		min=(lmin+min)/2;
+		maxref=max;
+		minref=min;
+	}
+	
 	
 	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
 	public int getSymbol(boolean have_sync)	{
@@ -209,7 +215,6 @@ public class DMRDecode {
 		// Buffer size
 		if (frameSync==true) lbufCount=144;
 		 else lbufCount=23;
-		int lbuf2[]=new int[24];
 		
 		while (true) {
 			t++;
@@ -225,6 +230,7 @@ public class DMRDecode {
 			if (t>=lbufCount) {
 				
 				if (frameSync==false)	{
+					int lbuf2[]=new int[24];
 					for (i=0;i<24;i++) {
 						lbuf2[i]=symbolBuffer[i];
 					}
@@ -233,7 +239,7 @@ public class DMRDecode {
 					lmax=(lbuf2[18]+lbuf2[19]+lbuf2[20])/3;
 					maxref=max;
 					minref=min;
-				} 
+				}
 
 				// Check if this has a valid voice or data frame sync
 				dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
@@ -243,8 +249,7 @@ public class DMRDecode {
 				if (dataSync==true) {
 					carrier=true;
 					if (frameSync==false)	{
-						max=lmax;
-						min=lmin;
+						frameCalcs(lmin,lmax);
 						frameSync=true;
 					}
 					if (lastsynctype==-1) firstframe=true;
@@ -256,8 +261,7 @@ public class DMRDecode {
 				if (voiceSync==true) {
 					carrier=true;
 					if (frameSync==false)	{
-						max=lmax;
-						min=lmin;
+						frameCalcs(lmin,lmax);
 						frameSync=true;
 					}
 					if (lastsynctype==-1) firstframe=true;
@@ -409,12 +413,7 @@ public class DMRDecode {
 	    }
 	    if (synctype==12) processDMRvoice ();
 	     else processDMRdata ();
-	    
-	    frameCounter++;
-	    l="frameCounter="+Integer.toString(frameCounter);
-	    addLine(l);
-	    
-	    }
+	    	    }
 
 	// Handle a DMR Voice Frame
 	void processDMRvoice ()	{	
@@ -432,6 +431,7 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
+		line[1]=returnDibitBufferPercentages();
 		line[9]=displayDibitBuffer();
 		displayLines(line);
 	}
