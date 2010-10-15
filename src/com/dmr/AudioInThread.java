@@ -60,6 +60,8 @@ public class AudioInThread extends Thread {
     		// If the audio device is ready , the program wants to and we aren't already then
     		// get data from the audio device.
     		if ((audioReady==true)&&(run==true)&&(gettingAudio==false)) getSample();
+    		else if (run==false) holdThread();
+ 
      	}
     }
 	
@@ -166,8 +168,16 @@ public class AudioInThread extends Thread {
     	if (writePos==lastWritePos) return false;
     	 else return true;
     }
-	
-
     
+    // Called to make the thread sleep for 250ms
+    private void holdThread ()	{
+    	try		{
+    			Thread.sleep(250);
+    		} catch (Exception e)	{
+    			String err="Error during holdThread()";
+    			JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+        		System.exit(0);
+    		}
+    }
 	
 }
