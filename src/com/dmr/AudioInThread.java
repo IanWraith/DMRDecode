@@ -12,7 +12,8 @@ public class AudioInThread extends Thread {
 	private int writePos;
 	private int readPos;
 	private int lastWritePos;
-	private static final int BUFFERSIZE=512;
+	// A 128 K Byte buffer seems to do the job
+	private static int BUFFERSIZE=128*1024;
 	private int audioBuffer[]=new int [BUFFERSIZE];
 	private TargetDataLine Line;
 	private AudioFormat format;
@@ -27,10 +28,10 @@ public class AudioInThread extends Thread {
 	// comp	 =	 no
 	// bits	 =	
 	// logmin	 =	
-	private static final int NZEROS=20;
-	private static final double GAIN=1.063197639e+01;
+	private static int NZEROS=20;
+	private static double GAIN=1.063197639e+01;
 	private double xv[]=new double [NZEROS+1];
-	private static final double XCOEFFS[]=
+	private static double XCOEFFS[]=
 	  { -0.1142415065, -0.0652615756, +0.0266625160, +0.1613371679,
 	    +0.3321186878, +0.5261565098, +0.7257137259, +0.9104055994,
 	    +1.0600181526, +1.1574475610, +1.1912627108, +1.1574475610,
@@ -109,9 +110,6 @@ public class AudioInThread extends Thread {
     // then increment the read buffer counter
     public int returnSample ()	{
     	if (run==false) return -1;
-    	
-    	// TODO : We need to check if readpos has got ahead of write pos in some way
-    	
     	// If the writePos hasn't changed since the last time then there is nothing to return
     	if (writePos==lastWritePos)	{
     		String err="AudioInThread returnSample() has caught up with itself !";
