@@ -48,8 +48,8 @@ public class DMRDecode {
 	private static final int SAMPLESPERSYMBOL=10;
 	private int jitter=-1;
 	private static final int SYMBOLCENTRE=4;
-	private static final int MAXSTARTVALUE=1500;
-	private static final int MINSTARTVALUE=-1500;
+	private static final int MAXSTARTVALUE=15000;
+	private static final int MINSTARTVALUE=-15000;
 	private int max=MAXSTARTVALUE;
 	private int min=MINSTARTVALUE;
 	private int centre=0;
@@ -155,8 +155,10 @@ public class DMRDecode {
 	
 	// A function containing the calculations required when a frame is detected
 	private void frameCalcs (int lmin,int lmax)	{
-		max=(lmax+max)/2;
-		min=(lmin+min)/2;
+		//max=(lmax+max)/2;
+		//min=(lmin+min)/2;	
+		max=lmax;
+		min=lmin;
 		maxref=max;
 		minref=min;
 	}
