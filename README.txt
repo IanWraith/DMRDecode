@@ -8,14 +8,12 @@ convert that code to Java and remove all sections that don't relate to DMR.
 
 Milestone 1 - To detect voice and data sync words reached (3rd September 2010)
 
-Milestone 2 - To reliably detect voice and data sync words.
+Milestone 2 - To reliably detect voice and data sync words. (Reached 15th October 2010
+although I would like to improve the AudioInThread code so it doesn't appear to hog 100% 
+of the CPU time.)
 
 Milestone 3 - To decode the CACH
 
-Still not at milestone 3 as I'm not happy with the demodulation code. However moving
-over to a sound thread did fix the main bug with the basic demodulation. However I
-now need to add a root raised cosine filter to improve performance further.
-
-Ian Wraith (11th October 2010)
+Ian Wraith (15th October 2010)
 
 
