@@ -79,6 +79,7 @@ public class DMRDecode {
 	private boolean audioSuck=false;
 	private int symbolBuffer[]=new int[24];
 	public AudioInThread lineInThread=new AudioInThread(this);
+	private boolean debug=false;
 	
 
 	public static void main(String[] args) {
@@ -276,11 +277,14 @@ public class DMRDecode {
 		if (carrier==true) {
 			// If we have missed 12 frames then something is wrong
 			if (synctest_pos>=1728) {
-				String l=getTimeStamp()+" Sync Lost";
-		    	//l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter)+" level="+Integer.toString(level)+"%";
-				//l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
-		    	addLine(l);
-				fileWrite(l);
+				// If in debug mode show that sync has been lost
+				if (debug==true)	{
+					String l=getTimeStamp()+" Sync Lost";
+					l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
+					l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
+					addLine(l);
+					fileWrite(l);
+				}
 				frameSync=false;
 				noCarrier();
 				return (-1);
@@ -405,12 +409,14 @@ public class DMRDecode {
 	    	// As we now have sync then skip the next 54 dibits as we can't do anything with them
 			skipDibit(54);			
 			//audioDump();
-	    	if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
-	    	 else l=getTimeStamp()+" DMR Data Sync Acquired";
-	    	l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
-			//l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
-	    	addLine(l);
-			fileWrite(l);
+			if (debug==true)	{
+				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
+				else l=getTimeStamp()+" DMR Data Sync Acquired";
+				l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
+				l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
+				addLine(l);
+				fileWrite(l);
+			}
 			return;
 	    }
 	    if (synctype==12) processDMRvoice ();
@@ -422,8 +428,7 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line[0]=getTimeStamp()+" DMR Voice Frame";
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
-		line[1]=returnDibitBufferPercentages();
-		line[9]=displayDibitBuffer();
+		if (debug==true) line[1]=returnDibitBufferPercentages();
 		displayLines(line);
 	}
 	
@@ -433,7 +438,7 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
-		line[1]=returnDibitBufferPercentages();
+		if (debug==true) line[1]=returnDibitBufferPercentages();
 		line[9]=displayDibitBuffer();
 		displayLines(line);
 	}
