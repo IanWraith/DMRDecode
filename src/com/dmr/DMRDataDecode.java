@@ -62,7 +62,7 @@ public class DMRDataDecode {
 		// Extract the TACT and error check it
 		for (a=23;a>16;a--)	{
 			tact1[a-17]=dataCACH1[a];	
-			tact2[a-17]=dataCACH1[a];	
+			tact2[a-17]=dataCACH2[a];	
 		}
 		
 		int t1=0;
