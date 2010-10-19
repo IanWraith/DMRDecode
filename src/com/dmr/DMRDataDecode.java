@@ -25,81 +25,61 @@ public class DMRDataDecode {
 	// With code added to work out which interleave sequence to use
 	private boolean decodeCACH ()	{
 		boolean rawdataCACH[]=new boolean[24];
-		boolean dataCACH1[]=new boolean[24];
-		boolean dataCACH2[]=new boolean[24];
-		boolean tact1[]=new boolean[7];
-		boolean tact2[]=new boolean[7];
-		final int[]interleaveCACH1={0,17,1,2,3,18,4,5,6,19,7,20,8,9,10,21,11,12,13,22,14,15,16,23};	
-		final int[]interleaveCACH2={23,16,15,14,22,13,12,11,21,10,9,8,20,7,19,6,5,4,18,3,2,1,17,0};
-		int a,b=0,r;
+		boolean dataCACH[]=new boolean[24];
+		boolean tact[]=new boolean[7];
+		final int[]interleaveCACH={0,4,8,12,14,18,22,1,2,3,5,6,7,9,10,11,13,15,16,17,19,20,21,23};	
+		
+		int a,r;
 		// Convert from dibit into boolean
+		r=0;
 		for (a=0;a<12;a++)	{
-			r=(1&(dibit_buf[a]>>1));
-			if (r==0) rawdataCACH[b]=false;
-			 else rawdataCACH[b]=true;
-			b++;
-			r=1&dibit_buf[a];
-			if (r==0) rawdataCACH[b]=false;
-			 else rawdataCACH[b]=true;
-			b++;
+			if (dibit_buf[a]==0)	{
+				rawdataCACH[r]=false;
+				rawdataCACH[r+1]=false;
+			}
+			else if (dibit_buf[a]==1)	{
+				rawdataCACH[r]=false;
+				rawdataCACH[r+1]=true;
+			}
+			else if (dibit_buf[a]==2)	{
+				rawdataCACH[r]=true;
+				rawdataCACH[r+1]=false;
+			}
+			else if (dibit_buf[a]==3)	{
+				rawdataCACH[r]=true;
+				rawdataCACH[r+1]=true;
+			}
+			r=r+2;
 		}
 		// De-interleave
 		for (a=0;a<24;a++)	{
-			r=interleaveCACH1[a];
-			dataCACH1[a]=rawdataCACH[r];
-			r=interleaveCACH2[a];
-			dataCACH2[a]=rawdataCACH[r];
+			r=interleaveCACH[a];
+			dataCACH[a]=rawdataCACH[r];
 		}
 		
 		// Display for diagnosic purposes
-		//line[1]="CACH : ";
-		//for (a=0;a<24;a++)	{
-		//	if (dataCACH[a]==false) line[1]=line[1]+"0";
-		//	 else line[1]=line[1]+"1";
-		//}
-		
-		// TACT
-		// Extract the TACT and error check it
-		for (a=23;a>16;a--)	{
-			tact1[a-17]=dataCACH1[a];	
-			tact2[a-17]=dataCACH2[a];	
+		line[1]="CACH : ";
+		for (a=0;a<24;a++)	{
+			if (dataCACH[a]==false) line[1]=line[1]+"0";
+			 else line[1]=line[1]+"1";
 		}
-		
+
+		// Try the first and last 7 bits
 		int t1=0;
-		if (tact1[0]==true) t1=t1+64;
-		if (tact1[1]==true) t1=t1+32;
-		if (tact1[2]==true) t1=t1+16;
-		if (tact1[3]==true) t1=t1+8;
-		if (tact1[4]==true) t1=t1+4;
-		if (tact1[5]==true) t1=t1+2;
-		if (tact1[6]==true) t1=t1+1;
-		boolean res=errorCheckHamming743(t1);
-		
-		line[2]="TACT1 : ";
-		for (a=0;a<7;a++)	{
-			if (tact1[a]==false) line[2]=line[2]+"0";
-			 else  line[2]=line[2]+"1";
-		}
-		if (res==true) line[2]=line[2]+" PASS";
-		 else line[2]=line[2]+" FAIL";
-		
-		t1=0;
-		if (tact2[0]==true) t1=t1+64;
-		if (tact2[1]==true) t1=t1+32;
-		if (tact2[2]==true) t1=t1+16;
-		if (tact2[3]==true) t1=t1+8;
-		if (tact2[4]==true) t1=t1+4;
-		if (tact2[5]==true) t1=t1+2;
-		if (tact2[6]==true) t1=t1+1;
+		boolean res;
+		// First 7 bits straight
+		if (dataCACH[0]==true) t1=t1+64;
+		if (dataCACH[1]==true) t1=t1+32;
+		if (dataCACH[2]==true) t1=t1+16;
+		if (dataCACH[3]==true) t1=t1+8;
+		if (dataCACH[4]==true) t1=t1+4;
+		if (dataCACH[5]==true) t1=t1+2;
+		if (dataCACH[6]==true) t1=t1+1;
 		res=errorCheckHamming743(t1);
-		line[3]="TACT2 : ";
-		for (a=0;a<7;a++)	{
-			if (tact2[a]==false) line[3]=line[3]+"0";
-			 else  line[3]=line[3]+"1";
-		}
-		if (res==true) line[3]=line[3]+" PASS";
-		 else line[3]=line[3]+" FAIL";		
-		
+		line[2]="Test ";
+		if (res==true) line[2]=line[2]+"PASS ";
+		else line[2]=line[2]+"FAIL ";
+		line[2]=line[2]+Integer.toString(t1);
 		return true;
 	}
 	
@@ -119,6 +99,8 @@ public class DMRDataDecode {
 		boolean d1,d2,d3,d4,h2,h1,h0;
 		int a;
 		int valid[]=new int[16];
+		
+		String line="";
 		
 		for (a=0;a<16;a++)	{
 			
@@ -144,6 +126,24 @@ public class DMRDataDecode {
 			if (h1==true) valid[a]=valid[a]+2;
 			if (h0==true) valid[a]=valid[a]+1;
 			
+			if (d1==true) line=line+"1";
+			 else line=line+"0";
+			if (d2==true) line=line+"1";
+			 else line=line+"0";
+			if (d3==true) line=line+"1";
+			 else line=line+"0";
+			if (d4==true) line=line+"1";
+			 else line=line+"0";
+			line=line+" ";
+			if (h0==true) line=line+"1";
+			 else line=line+"0";
+			if (h1==true) line=line+"1";
+			 else line=line+"0";
+			if (h2==true) line=line+"1";
+			 else line=line+"0";
+			
+			line=line+"\n";
+		
 		}
 		a++;
 	}
