@@ -30,6 +30,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private DMRDecode theApp;
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item;
+	private JMenuItem view_voice_frames;
 	private JMenuItem exit_item;
 
 	// Constructor
@@ -51,6 +52,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		menuBar.add(mainMenu);
 		// View
 		JMenu viewMenu=new JMenu("View");
+		viewMenu.add(view_voice_frames=new JRadioButtonMenuItem("View Voice Frames",theApp.isViewVoiceFrames()));
+		view_voice_frames.addActionListener(this);
 		menuBar.add(viewMenu);
 		}
 
@@ -87,6 +90,14 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			// Restart the audio in thread
 			theApp.lineInThread.startAudio();
 		}		
+		
+		// View voice frames
+		if (event_name=="View Voice Frames")	{
+			boolean cstate=theApp.isViewVoiceFrames();
+			if (cstate==true) cstate=false;
+			else cstate=true;
+			theApp.setViewVoiceFrames(cstate);
+		}
 		
 		// Exit 
 		if (event_name=="Exit") {

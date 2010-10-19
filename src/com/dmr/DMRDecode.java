@@ -80,6 +80,7 @@ public class DMRDecode {
 	private int symbolBuffer[]=new int[24];
 	public AudioInThread lineInThread=new AudioInThread(this);
 	private boolean debug=false;
+	private boolean viewVoiceFrames=true;
 	
 
 	public static void main(String[] args) {
@@ -419,9 +420,9 @@ public class DMRDecode {
 			}
 			return;
 	    }
-	    if (synctype==12) processDMRvoice ();
-	     else processDMRdata ();
-	    	    }
+	    if ((synctype==12)&&(viewVoiceFrames==true)) processDMRvoice ();
+	    else if (synctype==10) processDMRdata ();
+	}
 
 	// Handle a DMR Voice Frame
 	void processDMRvoice ()	{	
@@ -584,6 +585,14 @@ public class DMRDecode {
 			audioSuck=false;
 		}
 		return data;
+	}
+
+	public void setViewVoiceFrames(boolean viewVoiceFrames) {
+		this.viewVoiceFrames=viewVoiceFrames;
+	}
+
+	public boolean isViewVoiceFrames() {
+		return viewVoiceFrames;
 	}
 		
 }
