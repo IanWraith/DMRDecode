@@ -79,7 +79,7 @@ public class DMRDecode {
 	private boolean audioSuck=false;
 	private int symbolBuffer[]=new int[24];
 	public AudioInThread lineInThread=new AudioInThread(this);
-	private boolean debug=false;
+	private boolean debug=true;
 	private boolean viewVoiceFrames=true;
 	
 
@@ -426,10 +426,15 @@ public class DMRDecode {
 
 	// Handle a DMR Voice Frame
 	void processDMRvoice ()	{	
-		String line[]=new String[10];
+		String line[]=new String[10];		
+		DecodeCACH cachdecode=new DecodeCACH();
 		line[0]=getTimeStamp()+" DMR Voice Frame";
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
-		if (debug==true) line[1]=returnDibitBufferPercentages();
+		line[1]=cachdecode.decode(dibit_buf);
+		if (debug==true)	{
+			line[8]=returnDibitBufferPercentages();
+			line[9]=displayDibitBuffer();
+		}
 		displayLines(line);
 	}
 	
@@ -437,10 +442,12 @@ public class DMRDecode {
 	void processDMRdata ()	{
 		DMRDataDecode DMRdata=new DMRDataDecode();
 		String line[]=new String[10];
-		line=DMRdata.decode(getTimeStamp(),dibit_buf,inverted);
+		line=DMRdata.decode(getTimeStamp(),dibit_buf);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
-		if (debug==true) line[1]=returnDibitBufferPercentages();
-		line[9]=displayDibitBuffer();
+		if (debug==true)	{
+			line[8]=returnDibitBufferPercentages();
+			line[9]=displayDibitBuffer();
+		}
 		displayLines(line);
 	}
 
