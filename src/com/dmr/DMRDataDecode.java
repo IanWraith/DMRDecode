@@ -27,7 +27,8 @@ public class DMRDataDecode {
 		boolean rawdataCACH[]=new boolean[24];
 		boolean dataCACH[]=new boolean[24];
 		boolean tact[]=new boolean[7];
-		final int[]interleaveCACH={0,4,8,12,14,18,22,1,2,3,5,6,7,9,10,11,13,15,16,17,19,20,21,23};	
+		//final int[]interleaveCACH={0,4,8,12,14,18,22,1,2,3,5,6,7,9,10,11,13,15,16,17,19,20,21,23};	
+		final int[]interleaveCACH={23,19,15,11,9,5,1,22,21,20,18,17,16,14,13,12,10,8,7,6,4,3,2,0};
 		
 		int a,r;
 		// Convert from dibit into boolean
@@ -56,14 +57,17 @@ public class DMRDataDecode {
 			r=interleaveCACH[a];
 			dataCACH[a]=rawdataCACH[r];
 		}
-		
+				
 		// Display for diagnosic purposes
 		line[1]="CACH : ";
 		for (a=0;a<24;a++)	{
 			if (dataCACH[a]==false) line[1]=line[1]+"0";
 			 else line[1]=line[1]+"1";
+			
+			if (a==3) line[1]=line[1]+" ";
+			if (a==6) line[1]=line[1]+" ";
 		}
-
+		
 		// Try the first and last 7 bits
 		int t1=0;
 		boolean res;
@@ -125,7 +129,7 @@ public class DMRDataDecode {
 			if (h2==true) valid[a]=valid[a]+4;
 			if (h1==true) valid[a]=valid[a]+2;
 			if (h0==true) valid[a]=valid[a]+1;
-			
+						
 			if (d1==true) line=line+"1";
 			 else line=line+"0";
 			if (d2==true) line=line+"1";
@@ -135,11 +139,11 @@ public class DMRDataDecode {
 			if (d4==true) line=line+"1";
 			 else line=line+"0";
 			line=line+" ";
-			if (h0==true) line=line+"1";
+			if (h2==true) line=line+"1";
 			 else line=line+"0";
 			if (h1==true) line=line+"1";
 			 else line=line+"0";
-			if (h2==true) line=line+"1";
+			if (h0==true) line=line+"1";
 			 else line=line+"0";
 			
 			line=line+"\n";
