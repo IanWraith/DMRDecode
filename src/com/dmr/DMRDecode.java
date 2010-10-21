@@ -81,6 +81,8 @@ public class DMRDecode {
 	public AudioInThread lineInThread=new AudioInThread(this);
 	private boolean debug=true;
 	private boolean viewVoiceFrames=true;
+	public int frameCount=0;
+	public int badFrameCount=0;
 	
 
 	public static void main(String[] args) {
@@ -436,6 +438,9 @@ public class DMRDecode {
 			line[9]=displayDibitBuffer();
 		}
 		displayLines(line);
+		
+		frameCount++;
+		if (cachdecode.isPassErrorCheck()==false) badFrameCount++;
 	}
 	
 	// Handle a DMR Data Frame

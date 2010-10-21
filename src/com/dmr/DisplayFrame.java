@@ -24,13 +24,14 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.*;
+import java.text.DecimalFormat;
 
 public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
 	private DMRDecode theApp;
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item;
-	private JMenuItem view_voice_frames;
+	private JMenuItem view_voice_frames,error_rate;
 	private JMenuItem exit_item;
 
 	// Constructor
@@ -50,6 +51,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		mainMenu.add(exit_item=new JMenuItem("Exit"));		
 		exit_item.addActionListener(this);
 		menuBar.add(mainMenu);
+		// Info
+		JMenu infoMenu=new JMenu("Info");
+		infoMenu.add(error_rate=new JMenuItem("Error Check Info"));		
+		error_rate.addActionListener(this);
+		menuBar.add(infoMenu);
 		// View
 		JMenu viewMenu=new JMenu("View");
 		viewMenu.add(view_voice_frames=new JRadioButtonMenuItem("View Voice Frames",theApp.isViewVoiceFrames()));
@@ -97,6 +103,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			if (cstate==true) cstate=false;
 			else cstate=true;
 			theApp.setViewVoiceFrames(cstate);
+		}
+		
+		// Error rate info
+		if (event_name=="Error Check Info")	{
+			errorDialogBox();
 		}
 		
 		// Exit 
@@ -161,6 +172,15 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		}
 		theApp.logging=true;
 		return true;
+	}
+	
+	// Display the percentage of bad frames received
+	public void errorDialogBox()	{
+		if (theApp.frameCount==0) return;
+		DecimalFormat df=new DecimalFormat("#.#");
+		double err=((double)theApp.badFrameCount/(double)theApp.frameCount)*100.0;
+		String line=df.format(err)+"% of frames were bad.";
+		JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 }

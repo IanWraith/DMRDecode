@@ -8,27 +8,23 @@ public class DecodeCACH {
 	private boolean at;
 	private boolean channel;
 	private int lcss;
+	private boolean passErrorCheck=false;
 	
 	public String decode (int[] buf)	{
 		dibit_buf=buf;
-		line=" CACH ";
+		line="CACH ";
 		// CACH decode
-		mainDecode();
-
-		
+		passErrorCheck=mainDecode();
 		return line;
 	}
 	
 	// De-interleave , CRC check and decode the CACH
 	// With code added to work out which interleave sequence to use
 	private boolean mainDecode ()	{
+		int a,r;
 		boolean rawdataCACH[]=new boolean[24];
 		boolean dataCACH[]=new boolean[24];
-		boolean tact[]=new boolean[7];
-		//final int[]interleaveCACH={0,4,8,12,14,18,22,1,2,3,5,6,7,9,10,11,13,15,16,17,19,20,21,23};	
-		final int[]interleaveCACH={23,19,15,11,9,5,1,22,21,20,18,17,16,14,13,12,10,8,7,6,4,3,2,0};
-		
-		int a,r;
+		final int[]interleaveCACH={0,4,8,12,14,18,22,1,2,3,5,6,7,9,10,11,13,15,16,17,19,20,21,23};	
 		// Convert from dibit into boolean
 		r=0;
 		for (a=0;a<12;a++)	{
@@ -58,7 +54,7 @@ public class DecodeCACH {
 					
 		// Display for diagnosic purposes
 		for (a=0;a<24;a++)	{
-			if (dataCACH[a]==false) line=line+"0";
+			if (rawdataCACH[a]==false) line=line+"0";
 			 else line=line+"1";
 			
 			if (a==3) line=line+" ";
@@ -69,18 +65,18 @@ public class DecodeCACH {
 		int t1=0;
 		boolean res;
 		// First 7 bits straight
-		if (dataCACH[0]==true) t1=t1+64;
-		if (dataCACH[1]==true) t1=t1+32;
-		if (dataCACH[2]==true) t1=t1+16;
-		if (dataCACH[3]==true) t1=t1+8;
-		if (dataCACH[4]==true) t1=t1+4;
-		if (dataCACH[5]==true) t1=t1+2;
-		if (dataCACH[6]==true) t1=t1+1;
+		if (rawdataCACH[0]==true) t1=t1+64;
+		if (rawdataCACH[1]==true) t1=t1+32;
+		if (rawdataCACH[2]==true) t1=t1+16;
+		if (rawdataCACH[3]==true) t1=t1+8;
+		if (rawdataCACH[4]==true) t1=t1+4;
+		if (rawdataCACH[5]==true) t1=t1+2;
+		if (rawdataCACH[6]==true) t1=t1+1;
 		res=errorCheckHamming743(t1);
 		if (res==true) line=line+" : PASS : ";
 		else line=line+"  : FAIL : ";
-		line=line+Integer.toString(t1);
-		return true;
+		line=line+Integer.toString(t1);	
+		return res;
 	}
 	
 	// Error check the CACH TACT
@@ -147,6 +143,10 @@ public class DecodeCACH {
 		
 		}
 		a++;
+	}
+
+	public boolean isPassErrorCheck() {
+		return passErrorCheck;
 	}	
 	
 }
