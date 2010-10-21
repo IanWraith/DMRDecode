@@ -159,10 +159,10 @@ public class DMRDecode {
 	
 	// A function containing the calculations required when a frame is detected
 	private void frameCalcs (int lmin,int lmax)	{
-		//max=(lmax+max)/2;
-		//min=(lmin+min)/2;	
-		max=lmax;
-		min=lmin;
+		max=(lmax+max)/2;
+		min=(lmin+min)/2;	
+		//max=lmax;
+		//min=lmin;
 		maxref=max;
 		minref=min;
 	}
@@ -557,15 +557,18 @@ public class DMRDecode {
 		String dline;
 		int a,c0=0,c1=0,c2=0,c3=0;
 		for (a=0;a<144;a++)	{
+			// Exclude the sync burst from the percentages 
+			if ((a<66)||(a>89))	{
 			if (dibit_buf[a]==0) c0++;
 			if (dibit_buf[a]==1) c1++;
 			if (dibit_buf[a]==2) c2++;
 			if (dibit_buf[a]==3) c3++;
+			}
 		}
-		c0=(int)(((float)c0/(float)144.0)*(float)100);
-		c1=(int)(((float)c1/(float)144.0)*(float)100);
-		c2=(int)(((float)c2/(float)144.0)*(float)100);
-		c3=(int)(((float)c3/(float)144.0)*(float)100);
+		c0=(int)(((float)c0/(float)120.0)*(float)100);
+		c1=(int)(((float)c1/(float)120.0)*(float)100);
+		c2=(int)(((float)c2/(float)120.0)*(float)100);
+		c3=(int)(((float)c3/(float)120.0)*(float)100);
 		// Write this to a line
 		dline="Dibit 0="+Integer.toString(c0)+"% ";	
 		dline=dline+"Dibit 1="+Integer.toString(c1)+"% ";	
