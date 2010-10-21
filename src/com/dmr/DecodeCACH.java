@@ -49,7 +49,9 @@ public class DecodeCACH {
 		// De-interleave
 		for (a=0;a<24;a++)	{
 			r=interleaveCACH[a];
-			dataCACH[a]=rawdataCACH[r];
+			//dataCACH[a]=rawdataCACH[r];
+			dataCACH[a]=rawdataCACH[a];
+			
 		}
 					
 		// Display for diagnosic purposes
@@ -65,13 +67,13 @@ public class DecodeCACH {
 		int t1=0;
 		boolean res;
 		// First 7 bits straight
-		if (rawdataCACH[0]==true) t1=t1+64;
-		if (rawdataCACH[1]==true) t1=t1+32;
-		if (rawdataCACH[2]==true) t1=t1+16;
-		if (rawdataCACH[3]==true) t1=t1+8;
-		if (rawdataCACH[4]==true) t1=t1+4;
-		if (rawdataCACH[5]==true) t1=t1+2;
-		if (rawdataCACH[6]==true) t1=t1+1;
+		if (dataCACH[0]==true) t1=t1+64;
+		if (dataCACH[1]==true) t1=t1+32;
+		if (dataCACH[2]==true) t1=t1+16;
+		if (dataCACH[3]==true) t1=t1+8;
+		if (dataCACH[4]==true) t1=t1+4;
+		if (dataCACH[5]==true) t1=t1+2;
+		if (dataCACH[6]==true) t1=t1+1;
 		res=errorCheckHamming743(t1);
 		if (res==true) line=line+" : PASS : ";
 		else line=line+"  : FAIL : ";
@@ -83,6 +85,9 @@ public class DecodeCACH {
 	public boolean errorCheckHamming743(int tact)	{
 		// An array of valid Hamming words
 		final int[]Hamming743={0,14,21,27,35,45,54,56,71,73,82,92,100,106,113,127};	
+		// Below is the more standard Hamming (7,4,3) valid words
+		//final int[]Hamming743={0, 14, 23, 25, 37, 43, 50, 60, 67, 77, 84, 90, 102, 104, 113, 127};
+		
 		int a;
 		for (a=0;a<16;a++)	{
 		 if (tact==Hamming743[a]) return true;	
@@ -113,7 +118,6 @@ public class DecodeCACH {
 			h1=d1^d2^d4;
 			h0=d1^d2^d3;
 			
-	
 			valid[a]=0;
 			if (d1==true) valid[a]=valid[a]+64;
 			if (d2==true) valid[a]=valid[a]+32;
