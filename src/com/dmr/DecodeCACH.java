@@ -4,7 +4,6 @@ public class DecodeCACH {
 
 	private int dibit_buf[]=new int[132];
 	private String line;
-	private boolean inverted;
 	private boolean at;
 	private boolean channel;
 	private int lcss;
@@ -12,7 +11,7 @@ public class DecodeCACH {
 	
 	public String decode (int[] buf)	{
 		dibit_buf=buf;
-		line="CACH ";
+		line="CACH : TACT ";
 		// CACH decode
 		passErrorCheck=mainDecode();
 		return line;
@@ -21,9 +20,10 @@ public class DecodeCACH {
 	// De-interleave , CRC check and decode the CACH
 	// With code added to work out which interleave sequence to use
 	private boolean mainDecode ()	{
-		int a,r;
+		int a,r,t1;
 		boolean rawdataCACH[]=new boolean[24];
 		boolean dataCACH[]=new boolean[24];
+		boolean res;
 		final int[]interleaveCACH={0,4,8,12,14,18,22,1,2,3,5,6,7,9,10,11,13,15,16,17,19,20,21,23};	
 		// Convert from dibit into boolean
 		r=0;
@@ -50,23 +50,20 @@ public class DecodeCACH {
 		for (a=0;a<24;a++)	{
 			r=interleaveCACH[a];
 			dataCACH[a]=rawdataCACH[r];
-			//dataCACH[a]=rawdataCACH[a];
-			
 		}
 		// Display for diagnosic purposes
-		for (a=0;a<24;a++)	{
-			if (dataCACH[a]==false) line=line+"0";
-			 else line=line+"1";
+		//for (a=0;a<24;a++)	{
+			//if (dataCACH[a]==false) line=line+"0";
+			 //else line=line+"1";
 			
-			if (a==3) line=line+" ";
-			if (a==6) line=line+" ";
-		}
+			//if (a==3) line=line+" ";
+			//if (a==6) line=line+" ";
+		//}
 		
 		// Try the first and last 7 bits
-		int t1=0;
-		boolean res;
 		// First 7 bits straight
-		if (dataCACH[0]==true) t1=t1+64;
+		if (dataCACH[0]==true) t1=64;
+		else t1=0;
 		if (dataCACH[1]==true) t1=t1+32;
 		if (dataCACH[2]==true) t1=t1+16;
 		if (dataCACH[3]==true) t1=t1+8;
@@ -74,9 +71,21 @@ public class DecodeCACH {
 		if (dataCACH[5]==true) t1=t1+2;
 		if (dataCACH[6]==true) t1=t1+1;
 		res=errorCheckHamming743(t1);
-		if (res==true) line=line+" : PASS : ";
-		else line=line+"  : FAIL : ";
-		line=line+Integer.toString(t1);	
+		// Decode the TACT
+		at=dataCACH[0];
+		channel=dataCACH[1];
+		if (dataCACH[2]==true) lcss=2;
+		else lcss=0;
+		if (dataCACH[3]==true) lcss++;
+		// Display TACT info
+		if (at==true) line=line+" AT=1";
+		if (channel==false) line=line+" Ch 1";
+		else line=line+" Ch 2";
+		if (lcss==0) line=line+" First/Single fragment LC";
+		else if (lcss==1) line=line+" First fragment of LC";
+		else if (lcss==2) line=line+" Last fragment of LC or CSBK";
+		else if (lcss==3) line=line+" Continuation fragment of LC or CSBK";
+		
 		return res;
 	}
 	
@@ -84,7 +93,6 @@ public class DecodeCACH {
 	public boolean errorCheckHamming743(int tact)	{
 		// An array of valid Hamming words
 		final int[]Hamming743={0,11,22,29,39,44,49,58,69,78,83,88,98,105,116,127};
-		
 		int a;
 		for (a=0;a<16;a++)	{
 		 if (tact==Hamming743[a]) return true;	
@@ -93,6 +101,7 @@ public class DecodeCACH {
 	}
 	
 	// Generate a list of valid Hamming words
+	// Isn't normally called but leave in for now
 	public void calcHamming ()	{
 		boolean d1,d2,d3,d4,h2,h1,h0;
 		int a;
@@ -146,6 +155,7 @@ public class DecodeCACH {
 		a++;
 	}
 
+	// Let the main program now if there is an error in the frame
 	public boolean isPassErrorCheck() {
 		return passErrorCheck;
 	}	

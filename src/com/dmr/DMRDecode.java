@@ -41,7 +41,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 3";
+	public String program_version="DMR Decoder V0.00 Build 4";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -79,7 +79,7 @@ public class DMRDecode {
 	private boolean audioSuck=false;
 	private int symbolBuffer[]=new int[24];
 	public AudioInThread lineInThread=new AudioInThread(this);
-	private boolean debug=true;
+	private boolean debug=false;
 	private boolean viewVoiceFrames=true;
 	public int frameCount=0;
 	public int badFrameCount=0;
@@ -161,8 +161,6 @@ public class DMRDecode {
 	private void frameCalcs (int lmin,int lmax)	{
 		max=(lmax+max)/2;
 		min=(lmin+min)/2;	
-		//max=lmax;
-		//min=lmin;
 		maxref=max;
 		minref=min;
 	}
