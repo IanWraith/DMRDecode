@@ -12,8 +12,10 @@ Milestone 2 - To reliably detect voice and data sync words. (Reached 15th Octobe
 although I would like to improve the AudioInThread code so it doesn't appear to hog 100% 
 of the CPU time.)
 
-Milestone 3 - To decode the CACH
+Milestone 3 - To decode the CACH TACT (Reached 22nd October 2010)
 
-Ian Wraith (15th October 2010)
+Milestone 4 - To decode the CACH payload
+
+Ian Wraith (22nd October 2010)
 
 
