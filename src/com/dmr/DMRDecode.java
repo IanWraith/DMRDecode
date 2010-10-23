@@ -41,7 +41,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 4";
+	public String program_version="DMR Decoder V0.00 Build 5";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -159,8 +159,14 @@ public class DMRDecode {
 	
 	// A function containing the calculations required when a frame is detected
 	private void frameCalcs (int lmin,int lmax)	{
-		max=(lmax+max)/2;
-		min=(lmin+min)/2;	
+		// The code required below appears to depend on the soundcard
+		// Viglen PC code
+		//max=(lmax+max)/2;
+		//min=(lmin+min)/2;	
+		// Acer PC Code 
+		max=lmax;
+		min=lmin;
+		///////////////////
 		maxref=max;
 		minref=min;
 	}
