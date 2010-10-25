@@ -62,7 +62,6 @@ public class AudioInThread extends Thread {
     		// get data from the audio device.
     		if ((audioReady==true)&&(run==true)&&(gettingAudio==false)) getSample();
     		else if (run==false) holdThread();
- 
      	}
     }
 	
@@ -87,17 +86,23 @@ public class AudioInThread extends Thread {
     private void getSample ()	{
     	gettingAudio=true;
     	int sample,count,total=0,fsample;
-		byte buffer[]=new byte[2];
+    	// READ in ISIZE bytes and convert them into ISIZE/2 integers
+    	// Doing it this way reduces CPU loading
+    	final int ISIZE=256;
+		byte buffer[]=new byte[ISIZE];
 		try	{
-				while (total<1)	{
-					count=Line.read(buffer,0,2);
+				while (total<ISIZE)	{
+					count=Line.read(buffer,0,ISIZE);
 					total=total+count;
 			  		}
 			  	} catch (Exception e)	{
 			  		String err=e.getMessage();
 			  		JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
 			  	}
-		sample=(buffer[0]<<8)+buffer[1];
+			  	
+		int a;
+		for (a=0;a<ISIZE;a=a+2)	{
+		sample=(buffer[a]<<8)+buffer[a+1];
 		// Put this through a root raised filter
 		fsample=rootRaisedFilter(sample);
 		// Put the new sample in the buffer
@@ -105,7 +110,9 @@ public class AudioInThread extends Thread {
 		// Increment the write buffer pos
 		writePos++;
 		// If the write buffer pointer has reached maximum then reset it to zero
-		if (writePos==BUFFERSIZE) writePos=0;		
+		if (writePos==BUFFERSIZE) writePos=0;
+		}
+		
 		gettingAudio=false;	
     }
     
@@ -176,6 +183,17 @@ public class AudioInThread extends Thread {
     			Thread.sleep(250);
     		} catch (Exception e)	{
     			String err="Error during holdThread()";
+    			JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+        		System.exit(0);
+    		}
+    }
+    
+    // Called to make the thread sleep for 1ms
+    private void sleepThread ()	{
+    	try		{
+    			Thread.sleep(1);
+    		} catch (Exception e)	{
+    			String err="Error during sleepThread()";
     			JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
         		System.exit(0);
     		}
