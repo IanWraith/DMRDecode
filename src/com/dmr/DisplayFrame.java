@@ -30,7 +30,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
 	private DMRDecode theApp;
 	public static final long serialVersionUID=1;
-	private JMenuItem save_to_file,inverted_item;
+	private JMenuItem save_to_file,inverted_item,debug_item;
 	private JMenuItem view_voice_frames,error_rate;
 	private JMenuItem exit_item;
 
@@ -44,6 +44,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		setJMenuBar(menuBar);
 		// Main
 		JMenu mainMenu=new JMenu("Main");
+		mainMenu.add(debug_item=new JRadioButtonMenuItem("Debug Mode",theApp.isDebug()));
+		debug_item.addActionListener(this);
 		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted));
 		inverted_item.addActionListener(this);
 		mainMenu.add(save_to_file=new JRadioButtonMenuItem("Save to File",theApp.saveToFile));
@@ -73,6 +75,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	// Handle all menu events
 	public void actionPerformed (ActionEvent event) {
 		String event_name=event.getActionCommand();
+		
+		// Debug Mode
+		if (event_name=="Debug Mode")	{
+			if (theApp.isDebug()==false) theApp.setDebug(true);
+			 else theApp.setDebug(false);
+		}		
 
 		// Invert signal
 		if (event_name=="Invert Signal")	{
@@ -124,6 +132,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	// Update all the menu items 
 	public void menuItemUpdate () {
 		inverted_item.setSelected(theApp.inverted);
+		debug_item.setSelected(theApp.isDebug());
 	}
 	
 	// Display a dialog box so the user can select a location and name for a log file
