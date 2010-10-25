@@ -257,6 +257,13 @@ public class DMRDecode {
 				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
 					dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
 					voiceSync=syncCompare(DMR_VOICE_SYNC,frameSync);
+				
+					// Embedded signalling frame
+					if ((frameSync==true)&&(voiceSync==false)&&(dataSync==false)&&(firstframe==false)&&(lastsynctype!=13))	{
+						lastsynctype=13;
+						return (13);
+					}
+				
 				}
 				
 				// Data frame
@@ -282,7 +289,7 @@ public class DMRDecode {
 					 else firstframe=false;
 					lastsynctype=12;
 					return (12);
-				}
+				}				
 		}					
 		// We had a signal but appear to have lost it
 		if (carrier==true) {
@@ -432,23 +439,27 @@ public class DMRDecode {
 	    }
 	    if ((synctype==12)&&(viewVoiceFrames==true)) processDMRvoice ();
 	    else if (synctype==10) processDMRdata ();
+	    else if (synctype==13) processEmbedded ();
 	}
 
 	// Handle a DMR Voice Frame
 	void processDMRvoice ()	{	
 		String line[]=new String[10];		
 		DecodeCACH cachdecode=new DecodeCACH();
-		line[0]=getTimeStamp()+" DMR Voice Frame";
+		line[0]=getTimeStamp()+" DMR Voice Frame ";
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
-		line[1]=cachdecode.decode(dibit_buf);
+		line[0]=line[0]+" "+cachdecode.decode(dibit_buf);
 		if (debug==true)	{
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
-		displayLines(line);
-		
 		frameCount++;
-		if (cachdecode.isPassErrorCheck()==false) badFrameCount++;
+		if (cachdecode.isPassErrorCheck()==false)	{
+			badFrameCount++;
+			line[0]=getTimeStamp()+" DMR Voice Frame - CACH Error ! ";
+			line[0]=line[0]+dispSymbolsSinceLastFrame();
+		}
+		displayLines(line);
 	}
 	
 	// Handle a DMR Data Frame
@@ -461,7 +472,33 @@ public class DMRDecode {
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
+		frameCount++;
+		if (DMRdata.isError()==true)	{
+			badFrameCount++;
+			line[0]=getTimeStamp()+" DMR Data Frame - CACH Error ! ";
+			line[0]=line[0]+dispSymbolsSinceLastFrame();			
+		}
 		displayLines(line);
+	}
+	
+	// Handle an embedded frame
+	void processEmbedded ()	{
+		String line[]=new String[10];		
+		DecodeCACH cachdecode=new DecodeCACH();
+		line[0]=getTimeStamp()+" DMR Embedded Frame ";
+		line[0]=line[0]+dispSymbolsSinceLastFrame();
+		line[0]=line[0]+" "+cachdecode.decode(dibit_buf);
+		if (debug==true)	{
+			line[8]=returnDibitBufferPercentages();
+			line[9]=displayDibitBuffer();
+		}
+		frameCount++;
+		if (cachdecode.isPassErrorCheck()==false)	{
+			badFrameCount++;
+			line[0]=getTimeStamp()+" DMR Embedded Frame - CACH Error ! ";
+			line[0]=line[0]+dispSymbolsSinceLastFrame();
+		}
+		displayLines(line);		
 	}
 
 	// Display a group of lines

@@ -51,14 +51,6 @@ public class DecodeCACH {
 			r=interleaveCACH[a];
 			dataCACH[a]=rawdataCACH[r];
 		}
-		// Display for diagnosic purposes
-		//for (a=0;a<24;a++)	{
-			//if (dataCACH[a]==false) line=line+"0";
-			 //else line=line+"1";
-			
-			//if (a==3) line=line+" ";
-			//if (a==6) line=line+" ";
-		//}
 		
 		// Try the first and last 7 bits
 		// First 7 bits straight
@@ -81,10 +73,16 @@ public class DecodeCACH {
 		if (at==true) line=line+" AT=1";
 		if (channel==false) line=line+" Ch 1";
 		else line=line+" Ch 2";
-		if (lcss==0) line=line+" First fragment of CBSK";
-		else if (lcss==1) line=line+" First fragment of LC";
-		else if (lcss==2) line=line+" Last fragment of LC or CSBK";
-		else if (lcss==3) line=line+" Continuation fragment of LC or CSBK";
+		if (lcss==0) line=line+" First fragment of CBSK ";
+		else if (lcss==1) line=line+" First fragment of LC ";
+		else if (lcss==2) line=line+" Last fragment of LC or CSBK ";
+		else if (lcss==3) line=line+" Continuation fragment of LC or CSBK ";
+
+		// Display for diagnosic purposes
+		for (a=7;a<24;a++)	{
+			if (dataCACH[a]==false) line=line+"0";
+			else line=line+"1";
+		}
 		
 		return res;
 	}
