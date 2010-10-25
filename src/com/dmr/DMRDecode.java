@@ -250,10 +250,14 @@ public class DMRDecode {
 					maxref=max;
 					minref=min;
 				}
-
-				// Check if this has a valid voice or data frame sync
-				dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
-				voiceSync=syncCompare(DMR_VOICE_SYNC,frameSync);
+				
+				// Check if a frame has a voice or data sync
+				// If no frame sync do this at any time but if we do have
+				// frame sync then only do this every 144 bits
+				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
+					dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
+					voiceSync=syncCompare(DMR_VOICE_SYNC,frameSync);
+				}
 				
 				// Data frame
 				if (dataSync==true) {
