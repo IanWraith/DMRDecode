@@ -47,6 +47,7 @@ public class AudioInThread extends Thread {
     	readPos=0;
     	lastWritePos=-1;
     	gettingAudio=false;
+    	setPriority(Thread.MIN_PRIORITY);
         start();
         Thread.yield();
       }
