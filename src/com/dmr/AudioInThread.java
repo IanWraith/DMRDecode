@@ -188,15 +188,4 @@ public class AudioInThread extends Thread {
     		}
     }
     
-    // Called to make the thread sleep for 1ms
-    private void sleepThread ()	{
-    	try		{
-    			Thread.sleep(1);
-    		} catch (Exception e)	{
-    			String err="Error during sleepThread()";
-    			JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
-        		System.exit(0);
-    		}
-    }
-	
 }
