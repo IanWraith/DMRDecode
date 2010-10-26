@@ -446,9 +446,11 @@ public class DMRDecode {
 	void processDMRvoice ()	{	
 		String line[]=new String[10];		
 		DecodeCACH cachdecode=new DecodeCACH();
+		SlotType slottype=new SlotType();
 		line[0]=getTimeStamp()+" DMR Voice Frame ";
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		line[0]=line[0]+" "+cachdecode.decode(dibit_buf);
+		if (cachdecode.isPassErrorCheck()==true) line[1]=slottype.decode(dibit_buf);
 		if (debug==true)	{
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
@@ -456,7 +458,7 @@ public class DMRDecode {
 		frameCount++;
 		if (cachdecode.isPassErrorCheck()==false)	{
 			badFrameCount++;
-			line[0]=getTimeStamp()+" DMR Voice Frame - CACH Error ! ";
+			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();
 		}
 		displayLines(line);
@@ -466,16 +468,16 @@ public class DMRDecode {
 	void processDMRdata ()	{
 		DMRDataDecode DMRdata=new DMRDataDecode();
 		String line[]=new String[10];
-		line=DMRdata.decode(getTimeStamp(),dibit_buf);
+		line=DMRdata.decode(theApp,dibit_buf);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		if (debug==true)	{
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
 		frameCount++;
-		if (DMRdata.isError()==true)	{
+		if (DMRdata.isError()==false)	{
 			badFrameCount++;
-			line[0]=getTimeStamp()+" DMR Data Frame - CACH Error ! ";
+			line[0]=getTimeStamp()+" DMR Data Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();			
 		}
 		displayLines(line);
@@ -495,7 +497,7 @@ public class DMRDecode {
 		frameCount++;
 		if (cachdecode.isPassErrorCheck()==false)	{
 			badFrameCount++;
-			line[0]=getTimeStamp()+" DMR Embedded Frame - CACH Error ! ";
+			line[0]=getTimeStamp()+" DMR Embedded Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();
 		}
 		displayLines(line);		
