@@ -174,7 +174,10 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		}
 		// Open the file
 		try {
-			theApp.file = new FileWriter(tfile);
+			theApp.file=new FileWriter(tfile);
+			// Write the program version as the first line of the log
+			
+			
 		} catch (Exception e) {
 			System.out.println("\nError opening the logging file");
 			return false;
