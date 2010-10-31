@@ -176,7 +176,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		try {
 			theApp.file=new FileWriter(tfile);
 			// Write the program version as the first line of the log
-			
+			String fline=theApp.program_version+"\r\n";
+			theApp.file.write(fline);
 			
 		} catch (Exception e) {
 			System.out.println("\nError opening the logging file");
@@ -188,10 +189,15 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	
 	// Display the percentage of bad frames received
 	public void errorDialogBox()	{
-		if (theApp.frameCount==0) return;
-		DecimalFormat df=new DecimalFormat("#.#");
-		double err=((double)theApp.badFrameCount/(double)theApp.frameCount)*100.0;
-		String line=df.format(err)+"% of frames were bad.";
+		String line;
+		if (theApp.frameCount==0)	{
+			line="No frames received yet !";
+		}
+		else	{
+			DecimalFormat df=new DecimalFormat("#.#");
+			double err=((double)theApp.badFrameCount/(double)theApp.frameCount)*100.0;
+			line=df.format(err)+"% of frames were bad.";
+		}
 		JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 	}
 
