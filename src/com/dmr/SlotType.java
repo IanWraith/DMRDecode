@@ -22,7 +22,7 @@ public class SlotType {
 		// Convert from dibit into boolean
 		// DATA SLOT is broken into 2 parts
 		r=0;
-		for (a=60;a<66;a++)	{
+		for (a=61;a<66;a++)	{
 			if (dibit_buf[a]==0)	{
 				rawdataSLOT[r]=false;
 				rawdataSLOT[r+1]=false;
@@ -41,7 +41,6 @@ public class SlotType {
 			}
 			r=r+2;
 		}
-		r=10;
 		for (a=90;a<95;a++)	{
 			if (dibit_buf[a]==0)	{
 				rawdataSLOT[r]=false;
