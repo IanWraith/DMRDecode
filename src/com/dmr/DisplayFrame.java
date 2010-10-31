@@ -32,7 +32,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item,debug_item;
 	private JMenuItem view_voice_frames,error_rate;
-	private JMenuItem exit_item;
+	private JMenuItem exit_item,about_item;
 
 	// Constructor
 	public DisplayFrame(String title,DMRDecode theApp) {
@@ -55,6 +55,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		menuBar.add(mainMenu);
 		// Info
 		JMenu infoMenu=new JMenu("Info");
+		infoMenu.add(about_item=new JMenuItem("About"));		
+		about_item.addActionListener(this);
 		infoMenu.add(error_rate=new JMenuItem("Error Check Info"));		
 		error_rate.addActionListener(this);
 		menuBar.add(infoMenu);
@@ -75,6 +77,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	// Handle all menu events
 	public void actionPerformed (ActionEvent event) {
 		String event_name=event.getActionCommand();
+		
+		// About
+		if (event_name=="About")	{
+			String line=theApp.program_version+"\r\n"+"by Ian Wraith (iwraith@gmail.com)\r\nwith code taken from the DSD program.";
+			JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+		}
 		
 		// Debug Mode
 		if (event_name=="Debug Mode")	{
