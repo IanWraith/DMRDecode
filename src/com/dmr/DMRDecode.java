@@ -460,6 +460,7 @@ public class DMRDecode {
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();
+			line[0]=line[0]+" ("+cachdecode.getErrorRes()+")";
 		}
 		displayLines(line);
 	}
@@ -478,7 +479,7 @@ public class DMRDecode {
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Data Frame - Error ! ";
-			line[0]=line[0]+dispSymbolsSinceLastFrame();			
+			line[0]=line[0]+dispSymbolsSinceLastFrame();		
 		}
 		displayLines(line);
 	}

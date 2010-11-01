@@ -8,6 +8,7 @@ public class DecodeCACH {
 	private boolean channel;
 	private int lcss;
 	private boolean passErrorCheck=false;
+	private int errorRes;
 	
 	public String decode (int[] buf)	{
 		dibit_buf=buf;
@@ -20,7 +21,7 @@ public class DecodeCACH {
 	// De-interleave , CRC check and decode the CACH
 	// With code added to work out which interleave sequence to use
 	private boolean mainDecode ()	{
-		int a,r,t1;
+		int a,r;
 		boolean rawdataCACH[]=new boolean[24];
 		boolean dataCACH[]=new boolean[24];
 		boolean res;
@@ -54,15 +55,15 @@ public class DecodeCACH {
 		
 		// Try the first and last 7 bits
 		// First 7 bits straight
-		if (dataCACH[0]==true) t1=64;
-		else t1=0;
-		if (dataCACH[1]==true) t1=t1+32;
-		if (dataCACH[2]==true) t1=t1+16;
-		if (dataCACH[3]==true) t1=t1+8;
-		if (dataCACH[4]==true) t1=t1+4;
-		if (dataCACH[5]==true) t1=t1+2;
-		if (dataCACH[6]==true) t1=t1+1;
-		res=errorCheckHamming743(t1);
+		if (dataCACH[0]==true) errorRes=64;
+		else errorRes=0;
+		if (dataCACH[1]==true) errorRes=errorRes+32;
+		if (dataCACH[2]==true) errorRes=errorRes+16;
+		if (dataCACH[3]==true) errorRes=errorRes+8;
+		if (dataCACH[4]==true) errorRes=errorRes+4;
+		if (dataCACH[5]==true) errorRes=errorRes+2;
+		if (dataCACH[6]==true) errorRes++;
+		res=errorCheckHamming743(errorRes);
 		// Decode the TACT
 		at=dataCACH[0];
 		channel=dataCACH[1];
@@ -153,9 +154,14 @@ public class DecodeCACH {
 		a++;
 	}
 
-	// Let the main program now if there is an error in the frame
+	// Let the main program know if there is an error in the frame
 	public boolean isPassErrorCheck() {
 		return passErrorCheck;
+	}
+
+	// Let the main program know the hamming word in case of an error
+	public int getErrorRes() {
+		return errorRes;
 	}	
 	
 }
