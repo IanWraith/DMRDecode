@@ -2,7 +2,7 @@ package com.dmr;
 
 public class DecodeCACH {
 
-	private int dibit_buf[]=new int[132];
+	private int dibit_buf[]=new int[144];
 	private String line;
 	private boolean at;
 	private boolean channel;
