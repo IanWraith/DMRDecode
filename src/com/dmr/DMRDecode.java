@@ -41,7 +41,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 6";
+	public String program_version="DMR Decoder V0.00 Build 7";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -257,39 +257,37 @@ public class DMRDecode {
 				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
 					dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
 					voiceSync=syncCompare(DMR_VOICE_SYNC,frameSync);
-				
 					// Embedded signalling frame
 					if ((frameSync==true)&&(voiceSync==false)&&(dataSync==false)&&(firstframe==false)&&(lastsynctype!=13))	{
 						lastsynctype=13;
 						return (13);
 					}
+					// Data frame
+					if (dataSync==true) {
+						carrier=true;
+						if (frameSync==false)	{
+							frameCalcs(lmin,lmax);
+							frameSync=true;
+						}
+						if (lastsynctype==-1) firstframe=true;
+						else firstframe=false;
+						lastsynctype=10;
+						return (10);
+					}
+					// Voice frame
+					if (voiceSync==true) {
+						carrier=true;
+						if (frameSync==false)	{
+							frameCalcs(lmin,lmax);
+							frameSync=true;
+						}
+						if (lastsynctype==-1) firstframe=true;
+						else firstframe=false;
+						lastsynctype=12;
+						return (12);
+					}
 				
 				}
-				
-				// Data frame
-				if (dataSync==true) {
-					carrier=true;
-					if (frameSync==false)	{
-						frameCalcs(lmin,lmax);
-						frameSync=true;
-					}
-					if (lastsynctype==-1) firstframe=true;
-					 else firstframe=false;
-					lastsynctype=10;
-					return (10);
-				}
-				// Voice frame
-				if (voiceSync==true) {
-					carrier=true;
-					if (frameSync==false)	{
-						frameCalcs(lmin,lmax);
-						frameSync=true;
-					}
-					if (lastsynctype==-1) firstframe=true;
-					 else firstframe=false;
-					lastsynctype=12;
-					return (12);
-				}				
 		}					
 		// We had a signal but appear to have lost it
 		if (carrier==true) {
@@ -444,23 +442,19 @@ public class DMRDecode {
 
 	// Handle a DMR Voice Frame
 	void processDMRvoice ()	{	
-		String line[]=new String[10];		
-		DecodeCACH cachdecode=new DecodeCACH();
-		SlotType slottype=new SlotType();
-		line[0]=getTimeStamp()+" DMR Voice Frame ";
+		DMRVoice DMRvoice=new DMRVoice();
+		String line[]=new String[10];
+		line=DMRvoice.decode(theApp,dibit_buf);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
-		line[0]=line[0]+" "+cachdecode.decode(dibit_buf);
-		if (cachdecode.isPassErrorCheck()==true) line[1]=slottype.decode(dibit_buf);
 		if (debug==true)	{
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
 		frameCount++;
-		if (cachdecode.isPassErrorCheck()==false)	{
+		if (DMRvoice.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
-			line[0]=line[0]+dispSymbolsSinceLastFrame();
-			line[0]=line[0]+" ("+cachdecode.getErrorRes()+")";
+			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 		}
 		displayLines(line);
 	}
@@ -479,29 +473,32 @@ public class DMRDecode {
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Data Frame - Error ! ";
-			line[0]=line[0]+dispSymbolsSinceLastFrame();		
+			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 		}
 		displayLines(line);
 	}
 	
 	// Handle an embedded frame
 	void processEmbedded ()	{
-		String line[]=new String[10];		
-		DecodeCACH cachdecode=new DecodeCACH();
-		line[0]=getTimeStamp()+" DMR Embedded Frame ";
+		DMREmbedded DMRembedded=new DMREmbedded();
+		String line[]=new String[10];
+		line=DMRembedded.decode(theApp,dibit_buf);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
-		line[0]=line[0]+" "+cachdecode.decode(dibit_buf);
 		if (debug==true)	{
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
 		frameCount++;
-		if (cachdecode.isPassErrorCheck()==false)	{
+		if (DMRembedded.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Embedded Frame - Error ! ";
-			line[0]=line[0]+dispSymbolsSinceLastFrame();
+			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 		}
-		displayLines(line);		
+		else	{
+			// Set last sync type to 14 to show this was a good embedded frame
+			lastsynctype=14;
+		}
+		displayLines(line);
 	}
 
 	// Display a group of lines
@@ -593,10 +590,11 @@ public class DMRDecode {
 	// Grab a certain number of symbols but ignore their content
 	public void skipDibit (int count)
 	{
-	  int i;
+	  int i,r;
 	  for (i=0;i<count;i++)
 	    {
-		getSymbol(true);
+		r=getSymbol(true);
+		addToDitbitBuf(r,true);
 	    }
 	}
 	
