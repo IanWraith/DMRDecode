@@ -31,7 +31,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private DMRDecode theApp;
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item,debug_item;
-	private JMenuItem view_voice_frames,error_rate;
+	private JMenuItem view_voice_frames,view_data_frames,view_embedded_frames,error_rate;
 	private JMenuItem exit_item,about_item;
 
 	// Constructor
@@ -62,6 +62,10 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		menuBar.add(infoMenu);
 		// View
 		JMenu viewMenu=new JMenu("View");
+		viewMenu.add(view_data_frames=new JRadioButtonMenuItem("View Data Frames",theApp.isViewDataFrames()));
+		view_data_frames.addActionListener(this);		
+		viewMenu.add(view_embedded_frames=new JRadioButtonMenuItem("View Embedded Frames",theApp.isViewEmbeddedFrames()));
+		view_embedded_frames.addActionListener(this);		
 		viewMenu.add(view_voice_frames=new JRadioButtonMenuItem("View Voice Frames",theApp.isViewVoiceFrames()));
 		view_voice_frames.addActionListener(this);
 		menuBar.add(viewMenu);
@@ -111,7 +115,23 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			 else theApp.saveToFile=false;
 			// Restart the audio in thread
 			theApp.lineInThread.startAudio();
-		}		
+		}	
+		
+		// View data frames
+		if (event_name=="View Data Frames")	{
+			boolean cstate=theApp.isViewDataFrames();
+			if (cstate==true) cstate=false;
+			else cstate=true;
+			theApp.setViewDataFrames(cstate);
+		}
+		
+		// View embedded frames
+		if (event_name=="View Embedded Frames")	{
+			boolean cstate=theApp.isViewEmbeddedFrames();
+			if (cstate==true) cstate=false;
+			else cstate=true;
+			theApp.setViewEmbeddedFrames(cstate);
+		}
 		
 		// View voice frames
 		if (event_name=="View Voice Frames")	{

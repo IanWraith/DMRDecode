@@ -81,6 +81,8 @@ public class DMRDecode {
 	public AudioInThread lineInThread=new AudioInThread(this);
 	private boolean debug=false;
 	private boolean viewVoiceFrames=true;
+	private boolean viewDataFrames=true;
+	private boolean viewEmbeddedFrames=true;
 	public int frameCount=0;
 	public int badFrameCount=0;
 	
@@ -436,8 +438,8 @@ public class DMRDecode {
 			return;
 	    }
 	    if ((synctype==12)&&(viewVoiceFrames==true)) processDMRvoice ();
-	    else if (synctype==10) processDMRdata ();
-	    else if (synctype==13) processEmbedded ();
+	    else if ((synctype==10)&&(viewDataFrames==true)) processDMRdata ();
+	    else if ((synctype==13)&&(viewEmbeddedFrames==true)) processEmbedded ();
 	}
 
 	// Handle a DMR Voice Frame
@@ -663,5 +665,23 @@ public class DMRDecode {
 	public void setDebug(boolean debug) {
 		this.debug=debug;
 	}
+
+	public void setViewDataFrames(boolean viewDataFrames) {
+		this.viewDataFrames = viewDataFrames;
+	}
+
+	public boolean isViewDataFrames() {
+		return viewDataFrames;
+	}
+
+	public void setViewEmbeddedFrames(boolean viewEmbeddedFrames) {
+		this.viewEmbeddedFrames = viewEmbeddedFrames;
+	}
+
+	public boolean isViewEmbeddedFrames() {
+		return viewEmbeddedFrames;
+	}
+
+
 	
 }
