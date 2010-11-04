@@ -41,7 +41,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 7";
+	public String program_version="DMR Decoder V0.00 Build 9";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -61,7 +61,7 @@ public class DMRDecode {
 	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
 	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private boolean carrier=false;
-	public boolean inverted=false;
+	public boolean inverted=true;
 	private boolean firstframe=false;
 	public JEditorPane editorPane;
 	public HTMLDocument doc;
@@ -475,7 +475,11 @@ public class DMRDecode {
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Data Frame - Error ! ";
+			line[1]=null;
+			line[2]=null;
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
+			int gval=DMRdata.getGolayValue();
+			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
 		}
 		displayLines(line);
 	}

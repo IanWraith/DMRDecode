@@ -8,14 +8,14 @@ convert that code to Java and remove all sections that don't relate to DMR.
 
 Milestone 1 - To detect voice and data sync words reached (3rd September 2010)
 
-Milestone 2 - To reliably detect voice and data sync words. (Reached 15th October 2010
-although I would like to improve the AudioInThread code so it doesn't appear to hog 100% 
-of the CPU time.)
+Milestone 2 - To reliably detect voice and data sync words. (Reached 15th October 2010)
 
 Milestone 3 - To decode the CACH TACT (Reached 22nd October 2010)
 
+Milestone 3.5 (!) - To decode the SLOT TYPE PDU (Reached 4th November 2010)
+
 Milestone 4 - To decode the CACH payload
 
-Ian Wraith (22nd October 2010)
+Ian Wraith (4th November 2010)
 
 
