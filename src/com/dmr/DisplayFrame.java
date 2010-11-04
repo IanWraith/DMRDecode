@@ -32,7 +32,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item,debug_item;
 	private JMenuItem view_voice_frames,view_data_frames,view_embedded_frames,error_rate;
-	private JMenuItem exit_item,about_item;
+	private JMenuItem exit_item,about_item,help_item;
 
 	// Constructor
 	public DisplayFrame(String title,DMRDecode theApp) {
@@ -55,8 +55,6 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		menuBar.add(mainMenu);
 		// Info
 		JMenu infoMenu=new JMenu("Info");
-		infoMenu.add(about_item=new JMenuItem("About"));		
-		about_item.addActionListener(this);
 		infoMenu.add(error_rate=new JMenuItem("Error Check Info"));		
 		error_rate.addActionListener(this);
 		menuBar.add(infoMenu);
@@ -69,6 +67,13 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		viewMenu.add(view_voice_frames=new JRadioButtonMenuItem("View Voice Frames",theApp.isViewVoiceFrames()));
 		view_voice_frames.addActionListener(this);
 		menuBar.add(viewMenu);
+		// Help
+		JMenu helpMenu=new JMenu("Help");
+		helpMenu.add(about_item=new JMenuItem("About"));		
+		about_item.addActionListener(this);
+		helpMenu.add(help_item=new JMenuItem("Help"));		
+		help_item.addActionListener(this);		
+		menuBar.add(helpMenu);
 		}
 
 	// Handle messages from the scrollbars
@@ -154,6 +159,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			System.exit(0);	
 		}
 		
+		// Help
+		if (event_name=="Help") {
+			BareBonesBrowserLaunch.openURL("https://github.com/IanWraith/DMRDecode/wiki");
+		}
+		
 		menuItemUpdate();
 	}
 
@@ -228,5 +238,5 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		}
 		JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 	}
-
+	
 }
