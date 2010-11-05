@@ -9,9 +9,11 @@ public class DecodeCACH {
 	private int lcss;
 	private boolean passErrorCheck=false;
 	private int errorRes;
+	private DMRDecode theApp;
 	
-	public String decode (int[] buf)	{
+	public String decode (DMRDecode TtheApp,int[] buf)	{
 		dibit_buf=buf;
+		theApp=TtheApp;
 		line="CACH : TACT ";
 		// CACH decode
 		passErrorCheck=mainDecode();
@@ -21,7 +23,7 @@ public class DecodeCACH {
 	// De-interleave , CRC check and decode the CACH
 	// With code added to work out which interleave sequence to use
 	private boolean mainDecode ()	{
-		int a,r;
+		int a,r,fragType;
 		boolean rawdataCACH[]=new boolean[24];
 		boolean dataCACH[]=new boolean[24];
 		boolean res;
@@ -83,6 +85,16 @@ public class DecodeCACH {
 		for (a=0;a<24;a++)	{
 			if (dataCACH[a]==false) line=line+"0";
 			else line=line+"1";
+		}
+	
+		if (lcss==3) fragType=1;
+		else if (lcss==2) fragType=2;
+		else fragType=0;
+		theApp.short_lc.addData(dataCACH,fragType);
+		
+		// Is short LC data ready ?
+		if (theApp.short_lc.isDataReady()==true)	{
+			line=line+" Short LC : "+theApp.short_lc.getLine();
 		}
 		
 		return res;

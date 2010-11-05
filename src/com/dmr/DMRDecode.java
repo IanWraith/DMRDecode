@@ -85,7 +85,7 @@ public class DMRDecode {
 	private boolean viewEmbeddedFrames=true;
 	public int frameCount=0;
 	public int badFrameCount=0;
-	
+	public ShortLC short_lc=new ShortLC();
 
 	public static void main(String[] args) {
 		theApp=new DMRDecode();

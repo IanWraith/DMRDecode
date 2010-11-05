@@ -13,7 +13,7 @@ public class DMRDataDecode {
 		dibit_buf=buf;
 		line[0]=theApp.getTimeStamp()+" DMR Data Frame ";
 		// CACH decode
-		cline=cachdecode.decode(dibit_buf);
+		cline=cachdecode.decode(theApp,dibit_buf);
 		CACHres=cachdecode.isPassErrorCheck();
 		if (CACHres==true) line[1]=cline;
 		// Slot Type Decode
