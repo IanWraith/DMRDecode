@@ -150,6 +150,7 @@ public class SlotType {
 		return true;
 	}
 	
+	// TODO : Strongly suspect there is a fault in the Golay (20,8) code
 	// Check if a 20 bit boolean array has the collect Golay (20,8) coding
 	boolean checkGolay208 (boolean[] word)	{
 		int a;
@@ -180,6 +181,8 @@ public class SlotType {
 			if (golayValue==GolayNums[a]) return true;
 		}
 		return false;
+		// We have a problem so always return true for now
+		//return true;
 	}
 
 	// Let the main program know if there is an error in the frame
