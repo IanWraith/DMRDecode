@@ -696,10 +696,12 @@ public class DMRDecode {
 	}
 
 	// Record settings in the format
-	// good slot count,bad slot count,centre,jitter,max,min,umid,lmid
+	// percentage good count,centre,jitter,max,min,umid,lmid
 	public void recordCentreData()	{
 		String l;
-		l=Integer.toString(goodSLOT_TYPE)+","+Integer.toString(badSLOT_TYPE)+",";
+		int total=goodSLOT_TYPE+badSLOT_TYPE;
+		int per=(int)(((float)goodSLOT_TYPE/(float)total)*(float)100);
+		l=Integer.toString(per)+",";
 		l=l+Integer.toString(centre)+","+Integer.toString(jitter)+",";
 		l=l+Integer.toString(max)+","+Integer.toString(min)+",";
 		l=l+Integer.toString(umid)+","+Integer.toString(lmid);
