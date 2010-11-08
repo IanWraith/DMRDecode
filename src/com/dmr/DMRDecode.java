@@ -150,7 +150,6 @@ public class DMRDecode {
 	      while (synctype!=-1)	{
 	          processFrame();
 	          synctype=getFrameSync(); 
-	          calcMids();
 	        }  
 	  }
 	
