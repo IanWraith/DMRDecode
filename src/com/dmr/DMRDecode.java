@@ -86,6 +86,8 @@ public class DMRDecode {
 	public int frameCount=0;
 	public int badFrameCount=0;
 	public ShortLC short_lc=new ShortLC();
+	private int goodSLOT_TYPE=0;
+	private int badSLOT_TYPE=0;
 
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -340,6 +342,9 @@ public class DMRDecode {
 	
 	// No carrier or carrier lost so clear the variables
 	void noCarrier ()	{
+		
+		if ((goodSLOT_TYPE>0)||(badSLOT_TYPE>0)) recordCentreData();
+		
 		jitter=-1;
 		lastsynctype=-1;
 		carrier=false;
@@ -347,6 +352,8 @@ public class DMRDecode {
 		min=MINSTARTVALUE;
 		centre=0;
 		firstframe=false;
+		goodSLOT_TYPE=0;
+		badSLOT_TYPE=0;
 	  	}
 	
 	// Given a symbol return a dibit
@@ -480,7 +487,9 @@ public class DMRDecode {
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 			int gval=DMRdata.getGolayValue();
 			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
+			badSLOT_TYPE++;
 		}
+		else goodSLOT_TYPE++;
 		displayLines(line);
 	}
 	
@@ -686,6 +695,15 @@ public class DMRDecode {
 		return viewEmbeddedFrames;
 	}
 
-
+	// Record settings in the format
+	// good slot count,bad slot count,centre,jitter,max,min,umid,lmid
+	public void recordCentreData()	{
+		String l;
+		l=Integer.toString(goodSLOT_TYPE)+","+Integer.toString(badSLOT_TYPE)+",";
+		l=l+Integer.toString(centre)+","+Integer.toString(jitter)+",";
+		l=l+Integer.toString(max)+","+Integer.toString(min)+",";
+		l=l+Integer.toString(umid)+","+Integer.toString(lmid);
+		debugDump(l);
+	}
 	
 }
