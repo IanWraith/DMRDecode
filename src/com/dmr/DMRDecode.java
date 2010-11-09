@@ -86,6 +86,7 @@ public class DMRDecode {
 	public int frameCount=0;
 	public int badFrameCount=0;
 	public ShortLC short_lc=new ShortLC();
+	public int embeddedFrameCount=0;
 
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -250,7 +251,7 @@ public class DMRDecode {
 					}
 					qsort.sort(lbuf2);
 					lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
-					lmax=(lbuf2[18]+lbuf2[19]+lbuf2[20])/3;
+					lmax=(lbuf2[21]+lbuf2[20]+lbuf2[19])/3;
 					maxref=max;
 					minref=min;
 				}
@@ -259,15 +260,22 @@ public class DMRDecode {
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
 				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
-					dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
+					// Look for a voice frame
 					voiceSync=syncCompare(DMR_VOICE_SYNC,frameSync);
+					// Look for a data frame
+					if (voiceSync==false) dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
+					else dataSync=false;
 					// Embedded signalling frame
-					if ((frameSync==true)&&(voiceSync==false)&&(dataSync==false)&&(firstframe==false)&&(lastsynctype!=13))	{
+					if ((frameSync==true)&&(voiceSync==false)&&(dataSync==false)&&(firstframe==false)&&(embeddedFrameCount<7))	{
+						// Increment the embedded frame counter
+						embeddedFrameCount++;
 						lastsynctype=13;
 						return (13);
-					}
+					}					
 					// Data frame
 					if (dataSync==true) {
+						// Clear the embedded frame counter
+						embeddedFrameCount=0;
 						carrier=true;
 						if (frameSync==false)	{
 							frameCalcs(lmin,lmax);
@@ -280,6 +288,8 @@ public class DMRDecode {
 					}
 					// Voice frame
 					if (voiceSync==true) {
+						// Clear the embedded frame counter
+						embeddedFrameCount=0;
 						carrier=true;
 						if (frameSync==false)	{
 							frameCalcs(lmin,lmax);
@@ -341,7 +351,7 @@ public class DMRDecode {
 	}
 	
 	// No carrier or carrier lost so clear the variables
-	void noCarrier ()	{
+	public void noCarrier ()	{
 		jitter=-1;
 		lastsynctype=-1;
 		carrier=false;
@@ -391,7 +401,7 @@ public class DMRDecode {
 			}
 	}
 	  
-	// Compare the sync sequence held in an array with the contents of the dibit_buf
+	// Compare the sync sequence held in an array with the contents of the dibit_buf passed
 	public boolean syncCompare(int c[],boolean sync)	{
 		int i;
 		int offset;
@@ -687,6 +697,8 @@ public class DMRDecode {
 	public boolean isViewEmbeddedFrames() {
 		return viewEmbeddedFrames;
 	}
+	
+
 
 
 	
