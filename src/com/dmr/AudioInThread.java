@@ -22,22 +22,32 @@ public class AudioInThread extends Thread {
 	// filtertype	 =	 Raised Cosine
 	// samplerate	 =	 48000
 	// corner	 =	 2400
-	// beta	 =	 0.7
+	// beta	 =	 0.2 and 0.7
 	// impulselen	 =	 21
 	// racos	 =	 sqrt
 	// comp	 =	 no
 	// bits	 =	
 	// logmin	 =	
 	private static int NZEROS=20;
-	private static double GAIN=1.063197639e+01;
 	private double xv[]=new double [NZEROS+1];
+	// 0.2 //
+	//private static double GAIN=1.160943461e+01;
+	//private static double XCOEFFS[]=
+	//  {-0.0525370892, +0.0537187153, +0.1818868577, +0.3256572849,
+	//    +0.4770745929, +0.6271117870, +0.7663588857, +0.8857664963,
+	//    +0.9773779594, +1.0349835419, +1.0546365475, +1.0349835419,
+	//    +0.9773779594, +0.8857664963, +0.7663588857, +0.6271117870,
+	//    +0.4770745929, +0.3256572849, +0.1818868577, +0.0537187153,
+	//    -0.0525370892};
+	// 0.7 //
+	private static double GAIN=1.063197639e+01;
 	private static double XCOEFFS[]=
 	  {-0.1142415065, -0.0652615756, +0.0266625160, +0.1613371679,
 	    +0.3321186878, +0.5261565098, +0.7257137259, +0.9104055994,
 	    +1.0600181526, +1.1574475610, +1.1912627108, +1.1574475610,
 	    +1.0600181526, +0.9104055994, +0.7257137259, +0.5261565098,
 	    +0.3321186878, +0.1613371679, +0.0266625160, -0.0652615756,
-	    -0.1142415065};
+	    -0.1142415065};	
 	
     public AudioInThread (DMRDecode theApp) {
     	run=false;
@@ -84,7 +94,7 @@ public class AudioInThread extends Thread {
     // then write that into the sound buffer
     private void getSample ()	{
     	gettingAudio=true;
-    	int sample,count,total=0,fsample;
+    	int sample,count,total=0;
     	// READ in ISIZE bytes and convert them into ISIZE/2 integers
     	// Doing it this way reduces CPU loading
     	final int ISIZE=256;
@@ -103,9 +113,8 @@ public class AudioInThread extends Thread {
 		for (a=0;a<ISIZE;a=a+2)	{
 		sample=(buffer[a]<<8)+buffer[a+1];
 		// Put this through a root raised filter
-		fsample=rootRaisedFilter(sample);
-		// Put the new sample in the buffer
-		audioBuffer[writePos]=sample;
+		// then put the filtered sample in the buffer
+		audioBuffer[writePos]=rootRaisedFilter(sample);
 		// Increment the write buffer pos
 		writePos++;
 		// If the write buffer pointer has reached maximum then reset it to zero
