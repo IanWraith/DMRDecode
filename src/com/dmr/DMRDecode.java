@@ -148,7 +148,6 @@ public class DMRDecode {
 	      while (synctype!=-1)	{
 	          processFrame();
 	          synctype=getFrameSync(); 
-	          calcMids();
 	        }  
 	  }
 	
@@ -230,9 +229,11 @@ public class DMRDecode {
 		
 		while (true) {
 			t++;
+			// Get a symbol from the soundcard
 			symbol=getSymbol(frameSync);
 			// Store this in the rotating symbol buffer
-			addToSymbolBuffer(symbol);
+			// Only needed if we don't have frame sync
+			if (frameSync==false) addToSymbolBuffer(symbol);
 			// Set the dibit state
 			dibit=symboltoDibit(symbol);
 			// Add the dibit to the rotating dibit buffer
@@ -240,7 +241,8 @@ public class DMRDecode {
 		    // If we have received either 24 or 144 dibits (depending if we have sync)
 			// then check for a valid sync sequence
 			if (t>=lbufCount) {
-				
+				// If we don't have frame sync then rotate the symbol buffer
+				// and also find the new minimum and maximum
 				if (frameSync==false)	{
 					int lbuf2[]=new int[24];
 					for (i=0;i<24;i++) {
