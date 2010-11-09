@@ -9,7 +9,7 @@ public class DMRVoice {
 		String cline;
 		DecodeCACH cachdecode=new DecodeCACH();
 		dibit_buf=buf;
-		line[0]=theApp.getTimeStamp()+" DMR Voice Frame ";
+		line[0]="<b>"+theApp.getTimeStamp()+" DMR Voice Frame </b>";
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
 		res=cachdecode.isPassErrorCheck();

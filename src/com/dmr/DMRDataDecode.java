@@ -11,7 +11,7 @@ public class DMRDataDecode {
 		DecodeCACH cachdecode=new DecodeCACH();
 		SlotType slottype=new SlotType();
 		dibit_buf=buf;
-		line[0]=theApp.getTimeStamp()+" DMR Data Frame ";
+		line[0]="<b>"+theApp.getTimeStamp()+" DMR Data Frame </b>";
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
 		CACHres=cachdecode.isPassErrorCheck();
@@ -20,7 +20,9 @@ public class DMRDataDecode {
 		if (CACHres==true)	{
 			line[2]=slottype.decode(dibit_buf);
 			SLOT_TYPEres=slottype.isPassErrorCheck();
-			if (SLOT_TYPEres==false) golayValue=slottype.getGolayValue();
+			if (SLOT_TYPEres==false)	{
+				golayValue=slottype.getGolayValue();
+			}
 		}
 		theApp.frameCount++;
 		return line;
