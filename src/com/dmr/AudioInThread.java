@@ -9,12 +9,6 @@ import javax.swing.JOptionPane;
 public class AudioInThread extends Thread {
 	private boolean run;
 	private boolean audioReady;
-	private int writePos;
-	private int readPos;
-	private int lastWritePos;
-	// A 256 K Byte buffer seems to do the job
-	private static int BUFFERSIZE=256*1024;
-	private int audioBuffer[]=new int [BUFFERSIZE];
 	private TargetDataLine Line;
 	private AudioFormat format;
 	private boolean gettingAudio;
@@ -52,9 +46,6 @@ public class AudioInThread extends Thread {
     public AudioInThread (DMRDecode theApp) {
     	run=false;
     	audioReady=false;
-    	writePos=0;
-    	readPos=0;
-    	lastWritePos=-1;
     	gettingAudio=false;
     	setPriority(Thread.MIN_PRIORITY);
         start();
@@ -114,35 +105,14 @@ public class AudioInThread extends Thread {
 		sample=(buffer[a]<<8)+buffer[a+1];
 		// Put this through a root raised filter
 		// then put the filtered sample in the buffer
-		audioBuffer[writePos]=rootRaisedFilter(sample);
-		// Increment the write buffer pos
-		writePos++;
-		// If the write buffer pointer has reached maximum then reset it to zero
-		if (writePos==BUFFERSIZE) writePos=0;
+		//audioBuffer[writePos]=rootRaisedFilter(sample);
+	
 		}
 		
 		gettingAudio=false;	
     }
     
-    // Return the next integer from the sound buffer
-    // then increment the read buffer counter
-    public int returnSample ()	{
-    	if (run==false) return -1;
-    	// If the writePos hasn't changed since the last time then there is nothing to return
-    	if (writePos==lastWritePos)	{
-    		String err="AudioInThread returnSample() has caught up with itself !";
-    		JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
-    		System.exit(0);
-    	}
-    	int sample=audioBuffer[readPos];
-    	lastWritePos=writePos;
-    	// Increment the read buffer counter
-    	readPos++;
-    	// If the read buffer pointer has reached maximum then reset it to zero
-    	if (readPos==BUFFERSIZE) readPos=0;
-    	return sample;
-    }
-    
+   
     // Called when the main program wants to suspend receiving audio
     public void suspendAudio ()	{
     	run=false;
@@ -179,12 +149,7 @@ public class AudioInThread extends Thread {
     	return (int)sum;
     }
 
-    // Return true only if there are samples waiting
-    public boolean sampleReady ()	{
-    	if (writePos==lastWritePos) return false;
-    	 else return true;
-    }
-    
+
     // Called to make the thread sleep for 250ms
     private void holdThread ()	{
     	try		{
