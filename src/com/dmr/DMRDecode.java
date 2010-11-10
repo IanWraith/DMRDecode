@@ -403,14 +403,16 @@ public class DMRDecode {
 	  
 	// Compare the sync sequence held in an array with the contents of the dibit_buf passed
 	public boolean syncCompare(int c[],boolean sync)	{
-		int i,offset,same=0;
+		int i,offset,same=0,diff;
 		if (sync==true) offset=66;
 		 else offset=0;
 		for (i=0;i<24;i++)	{
 			if (dibit_buf[i+offset]==c[i]) same++;
 		}
-		// Allow 1 dibit to be incorrect
-		if ((c.length-same)>1) return false;
+		// Allow 1 dibit to be incorrect when syncronised 
+		if (sync==true) diff=1;
+		else diff=0;
+		if ((c.length-same)>diff) return false;
 		else return true;
 	}
 	  
