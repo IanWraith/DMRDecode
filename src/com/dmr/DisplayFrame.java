@@ -107,8 +107,6 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		
 		// Save to File
 		if (event_name=="Save to File")	{		
-		    // Tell the audio in thread to stop
-			theApp.lineInThread.suspendAudio();
 			if (theApp.saveToFile==false)	{
 				if (saveDialogBox()==false)	{
 					// Restart the audio in thread
