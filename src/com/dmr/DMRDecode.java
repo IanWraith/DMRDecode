@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.io.PipedInputStream;
 import javax.swing.*;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.Element;
@@ -87,13 +88,19 @@ public class DMRDecode {
 	public int badFrameCount=0;
 	public ShortLC short_lc=new ShortLC();
 	public int embeddedFrameCount=0;
+	PipedInputStream piStream=new PipedInputStream();
 
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
 		// If sucking in test data then open the file
-		if (theApp.audioSuck==true) theApp.prepareAudioSuck("aor3000_audiodump.csv");
-		 else theApp.lineInThread.startAudio();
+		if (theApp.audioSuck==true)	{
+			theApp.prepareAudioSuck("aor3000_audiodump.csv");
+		}
+		else	{
+			theApp.lineInThread.startAudio();
+			while(theApp.connectPipes()==false)	{};
+		}
 		// The main routine
 		while (RUNNING)	{
 			if ((theApp.lineInThread.getAudioReady()==true)&&(theApp.pReady==true)) theApp.decode();
@@ -185,9 +192,9 @@ public class DMRDecode {
 		       }
 			  if (audioSuck==false)	{ 
 				  // Loop until a sample is ready
-				  while (lineInThread.sampleReady()==false)	{}
-				  // Get the sample from the sound card via the sound thread
-				  sample=lineInThread.returnSample();
+				  while (pipeReady()==false)	{}
+				  // Get the sample from the sound card via the sound thread pipe
+				  sample=getFromPipe();
 			  }
 			  else	{
 				  // Get the data from the suck file
@@ -568,7 +575,7 @@ public class DMRDecode {
 		final long sample_max=48000*5;
 		int samples[]=new int[48000*5];
 		for (a=0;a<sample_max;a++)	{
-			samples[(int)a]=lineInThread.returnSample();
+			samples[(int)a]=getFromPipe();
 		}	
 	    try	{
 	    	FileWriter dfile=new FileWriter("audiodump_out.csv");
@@ -701,8 +708,54 @@ public class DMRDecode {
 		return viewEmbeddedFrames;
 	}
 	
+	// Connect the input and output threads
+	private boolean connectPipes()	{
+		try	{
+			piStream.connect(lineInThread.poStream);
+		}
+		catch (Exception e)	{
+			String err="Error during connectPipes()";
+			JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		return true;
+	}
 
+	// Get an integer from the audio threads pipe
+	private int getFromPipe()	{
+		int ndibit;
+		byte pipeInBytes[]=new byte[4];
+		try	{
+			piStream.read(pipeInBytes,0,4);
+			ndibit=byteArrayToInt(pipeInBytes);
+		}
+		catch (Exception e)	{
+			String err="Error during getFromPipe()";
+			JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+			return -1;
+		}
+		return ndibit;
+	}
 
-
+	private boolean pipeReady()	{
+		int available;
+		try	{
+			available=piStream.available();
+		}
+		catch (Exception e)	{
+			String err="Error during pipeReady()";
+			JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (available>=4) return true;
+		else return false;
+	}
+	
+    public int byteArrayToInt(byte [] b) {
+        return (b[0] << 24)
+                + ((b[1] & 0xFF) << 16)
+                + ((b[2] & 0xFF) << 8)
+                + (b[3] & 0xFF);
+}
 	
 }

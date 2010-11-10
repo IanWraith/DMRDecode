@@ -1,5 +1,6 @@
 package com.dmr;
 
+import java.io.PipedOutputStream;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
@@ -12,6 +13,7 @@ public class AudioInThread extends Thread {
 	private TargetDataLine Line;
 	private AudioFormat format;
 	private boolean gettingAudio;
+	public PipedOutputStream poStream=new PipedOutputStream();
 	// Filter details ..
 	// filtertype	 =	 Raised Cosine
 	// samplerate	 =	 48000
@@ -85,11 +87,13 @@ public class AudioInThread extends Thread {
     // then write that into the sound buffer
     private void getSample ()	{
     	gettingAudio=true;
-    	int sample,count,total=0;
+    	int a,out,sample,count,total=0;
     	// READ in ISIZE bytes and convert them into ISIZE/2 integers
     	// Doing it this way reduces CPU loading
     	final int ISIZE=256;
 		byte buffer[]=new byte[ISIZE];
+		byte pipeOut[]=new byte[4];
+		int b1,b2;
 		try	{
 				while (total<ISIZE)	{
 					count=Line.read(buffer,0,ISIZE);
@@ -99,14 +103,20 @@ public class AudioInThread extends Thread {
 			  		String err=e.getMessage();
 			  		JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
 			  	}
-			  	
-		int a;
 		for (a=0;a<ISIZE;a=a+2)	{
 		sample=(buffer[a]<<8)+buffer[a+1];
 		// Put this through a root raised filter
-		// then put the filtered sample in the buffer
-		//audioBuffer[writePos]=rootRaisedFilter(sample);
+		// then put the filtered sample in the output pipe
+		out=rootRaisedFilter(sample);
+
+		pipeOut=intToByteArray(out);
 	
+		try	{
+			poStream.write(pipeOut,0,4);
+		} catch (Exception e)	{
+			String err=e.getMessage();
+			JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+		}
 		}
 		
 		gettingAudio=false;	
@@ -160,5 +170,14 @@ public class AudioInThread extends Thread {
         		System.exit(0);
     		}
     }
+    
+    public byte[] intToByteArray(int value) {
+        return new byte[] {
+                (byte)(value >>>24),
+                (byte)(value >>>16),
+                (byte)(value >>>8),
+                (byte)value};
+    }
+    
     
 }
