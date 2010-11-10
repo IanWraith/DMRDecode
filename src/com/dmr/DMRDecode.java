@@ -217,10 +217,9 @@ public class DMRDecode {
 	// Grab either 24 or 144 dibits depending on if you have sync
 	// Check if they have a sync pattern and if they do then process them accordingly
 	public int getFrameSync ()	{
-		int i,t=0,dibit,symbol,synctest_pos=0;
+		int i,t=0,dibit,symbol,synctest_pos=0,syncType;
 		int lmin=0,lmax=0;
 		int lbufCount;
-		boolean dataSync=false,voiceSync=false;
 		Quicksort qsort=new Quicksort();
 		// Clear the symbol counter
 		symbolcnt=0;
@@ -255,25 +254,24 @@ public class DMRDecode {
 					maxref=max;
 					minref=min;
 				}
-				
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
 				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
-					// Look for a voice frame
-					voiceSync=syncCompare(DMR_VOICE_SYNC,frameSync);
-					// Look for a data frame
-					if (voiceSync==false) dataSync=syncCompare(DMR_DATA_SYNC,frameSync);
-					else dataSync=false;
+					// Identify the frame sync type which returns
+					// 0 if unknown
+					// 1 if voice
+					// 2 if data
+					syncType=syncCompare(frameSync);
 					// Embedded signalling frame
-					if ((frameSync==true)&&(voiceSync==false)&&(dataSync==false)&&(firstframe==false)&&(embeddedFrameCount<7))	{
+					if ((frameSync==true)&&(syncType==0)&&(firstframe==false)&&(embeddedFrameCount<7))	{
 						// Increment the embedded frame counter
 						embeddedFrameCount++;
 						lastsynctype=13;
 						return (13);
 					}					
 					// Data frame
-					if (dataSync==true) {
+					if (syncType==2) {
 						// Clear the embedded frame counter
 						embeddedFrameCount=0;
 						carrier=true;
@@ -287,7 +285,7 @@ public class DMRDecode {
 						return (10);
 					}
 					// Voice frame
-					if (voiceSync==true) {
+					if (syncType==1) {
 						// Clear the embedded frame counter
 						embeddedFrameCount=0;
 						carrier=true;
@@ -401,19 +399,26 @@ public class DMRDecode {
 			}
 	}
 	  
-	// Compare the sync sequence held in an array with the contents of the dibit_buf passed
-	public boolean syncCompare(int c[],boolean sync)	{
-		int i,offset,same=0,diff;
-		if (sync==true) offset=66;
-		 else offset=0;
-		for (i=0;i<24;i++)	{
-			if (dibit_buf[i+offset]==c[i]) same++;
+	// Compare the sync sequences held in global arrays with the contents of the dibit_buf 
+	// Returns ..
+	// 0 if unknown
+	// 1 if voice
+	// 2 if data
+	public int syncCompare(boolean sync)	{
+		int i,offset=0,dataSync=0,voiceSync=0,diff=0;
+		// Allow 1 dibit to be incorrect when syncronised and set the offset
+		if (sync==true)	{
+			offset=66;
+			diff=1;
 		}
-		// Allow 1 dibit to be incorrect when syncronised 
-		if (sync==true) diff=1;
-		else diff=0;
-		if ((c.length-same)>diff) return false;
-		else return true;
+		// Run through all 24 dibits comparing them
+		for (i=0;i<24;i++)	{
+			if (dibit_buf[i+offset]==DMR_DATA_SYNC[i]) dataSync++;
+			if (dibit_buf[i+offset]==DMR_VOICE_SYNC[i]) voiceSync++;
+		}
+		if ((24-voiceSync)<=diff) return 1;
+		else if ((24-dataSync)<=diff) return 2;
+		else return 0;
 	}
 	  
 	// Adds a line to the display
