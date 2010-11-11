@@ -87,6 +87,7 @@ public class DMRDecode {
 	public int badFrameCount=0;
 	public ShortLC short_lc=new ShortLC();
 	public int embeddedFrameCount=0;
+	private int symbolBufferCounter=0;
 
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -339,13 +340,11 @@ public class DMRDecode {
 		dibit_buf[max]=dibit;
 	}
 	
-	// Add a symbol to the symbol buffer
+	// Add a symbol to the circular symbol buffer
 	void addToSymbolBuffer (int symbol)	{
-		int a;
-		for (a=0;a<23;a++)	{
-			symbolBuffer[a]=symbolBuffer[a+1];
-		}
-		symbolBuffer[23]=symbol;
+		symbolBuffer[symbolBufferCounter]=symbol;
+		symbolBufferCounter++;
+		if (symbolBufferCounter>23) symbolBufferCounter=0;
 	}
 	
 	// No carrier or carrier lost so clear the variables
