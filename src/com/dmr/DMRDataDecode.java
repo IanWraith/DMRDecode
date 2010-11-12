@@ -1,12 +1,12 @@
 package com.dmr;
 
 public class DMRDataDecode {
-	private int dibit_buf[]=new int[144];
+	private byte dibit_buf[]=new byte[144];
 	private int golayValue=-1;
 	private String line[]=new String[10];
 	private boolean CACHres,SLOT_TYPEres;
 	
-	public String[] decode (DMRDecode theApp,int[] buf)	{
+	public String[] decode (DMRDecode theApp,byte[] buf)	{
 		String cline;
 		DecodeCACH cachdecode=new DecodeCACH();
 		SlotType slottype=new SlotType();

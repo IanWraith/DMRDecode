@@ -1,11 +1,11 @@
 package com.dmr;
 
 public class DMRVoice {
-	private int dibit_buf[]=new int[144];
+	private byte dibit_buf[]=new byte[144];
 	private String line[]=new String[10];
 	private boolean res;
 	
-	public String[] decode (DMRDecode theApp,int[] buf)	{
+	public String[] decode (DMRDecode theApp,byte[] buf)	{
 		String cline;
 		DecodeCACH cachdecode=new DecodeCACH();
 		dibit_buf=buf;

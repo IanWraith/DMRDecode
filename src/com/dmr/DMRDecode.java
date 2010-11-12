@@ -58,8 +58,8 @@ public class DMRDecode {
 	private int minref=-12000;
 	private int lastsynctype=-1;
 	private int symbolcnt=0;
-	private static final int DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
-	private static final int DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
+	private static final byte DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
+	private static final byte DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private boolean carrier=false;
 	public boolean inverted=true;
 	private boolean firstframe=false;
@@ -70,7 +70,9 @@ public class DMRDecode {
 	private int umid=0;
 	private int synctype;
 	private BufferedReader br;
-	private int dibit_buf[]=new int[144];
+	private byte dibitCircularBuffer[]=new byte[144];
+	private int dibitCircularBufferCounter=0;
+	private byte dibitFrame[]=new byte[144];
 	private boolean frameSync=false;
 	public boolean saveToFile=false;
 	public FileWriter file;
@@ -150,6 +152,7 @@ public class DMRDecode {
 	      while (synctype!=-1)	{
 	          processFrame();
 	          synctype=getFrameSync(); 
+	          createDibitFrame();
 	        }  
 	  }
 	
@@ -237,8 +240,8 @@ public class DMRDecode {
 			if (frameSync==false) addToSymbolBuffer(symbol);
 			// Set the dibit state
 			dibit=symboltoDibit(symbol);
-			// Add the dibit to the rotating dibit buffer
-			addToDitbitBuf(dibit,frameSync);
+			// Add the dibit to the circular dibit buffer
+			addToDitbitBuf(dibit);
 		    // If we have received either 24 or 144 dibits (depending if we have sync)
 			// then check for a valid sync sequence
 			if (t>=lbufCount) {
@@ -328,16 +331,11 @@ public class DMRDecode {
 		}
 	  }
 	  
-	// Add a dibit to the dibit buffer
-	void addToDitbitBuf (int dibit,boolean sync)	{
-		int a,max;
-		if (sync==false) max=23;
-		 else max=143;
-		// Rotate the dibit buffer to the left
-		for (a=0;a<max;a++)	{
-			dibit_buf[a]=dibit_buf[a+1];
-		}
-		dibit_buf[max]=dibit;
+	// Add a dibit to the circular dibit buffer
+	void addToDitbitBuf (int dibit)	{
+		dibitCircularBuffer[dibitCircularBufferCounter]=(byte)dibit;
+		dibitCircularBufferCounter++;
+		if (dibitCircularBufferCounter==144) dibitCircularBufferCounter=0;
 	}
 	
 	// Add a symbol to the circular symbol buffer
@@ -397,27 +395,28 @@ public class DMRDecode {
 				}
 			}
 	}
-	  
-	// Compare the sync sequences held in global arrays with the contents of the dibit_buf 
+	  	
+	// Compare the sync sequences held in global arrays with the contents of the dibit circular buffer
 	// Returns ..
 	// 0 if unknown
 	// 1 if voice
 	// 2 if data
-	public int syncCompare(boolean sync)	{
-		int i,offset=0,dataSync=0,voiceSync=0,diff=0;
+	private int syncCompare(boolean sync)	{
+		int i,dataSync=0,voiceSync=0,diff,circPos;
 		// Allow 1 dibit to be incorrect when syncronised and set the offset
-		if (sync==true)	{
-			offset=66;
-			diff=1;
-		}
-		// Run through all 24 dibits comparing them
+		if (sync==true)	diff=1;
+		else diff=0;
+		circPos=dibitCircularBufferCounter+66;
+		if (circPos>=144) circPos=circPos-144;
 		for (i=0;i<24;i++)	{
-			if (dibit_buf[i+offset]==DMR_DATA_SYNC[i]) dataSync++;
-			if (dibit_buf[i+offset]==DMR_VOICE_SYNC[i]) voiceSync++;
+			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC[i]) dataSync++;
+			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC[i]) voiceSync++;
+			circPos++;
+			if (circPos==144) circPos=0;
 		}
 		if ((24-voiceSync)<=diff) return 1;
 		else if ((24-dataSync)<=diff) return 2;
-		else return 0;
+		else return 0;	
 	}
 	  
 	// Adds a line to the display
@@ -444,7 +443,7 @@ public class DMRDecode {
 	    minref=min;
 	    if (firstframe==true)	{	
 	    	// As we now have sync then skip the next 54 dibits as we can't do anything with them
-			skipDibit(54);			
+			//skipDibit(54);			
 			//audioDump();
 			if (debug==true)	{
 				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
@@ -465,7 +464,7 @@ public class DMRDecode {
 	void processDMRvoice ()	{	
 		DMRVoice DMRvoice=new DMRVoice();
 		String line[]=new String[10];
-		line=DMRvoice.decode(theApp,dibit_buf);
+		line=DMRvoice.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		if (debug==true)	{
 			line[8]=returnDibitBufferPercentages();
@@ -484,7 +483,7 @@ public class DMRDecode {
 	void processDMRdata ()	{
 		DMRDataDecode DMRdata=new DMRDataDecode();
 		String line[]=new String[10];
-		line=DMRdata.decode(theApp,dibit_buf);
+		line=DMRdata.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		if (debug==true)	{
 			line[8]=returnDibitBufferPercentages();
@@ -507,7 +506,7 @@ public class DMRDecode {
 	void processEmbedded ()	{
 		DMREmbedded DMRembedded=new DMREmbedded();
 		String line[]=new String[10];
-		line=DMRembedded.decode(theApp,dibit_buf);
+		line=DMRembedded.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		if (debug==true)	{
 			line[8]=returnDibitBufferPercentages();
@@ -607,20 +606,9 @@ public class DMRDecode {
 		String lb="";
 		int a;
 		for (a=0;a<144;a++)	{
-			lb=lb+Integer.toString(dibit_buf[a]);
+			lb=lb+Integer.toString(dibitFrame[a]);
 		}
 		return lb;
-	}
-	
-	// Grab a certain number of symbols but ignore their content
-	public void skipDibit (int count)
-	{
-	  int i,r;
-	  for (i=0;i<count;i++)
-	    {
-		r=getSymbol(true);
-		addToDitbitBuf(r,true);
-	    }
 	}
 	
 	// Return a string showing the percentages of each dibit in the dibit buffer
@@ -630,10 +618,10 @@ public class DMRDecode {
 		for (a=0;a<144;a++)	{
 			// Exclude the sync burst from the percentages 
 			if ((a<66)||(a>89))	{
-			if (dibit_buf[a]==0) c0++;
-			if (dibit_buf[a]==1) c1++;
-			if (dibit_buf[a]==2) c2++;
-			if (dibit_buf[a]==3) c3++;
+			if (dibitFrame[a]==0) c0++;
+			if (dibitFrame[a]==1) c1++;
+			if (dibitFrame[a]==2) c2++;
+			if (dibitFrame[a]==3) c3++;
 			}
 		}
 		c0=(int)(((float)c0/(float)120.0)*(float)100);
@@ -705,7 +693,17 @@ public class DMRDecode {
 		return viewEmbeddedFrames;
 	}
 	
-
+	// Put the dibits into dibitFrame in the correct order from the circular dibit buffer
+	private void createDibitFrame()	{
+		int i,circPos;
+		circPos=dibitCircularBufferCounter-144;
+		if (circPos<0) circPos=144+circPos;
+		for (i=0;i<144;i++)	{
+			dibitFrame[i]=dibitCircularBuffer[circPos];
+			circPos++;
+			if (circPos==144) circPos=0;
+		}
+	}
 
 
 	

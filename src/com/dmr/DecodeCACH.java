@@ -2,7 +2,7 @@ package com.dmr;
 
 public class DecodeCACH {
 
-	private int dibit_buf[]=new int[144];
+	private byte dibit_buf[]=new byte[144];
 	private String line;
 	private boolean at;
 	private boolean channel;
@@ -11,7 +11,7 @@ public class DecodeCACH {
 	private int errorRes;
 	private DMRDecode theApp;
 	
-	public String decode (DMRDecode TtheApp,int[] buf)	{
+	public String decode (DMRDecode TtheApp,byte[] buf)	{
 		dibit_buf=buf;
 		theApp=TtheApp;
 		line="CACH : TACT ";
