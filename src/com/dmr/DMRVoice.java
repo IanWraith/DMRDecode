@@ -1,14 +1,12 @@
 package com.dmr;
 
 public class DMRVoice {
-	private byte dibit_buf[]=new byte[144];
 	private String line[]=new String[10];
 	private boolean res;
 	
-	public String[] decode (DMRDecode theApp,byte[] buf)	{
+	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
 		DecodeCACH cachdecode=new DecodeCACH();
-		dibit_buf=buf;
 		line[0]="<b>"+theApp.getTimeStamp()+" DMR Voice Frame </b>";
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);

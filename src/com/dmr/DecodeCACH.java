@@ -1,8 +1,6 @@
 package com.dmr;
 
 public class DecodeCACH {
-
-	private byte dibit_buf[]=new byte[144];
 	private String line;
 	private boolean at;
 	private boolean channel;
@@ -11,18 +9,17 @@ public class DecodeCACH {
 	private int errorRes;
 	private DMRDecode theApp;
 	
-	public String decode (DMRDecode TtheApp,byte[] buf)	{
-		dibit_buf=buf;
+	public String decode (DMRDecode TtheApp,byte[] dibit_buf)	{
 		theApp=TtheApp;
 		line="CACH : TACT ";
 		// CACH decode
-		passErrorCheck=mainDecode();
+		passErrorCheck=mainDecode(dibit_buf);
 		return line;
 	}
 	
 	// De-interleave , CRC check and decode the CACH
 	// With code added to work out which interleave sequence to use
-	private boolean mainDecode ()	{
+	private boolean mainDecode (byte[] dibit_buf)	{
 		int a,r=0,fragType=-1;
 		boolean rawdataCACH[]=new boolean[24];
 		boolean dataCACH[]=new boolean[24];

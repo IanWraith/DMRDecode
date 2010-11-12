@@ -1,16 +1,14 @@
 package com.dmr;
 
 public class DMRDataDecode {
-	private byte dibit_buf[]=new byte[144];
 	private int golayValue=-1;
 	private String line[]=new String[10];
 	private boolean CACHres,SLOT_TYPEres;
 	
-	public String[] decode (DMRDecode theApp,byte[] buf)	{
+	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
 		DecodeCACH cachdecode=new DecodeCACH();
 		SlotType slottype=new SlotType();
-		dibit_buf=buf;
 		line[0]="<b>"+theApp.getTimeStamp()+" DMR Data Frame </b>";
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);

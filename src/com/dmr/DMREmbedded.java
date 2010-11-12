@@ -1,22 +1,20 @@
 package com.dmr;
 
 public class DMREmbedded {
-	private byte dibit_buf[]=new byte[144];
 	private int residueValue;
 	private String line[]=new String[10];
 	private boolean resCACH,resEMB;
 	
-	public String[] decode (DMRDecode theApp,byte[] buf)	{
+	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
 		DecodeCACH cachdecode=new DecodeCACH();
-		dibit_buf=buf;
 		line[0]="<b>"+theApp.getTimeStamp()+" DMR Embedded Frame </b>";
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
 		resCACH=cachdecode.isPassErrorCheck();
 		if (resCACH==true) {
 			line[1]=cline;
-			resEMB=EMBdecode();
+			resEMB=EMBdecode(dibit_buf);
 		}
 		if ((resCACH==false)||(resEMB==false)) theApp.embeddedFrameCount=8;
 		theApp.frameCount++;
@@ -27,7 +25,7 @@ public class DMREmbedded {
 		return resCACH;
 	}
 	
-	private boolean EMBdecode()	{
+	private boolean EMBdecode(byte[] dibit_buf)	{
 		int a,r,cc;
 		boolean EMDdata[]=new boolean[16];
 		boolean res;
