@@ -79,7 +79,7 @@ public class DMRDecode {
 	public boolean logging=false;
 	public boolean pReady=false;
 	private boolean audioSuck=false;
-	private int symbolBuffer[]=new int[24];
+	private int symbolBuffer[]=new int[144];
 	public AudioInThread lineInThread=new AudioInThread(this);
 	private boolean debug=false;
 	private boolean viewVoiceFrames=true;
@@ -221,16 +221,12 @@ public class DMRDecode {
 	// Grab either 24 or 144 dibits depending on if you have sync
 	// Check if they have a sync pattern and if they do then process them accordingly
 	public int getFrameSync ()	{
-		int i,t=0,dibit,symbol,synctest_pos=0,syncType;
+		int t=0,dibit,symbol,synctest_pos=0,syncType;
 		int lmin=0,lmax=0;
-		int lbufCount;
 		Quicksort qsort=new Quicksort();
 		// Clear the symbol counter
 		symbolcnt=0;
-		// Buffer size
-		if (frameSync==true) lbufCount=144;
-		 else lbufCount=23;
-		
+
 		while (true) {
 			t++;
 			// Get a symbol from the soundcard
@@ -242,16 +238,12 @@ public class DMRDecode {
 			dibit=symboltoDibit(symbol);
 			// Add the dibit to the circular dibit buffer
 			addToDitbitBuf(dibit);
-		    // If we have received either 24 or 144 dibits (depending if we have sync)
-			// then check for a valid sync sequence
-			if (t>=lbufCount) {
+		    // If we have received 144 dibits then check for a valid sync sequence
+			if (t>=144) {
 				// If we don't have frame sync then rotate the symbol buffer
 				// and also find the new minimum and maximum
 				if (frameSync==false)	{
-					int lbuf2[]=new int[24];
-					for (i=0;i<24;i++) {
-						lbuf2[i]=symbolBuffer[i];
-					}
+					int lbuf2[]=getSyncSymbols();
 					qsort.sort(lbuf2);
 					lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
 					lmax=(lbuf2[21]+lbuf2[20]+lbuf2[19])/3;
@@ -342,7 +334,7 @@ public class DMRDecode {
 	void addToSymbolBuffer (int symbol)	{
 		symbolBuffer[symbolBufferCounter]=symbol;
 		symbolBufferCounter++;
-		if (symbolBufferCounter>23) symbolBufferCounter=0;
+		if (symbolBufferCounter==144) symbolBufferCounter=0;
 	}
 	
 	// No carrier or carrier lost so clear the variables
@@ -417,6 +409,20 @@ public class DMRDecode {
 		if ((24-voiceSync)<=diff) return 1;
 		else if ((24-dataSync)<=diff) return 2;
 		else return 0;	
+	}
+	
+	// Extract just the 24 symbols of the sync sequence and return them in an array
+	private int[] getSyncSymbols()	{
+		int i,circPos;
+		int syms[]=new int[24];
+		circPos=symbolBufferCounter+66;
+		if (circPos>=144) circPos=circPos-144;
+		for (i=0;i<24;i++)	{
+			syms[i]=symbolBuffer[circPos];
+			circPos++;
+			if (circPos==144) circPos=0;
+		}
+		return syms;	
 	}
 	  
 	// Adds a line to the display
