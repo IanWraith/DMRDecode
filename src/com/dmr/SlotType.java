@@ -1,21 +1,19 @@
 package com.dmr;
 
 public class SlotType {
-	private int dibit_buf[]=new int[144];
 	private int golayValue;
 	private String line;
 	private boolean passErrorCheck;
 	
 	// Decode a SLOT TYPE field given a int array of dibit values
-	public String decode (int[] buf)	{
-		dibit_buf=buf;
+	public String decode (byte[] dibit_buf)	{
 		line="Slot Type : ";
-		passErrorCheck=mainDecode();
+		passErrorCheck=mainDecode(dibit_buf);
 		return line;
 	}
 	
 	// The main decode and display method
-	private boolean mainDecode ()	{
+	private boolean mainDecode (byte[] dibit_buf)	{
 		int a,r,colourCode,dataType;
 		boolean dataSLOT[]=new boolean[20];
 		// Convert from dibits into boolean
