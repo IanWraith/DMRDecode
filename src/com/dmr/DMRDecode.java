@@ -243,7 +243,7 @@ public class DMRDecode {
 				// If we don't have frame sync then rotate the symbol buffer
 				// and also find the new minimum and maximum
 				if (frameSync==false)	{
-					// Get the frames 144 symbols
+					// Get the frames 24 sync symbols
 					int lbuf2[]=getSyncSymbols();
 					// Sort then in low to high order
 					qsort.sort(lbuf2);
