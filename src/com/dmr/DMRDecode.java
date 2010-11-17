@@ -250,8 +250,8 @@ public class DMRDecode {
 					// Find the length of the array
 					rLength=lbuf2.length;
 					// Set lmin and lmax from these high and low values
-					lmin=(lbuf2[2]+lbuf2[3]+lbuf2[4])/3;
-					lmax=(lbuf2[rLength-3]+lbuf2[rLength-4]+lbuf2[rLength-5])/3;
+					lmin=(lbuf2[1]+lbuf2[2]+lbuf2[3])/3;
+					lmax=(lbuf2[rLength-2]+lbuf2[rLength-3]+lbuf2[rLength-4])/3;
 					maxref=max;
 					minref=min;
 				}
