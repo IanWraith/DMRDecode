@@ -90,6 +90,9 @@ public class DMRDecode {
 	public ShortLC short_lc=new ShortLC();
 	public int embeddedFrameCount=0;
 	private int symbolBufferCounter=0;
+	private int errorFreeFrameCount=0;
+	private int errorFrameCount=0;
+	
 
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -221,7 +224,7 @@ public class DMRDecode {
 	// Grab 144 dibits then check if they have a sync pattern and if they do then process 
 	// them accordingly
 	public int getFrameSync ()	{
-		int t=0,dibit,symbol,synctest_pos=0,syncType,rLength;
+		int t=0,dibit,symbol,synctest_pos=0,syncType;
 		int lmin=0,lmax=0,a;
 		// Clear the symbol counter
 		symbolcnt=0;
@@ -349,6 +352,8 @@ public class DMRDecode {
 		min=MINSTARTVALUE;
 		centre=0;
 		firstframe=false;
+		errorFreeFrameCount=0;
+		errorFrameCount=0;
 	  	}
 	
 	// Given a symbol return a dibit
@@ -507,9 +512,27 @@ public class DMRDecode {
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 			int gval=DMRdata.getGolayValue();
 			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
-		
-			//measureSyncPeaks(DMR_DATA_SYNC);
+			// Record that there has been a frame with an error
+			errorFreeFrameCount=0;
+			errorFrameCount++;
 		}
+		else	{
+			// Record that there has been an error free frame
+			errorFreeFrameCount++;
+			errorFrameCount=0;
+		}
+		
+		// If there have been 10 good frames in a row then save the settings
+		if (errorFreeFrameCount==10)	{
+			errorFreeFrameCount=0;
+			recordFrameSettings(true);
+		}
+		// If there have been 10 bad frames in a row then save the settings
+		if (errorFrameCount==10)	{
+			errorFrameCount=0;
+			recordFrameSettings(false);
+		}
+		
 		displayLines(line);
 	}
 	
@@ -716,47 +739,14 @@ public class DMRDecode {
 		}
 	}
 	
-	private void measureSyncPeaks (byte syncSeq[])	{
-		int a,total1=0,total3=0;
-		int count1=0,count3=0;
-		int av1,av3;
-		int syms[]=getSyncSymbols();
-		int len=syncSeq.length;
-		for (a=0;a<len;a++)	{
-			if (syncSeq[a]==1)	{
-				total1=total1+syms[a];
-				count1++;
-			}
-			else	{
-				total3=total3+syms[a];
-				count3++;
-			}
-		}
-		
-		av1=total1/count1;
-		av3=total3/count3;
-		
-		
-		
-		if (inverted==false)	{
-			min=av3;
-			max=av1;
-		}
-		else	{
-		
-			String dline=Integer.toString(max)+","+Integer.toString(min)+","+Integer.toString(av3)+","+Integer.toString(av1);
-			debugDump(dline);
-
-			
-			min=av1;
-			max=av3;
-		}
-		
-		calcMids();
-		maxref=max;
-		minref=min;
+	// Record in the debug.csv file if the systems settings are good or bad
+	private void recordFrameSettings(boolean goodFrame)	{
+		String fline;
+		if (goodFrame==true) fline="OK,";
+		else fline="FAIL,";
+		fline=fline+Integer.toString(jitter)+","+Integer.toString(max)+","+Integer.toString(min);
+		debugDump(fline);
 	}
-
 
 	
 }
