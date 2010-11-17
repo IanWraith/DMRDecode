@@ -233,7 +233,8 @@ public class DMRDecode {
 			symbol=getSymbol(frameSync);
 			// Store this in the rotating symbol buffer
 			// Only needed if we don't have frame sync
-			if (frameSync==false) addToSymbolBuffer(symbol);
+			//if (frameSync==false) 
+			addToSymbolBuffer(symbol);
 			// Set the dibit state
 			dibit=symboltoDibit(symbol);
 			// Add the dibit to the circular dibit buffer
@@ -509,6 +510,8 @@ public class DMRDecode {
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 			int gval=DMRdata.getGolayValue();
 			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
+		
+			//measureSyncPeaks(DMR_DATA_SYNC);
 		}
 		displayLines(line);
 	}
@@ -714,6 +717,47 @@ public class DMRDecode {
 			circPos++;
 			if (circPos==144) circPos=0;
 		}
+	}
+	
+	private void measureSyncPeaks (byte syncSeq[])	{
+		int a,total1=0,total3=0;
+		int count1=0,count3=0;
+		int av1,av3;
+		int syms[]=getSyncSymbols();
+		int len=syncSeq.length;
+		for (a=0;a<len;a++)	{
+			if (syncSeq[a]==1)	{
+				total1=total1+syms[a];
+				count1++;
+			}
+			else	{
+				total3=total3+syms[a];
+				count3++;
+			}
+		}
+		
+		av1=total1/count1;
+		av3=total3/count3;
+		
+		
+		
+		if (inverted==false)	{
+			min=av3;
+			max=av1;
+		}
+		else	{
+		
+			String dline=Integer.toString(max)+","+Integer.toString(min)+","+Integer.toString(av3)+","+Integer.toString(av1);
+			debugDump(dline);
+
+			
+			min=av1;
+			max=av3;
+		}
+		
+		calcMids();
+		maxref=max;
+		minref=min;
 	}
 
 
