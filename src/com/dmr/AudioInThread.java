@@ -96,7 +96,7 @@ public class AudioInThread extends Thread {
     	int sample,count,total=0;
     	// READ in ISIZE bytes and convert them into ISIZE/2 integers
     	// Doing it this way reduces CPU loading
-    	final int ISIZE=256;
+    	final int ISIZE=32;
 		byte buffer[]=new byte[ISIZE];
 		try	{
 				while (total<ISIZE)	{

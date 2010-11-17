@@ -222,8 +222,7 @@ public class DMRDecode {
 	// them accordingly
 	public int getFrameSync ()	{
 		int t=0,dibit,symbol,synctest_pos=0,syncType,rLength;
-		int lmin=0,lmax=0;
-		Quicksort qsort=new Quicksort();
+		int lmin=0,lmax=0,a;
 		// Clear the symbol counter
 		symbolcnt=0;
 
@@ -233,26 +232,24 @@ public class DMRDecode {
 			symbol=getSymbol(frameSync);
 			// Store this in the rotating symbol buffer
 			// Only needed if we don't have frame sync
-			//if (frameSync==false) 
-			addToSymbolBuffer(symbol);
+			if (frameSync==false) addToSymbolBuffer(symbol);
 			// Set the dibit state
 			dibit=symboltoDibit(symbol);
 			// Add the dibit to the circular dibit buffer
 			addToDitbitBuf(dibit);
-		    // If we have received 144 dibits then check for a valid sync sequence
+		    // If we have received 144 dibits then we can check for a valid sync sequence
 			if (t>=144) {
 				// If we don't have frame sync then rotate the symbol buffer
 				// and also find the new minimum and maximum
 				if (frameSync==false)	{
 					// Get the frames 24 sync symbols
 					int lbuf2[]=getSyncSymbols();
-					// Sort then in low to high order
-					qsort.sort(lbuf2);
-					// Find the length of the array
-					rLength=lbuf2.length;
-					// Set lmin and lmax from these high and low values
-					lmin=(lbuf2[1]+lbuf2[2]+lbuf2[3])/3;
-					lmax=(lbuf2[rLength-2]+lbuf2[rLength-3]+lbuf2[rLength-4])/3;
+					lmin=1;
+					lmax=-1;
+					for (a=0;a<24;a++)	{
+						if (lbuf2[a]<lmin) lmin=lbuf2[a];
+						if (lbuf2[a]>lmax) lmax=lbuf2[a];
+					}
 					maxref=max;
 					minref=min;
 				}
