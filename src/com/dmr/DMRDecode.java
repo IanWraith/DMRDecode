@@ -91,9 +91,8 @@ public class DMRDecode {
 	public int embeddedFrameCount=0;
 	private int symbolBufferCounter=0;
 	private int errorFreeFrameCount=0;
-	private int errorFrameCount=0;
+	private SettingsChoice settingsChoice=new SettingsChoice();
 	
-
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
@@ -353,7 +352,6 @@ public class DMRDecode {
 		centre=0;
 		firstframe=false;
 		errorFreeFrameCount=0;
-		errorFrameCount=0;
 	  	}
 	
 	// Given a symbol return a dibit
@@ -456,6 +454,13 @@ public class DMRDecode {
 	    maxref=max;
 	    minref=min;
 	    if (firstframe==true)	{	
+	    	
+	    	if (settingsChoice.testChoice(max,min)==false)	{
+	    		if (debug==true) addLine(getTimeStamp()+" Settings Rejected !");
+	    		frameSync=false;
+				noCarrier();
+	    	}
+	    	
 	    	// As we now have sync then skip the next 54 dibits as we can't do anything with them
 			//skipDibit(54);			
 			//audioDump();
@@ -514,24 +519,17 @@ public class DMRDecode {
 			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
-			errorFrameCount++;
 		}
 		else	{
 			// Record that there has been an error free frame
 			errorFreeFrameCount++;
-			errorFrameCount=0;
+			if (errorFreeFrameCount>settingsChoice.getBestScore())	{
+				if (debug==true) addLine(getTimeStamp()+" Best Score so far");
+				settingsChoice.setBestChoice(max,min,errorFreeFrameCount);
+			}
 		}
 		
-		// If there have been 10 good frames in a row then save the settings
-		if (errorFreeFrameCount==10)	{
-			errorFreeFrameCount=0;
-			recordFrameSettings(true);
-		}
-		// If there have been 10 bad frames in a row then save the settings
-		if (errorFrameCount==10)	{
-			errorFrameCount=0;
-			recordFrameSettings(false);
-		}
+
 		
 		displayLines(line);
 	}
