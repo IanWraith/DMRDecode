@@ -76,7 +76,7 @@ public class DecodeCACH {
 		else if (lcss==3) line=line+" Continuation fragment of LC or CSBK ";
 
 		// Display for diagnosic purposes
-		for (a=0;a<24;a++)	{
+		for (a=7;a<24;a++)	{
 			if (dataCACH[a]==false) line=line+"0";
 			else line=line+"1";
 		}

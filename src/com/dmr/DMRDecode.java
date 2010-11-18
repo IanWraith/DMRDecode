@@ -41,7 +41,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 9";
+	public String program_version="DMR Decoder V0.00 Build 10";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -401,19 +401,19 @@ public class DMRDecode {
 	// 2 if data
 	private int syncCompare(boolean sync)	{
 		int i,dataSync=0,voiceSync=0,diff,circPos;
-		// Allow 1 dibit to be incorrect when syncronised and set the offset
-		if (sync==true)	diff=1;
+		// Allow 2 dibits to be incorrect when syncronised and set the offset
+		if (sync==true)	diff=2;
 		else diff=0;
 		circPos=dibitCircularBufferCounter+66;
 		if (circPos>=144) circPos=circPos-144;
 		for (i=0;i<24;i++)	{
-			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC[i]) dataSync++;
 			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC[i]) voiceSync++;
+			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC[i]) dataSync++;
 			circPos++;
 			if (circPos==144) circPos=0;
 		}
-		if ((24-voiceSync)<=diff) return 1;
-		else if ((24-dataSync)<=diff) return 2;
+		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff) return 1;
+		else if ((DMR_DATA_SYNC.length-dataSync)<=diff) return 2;
 		else return 0;	
 	}
 	
@@ -454,13 +454,19 @@ public class DMRDecode {
 	    maxref=max;
 	    minref=min;
 	    if (firstframe==true)	{	
-	    	
+	    	// Test if these settings are any good
 	    	if (settingsChoice.testChoice(max,min)==false)	{
-	    		if (debug==true) addLine(getTimeStamp()+" Settings Rejected !");
+	    		if (debug==true)	{
+	    			l=getTimeStamp()+" Settings Rejected";
+	    			l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
+	    			l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
+	    			addLine(l);
+	    			fileWrite(l);
+	    		}
 	    		frameSync=false;
 				noCarrier();
+				return;
 	    	}
-	    	
 	    	// As we now have sync then skip the next 54 dibits as we can't do anything with them
 			//skipDibit(54);			
 			//audioDump();
@@ -528,9 +534,7 @@ public class DMRDecode {
 				settingsChoice.setBestChoice(max,min,errorFreeFrameCount);
 			}
 		}
-		
-
-		
+		// Display the info
 		displayLines(line);
 	}
 	
@@ -549,11 +553,14 @@ public class DMRDecode {
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Embedded Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
+			// Record that there has been a frame with an error
+			errorFreeFrameCount=0;
 		}
 		else	{
 			// Set last sync type to 14 to show this was a good embedded frame
 			lastsynctype=14;
 		}
+		// Display the info
 		displayLines(line);
 	}
 
@@ -737,14 +744,5 @@ public class DMRDecode {
 		}
 	}
 	
-	// Record in the debug.csv file if the systems settings are good or bad
-	private void recordFrameSettings(boolean goodFrame)	{
-		String fline;
-		if (goodFrame==true) fline="OK,";
-		else fline="FAIL,";
-		fline=fline+Integer.toString(jitter)+","+Integer.toString(max)+","+Integer.toString(min);
-		debugDump(fline);
-	}
-
 	
 }
