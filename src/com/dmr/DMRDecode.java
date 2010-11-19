@@ -99,6 +99,8 @@ public class DMRDecode {
 		// If sucking in test data then open the file
 		if (theApp.audioSuck==true) theApp.prepareAudioSuck("aor3000_audiodump.csv");
 		 else theApp.lineInThread.startAudio();
+		// Set the debug mode in the settings choice object
+		theApp.settingsChoice.setDebug(true);
 		// The main routine
 		while (RUNNING)	{
 			if ((theApp.lineInThread.getAudioReady()==true)&&(theApp.pReady==true)) theApp.decode();
@@ -180,7 +182,8 @@ public class DMRDecode {
 	}
 	
 	
-	// This code lifted straight from the DSD source code converted to Java and tidied up removing non DMR code
+	// This code lifted straight from the DSD source code converted to Java 
+	// and tidied up removing non DMR code
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
@@ -401,8 +404,8 @@ public class DMRDecode {
 	// 2 if data
 	private int syncCompare(boolean sync)	{
 		int i,dataSync=0,voiceSync=0,diff,circPos;
-		// Allow 2 dibits to be incorrect when syncronised and set the offset
-		if (sync==true)	diff=2;
+		// Allow 5 dibits to be incorrect when syncronised and set the offset
+		if (sync==true)	diff=5;
 		else diff=0;
 		circPos=dibitCircularBufferCounter+66;
 		if (circPos>=144) circPos=circPos-144;
@@ -454,22 +457,14 @@ public class DMRDecode {
 	    maxref=max;
 	    minref=min;
 	    if (firstframe==true)	{	
-	    	// Test if these settings are any good
+	    	// Check if these settings are any good
 	    	if (settingsChoice.testChoice(max,min)==false)	{
-	    		if (debug==true)	{
-	    			l=getTimeStamp()+" Settings Rejected";
-	    			l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
-	    			l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
-	    			addLine(l);
-	    			fileWrite(l);
+	    		settingsChoice.recordForce();
+	    		max=settingsChoice.getBestMax();
+	    		min=settingsChoice.getBestMin();
+	    		calcMids();
 	    		}
-	    		frameSync=false;
-				noCarrier();
-				return;
-	    	}
-	    	// As we now have sync then skip the next 54 dibits as we can't do anything with them
-			//skipDibit(54);			
-			//audioDump();
+	    	// If debug enabled record obtaining sync
 			if (debug==true)	{
 				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
 				else l=getTimeStamp()+" DMR Data Sync Acquired";
@@ -525,6 +520,8 @@ public class DMRDecode {
 			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
+			
+			settingsChoice.badFrameRecord();
 		}
 		else	{
 			// Record that there has been an error free frame
@@ -533,6 +530,7 @@ public class DMRDecode {
 				if (debug==true) addLine(getTimeStamp()+" Best Score so far");
 				settingsChoice.setBestChoice(max,min,errorFreeFrameCount);
 			}
+			settingsChoice.goodFrameRecord();
 		}
 		// Display the info
 		displayLines(line);
