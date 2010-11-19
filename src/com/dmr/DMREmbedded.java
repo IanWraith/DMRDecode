@@ -4,11 +4,12 @@ public class DMREmbedded {
 	private int residueValue;
 	private String line[]=new String[10];
 	private boolean resCACH,resEMB;
+	private DMRDecode theApp;
 	
-	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
+	public String[] decode (DMRDecode TtheApp,byte[] dibit_buf)	{
 		String cline;
+		theApp=TtheApp;
 		DecodeCACH cachdecode=new DecodeCACH();
-		line[0]="<b>"+theApp.getTimeStamp()+" DMR Embedded Frame </b>";
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
 		resCACH=cachdecode.isPassErrorCheck();
@@ -75,7 +76,9 @@ public class DMREmbedded {
 			r=r+2;
 		}
 		// Error check the EMB
+		// If it passes this is a Voice Burst with Embedded Signalling
 		if (QuadResidue1676(EMDdata)==true)	{
+			line[0]="<b>"+theApp.getTimeStamp()+" DMR Voice Frame with Embedded Signalling </b>";
 			// Color code
 			if (EMDdata[0]==true) cc=8;
 			else cc=0;
@@ -99,7 +102,16 @@ public class DMREmbedded {
 			else if (lcss==3) line[2]=line[2]+" : Continuation fragment of LC or CSBK ";
 			return true;
 		}
-		else return false;
+		else	{
+			// Is this a Data Frame with Embedded signalling
+			// See if its has a slot type field that passes its error check
+			SlotType slottype=new SlotType();
+			boolean SLOT_TYPEres;
+			line[0]="<b>"+theApp.getTimeStamp()+" DMR Data Frame with Embedded Signalling </b>";
+			line[2]=slottype.decode(dibit_buf);
+			SLOT_TYPEres=slottype.isPassErrorCheck();
+			return SLOT_TYPEres;
+		}
 	}
 	
 	// Code to calculate all valid values for Quadratic residue (16,7,6)

@@ -7,7 +7,6 @@ public class SlotType {
 	
 	// Decode a SLOT TYPE field given a int array of dibit values
 	public String decode (byte[] dibit_buf)	{
-		line="Slot Type : ";
 		passErrorCheck=mainDecode(dibit_buf);
 		return line;
 	}
@@ -75,7 +74,7 @@ public class SlotType {
 		if (dataSLOT[6]==true) dataType=dataType+2;
 		if (dataSLOT[7]==true) dataType++;
 		// Display this info
-		line=line+"Colour Code "+Integer.toString(colourCode);
+		line="Slot Type : Colour Code "+Integer.toString(colourCode);
 		if (dataType==0) line=line+" PI Header";
 		else if (dataType==1) line=line+" Voice LC Header";
 		else if (dataType==2) line=line+" Terminator with LC";
