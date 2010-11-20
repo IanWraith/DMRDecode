@@ -72,8 +72,8 @@ public class DecodeCACH {
 		else line=line+" Ch 2";
 		if (lcss==0) line=line+" First fragment of CBSK ";
 		else if (lcss==1) line=line+" First fragment of LC ";
-		else if (lcss==2) line=line+" Last fragment of LC or CSBK ";
-		else if (lcss==3) line=line+" Continuation fragment of LC or CSBK ";
+		else if (lcss==2) line=line+" Last fragment of LC ";
+		else if (lcss==3) line=line+" Continuation fragment of LC ";
 
 		// Display for diagnosic purposes
 		for (a=7;a<24;a++)	{
