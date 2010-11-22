@@ -2,10 +2,12 @@ package com.dmr;
 
 public class DecodeCACH {
 	private String line;
+	private String shortLCline;
 	private boolean at;
 	private boolean channel;
 	private int lcss;
 	private boolean passErrorCheck=false;
+	private boolean haveShortLC=false;
 	private int errorRes;
 	private DMRDecode theApp;
 	
@@ -23,7 +25,6 @@ public class DecodeCACH {
 		int a,r=0,fragType=-1;
 		boolean rawdataCACH[]=new boolean[24];
 		boolean dataCACH[]=new boolean[24];
-		boolean res;
 		final int[]interleaveCACH={0,4,8,12,14,18,22,1,2,3,5,6,7,9,10,11,13,15,16,17,19,20,21,23};	
 		// Convert from dibits into boolean
 		for (a=0;a<12;a++)	{
@@ -59,7 +60,7 @@ public class DecodeCACH {
 		if (dataCACH[4]==true) errorRes=errorRes+4;
 		if (dataCACH[5]==true) errorRes=errorRes+2;
 		if (dataCACH[6]==true) errorRes++;
-		res=errorCheckHamming743(errorRes);
+		if (errorCheckHamming743(errorRes)==false) return false;
 		// Decode the TACT
 		at=dataCACH[0];
 		channel=dataCACH[1];
@@ -87,14 +88,17 @@ public class DecodeCACH {
 		else if (lcss==1) fragType=0;
 		// Below is commented out as the code contains a known bug
 		// Also other things need fixing first
-		//if (fragType!=-1) theApp.short_lc.addData(dataCACH,fragType);
+		if (fragType!=-1) theApp.short_lc.addData(dataCACH,fragType);
 		
 		// Is short LC data ready ?
 		if (theApp.short_lc.isDataReady()==true)	{
-			line=line+" Short LC : "+theApp.short_lc.getLine();
+			shortLCline="Short LC : "+theApp.short_lc.getLine();
+			theApp.short_lc.clrDataReady();
+			haveShortLC=true;
 		}
+		else haveShortLC=false;
 		
-		return res;
+		return true;
 	}
 	
 	// Error check the CACH TACT
@@ -154,5 +158,20 @@ public class DecodeCACH {
 	public int getErrorRes() {
 		return errorRes;
 	}	
+	
+	// Tell the user we have a Short LC
+	public boolean getShortLC()	{
+		return haveShortLC;
+	}
+	
+	// Clear the Short LC variables
+	public void clearShortLC()	{
+		haveShortLC=false;
+	}
+	
+	// Return the decoded short LC
+	public String getShortLCline()	{
+		return shortLCline;
+	}
 	
 }

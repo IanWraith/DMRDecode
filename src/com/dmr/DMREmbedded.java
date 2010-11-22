@@ -16,6 +16,11 @@ public class DMREmbedded {
 		if (resCACH==true) {
 			line[1]=cline;
 			resEMB=EMBdecode(dibit_buf);
+			// If short LC data is available then display it
+			if (cachdecode.getShortLC()==true)	{
+				line[2]=cachdecode.getShortLCline();
+				cachdecode.clearShortLC();
+			}
 		}
 		if ((resCACH==false)||(resEMB==false)) theApp.embeddedFrameCount=8;
 		theApp.frameCount++;

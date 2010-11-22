@@ -13,11 +13,16 @@ public class DMRDataDecode {
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
 		CACHres=cachdecode.isPassErrorCheck();
-		if (CACHres==true) line[1]=cline;
 		// Slot Type Decode
 		if (CACHres==true)	{
+			line[1]=cline;
 			line[2]=slottype.decode(dibit_buf);
 			SLOT_TYPEres=slottype.isPassErrorCheck();
+			// If short LC data is available then display it
+			if (cachdecode.getShortLC()==true)	{
+				line[3]=cachdecode.getShortLCline();
+				cachdecode.clearShortLC();
+			}
 			if (SLOT_TYPEres==false)	{
 				golayValue=slottype.getGolayValue();
 			}
