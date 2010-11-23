@@ -85,15 +85,111 @@ public class ShortLC {
 	// Deinterleave and error check the short LC
 	private void decode()	{
 		int a;
-		line="";
-		for (a=0;a<68;a++)	{
-			if (rawData[a]==true) line=line+"1";
-			else line=line+"0";
-		}
 		
-		// TODO: Deinterleave the Short LC
+		if (shortLCHamming(rawData)==true)	{
+			boolean shortLC[]=deInterleaveShortLC(rawData);
+		}
+		else line="";
+		
 		
 		dataReady=true;
 	}
+	
+	// Deinterleave a Short LC from 4 CACH bursts
+	private boolean[] deInterleaveShortLC (boolean raw[])	{
+		int a,pos;
+		final int sequence[]={
+				0,4,8,12,16,20,24,28,32,36,40,44,
+				1,5,9,13,17,21,25,29,33,37,41,45,
+				2,6,10,14,18,22,26,30,34,38,42,46};
+		boolean[] deinter=new boolean[36];
+		for (a=0;a<36;a++)	{
+			pos=sequence[a];
+			deinter[a]=raw[pos];
+		}
+		
+		line=" Verify ";
+		for (a=0;a<36;a++)	{
+			if (deinter[a]==true) line=line+"1";
+			else line=line+"0";
+			if (a==27) line=line+" ";
+		}
+		
+		return deinter;
+	}
+	
+	// Hamming check 3 of the 4 CACH rows
+	private boolean shortLCHamming (boolean raw[])	{
+		int a,pos;
+		final int sequence1[]={0,4,8,12,16,20,24,28,32,36,40,44};
+		final int sequence2[]={1,5,9,13,17,21,25,29,33,37,41,45};
+		final int sequence3[]={2,6,10,14,18,22,26,30,34,38,42,46};
+		final int ham1[]={48,52,56,60,64};
+		final int ham2[]={49,53,57,61,65};
+		final int ham3[]={50,54,58,62,66};
+		boolean[] d=new boolean[12];
+		boolean[] p=new boolean[5];
+		boolean[] c=new boolean[5];
+		
+		for (a=0;a<12;a++)	{
+			pos=sequence1[a];
+			d[a]=raw[pos];
+			if (a<5)	{
+				pos=ham1[a];
+				p[a]=raw[pos];
+			}
+		}
+		
+		c[0]=d[0]^d[1]^d[2]^d[3]^d[6]^d[7]^d[9];
+		c[1]=d[0]^d[1]^d[2]^d[3]^d[4]^d[7]^d[8]^d[10];
+		c[2]=d[1]^d[2]^d[3]^d[4]^d[5]^d[8]^d[9]^d[11];
+		c[3]=d[0]^d[1]^d[4]^d[5]^d[7]^d[10];
+		c[4]=d[0]^d[1]^d[2]^d[5]^d[6]^d[8]^d[11];
+		
+		for (a=0;a<5;a++)	{
+			if (c[a]!=p[a]) return false;
+		}
+		
+		for (a=0;a<12;a++)	{
+			pos=sequence2[a];
+			d[a]=raw[pos];
+			if (a<5)	{
+				pos=ham2[a];
+				p[a]=raw[pos];
+			}
+		}
+		
+		c[0]=d[0]^d[1]^d[2]^d[3]^d[6]^d[7]^d[9];
+		c[1]=d[0]^d[1]^d[2]^d[3]^d[4]^d[7]^d[8]^d[10];
+		c[2]=d[1]^d[2]^d[3]^d[4]^d[5]^d[8]^d[9]^d[11];
+		c[3]=d[0]^d[1]^d[4]^d[5]^d[7]^d[10];
+		c[4]=d[0]^d[1]^d[2]^d[5]^d[6]^d[8]^d[11];
+		
+		for (a=0;a<5;a++)	{
+			if (c[a]!=p[a]) return false;
+		}
+
+		for (a=0;a<12;a++)	{
+			pos=sequence3[a];
+			d[a]=raw[pos];
+			if (a<5)	{
+				pos=ham3[a];
+				p[a]=raw[pos];
+			}
+		}
+		
+		c[0]=d[0]^d[1]^d[2]^d[3]^d[6]^d[7]^d[9];
+		c[1]=d[0]^d[1]^d[2]^d[3]^d[4]^d[7]^d[8]^d[10];
+		c[2]=d[1]^d[2]^d[3]^d[4]^d[5]^d[8]^d[9]^d[11];
+		c[3]=d[0]^d[1]^d[4]^d[5]^d[7]^d[10];
+		c[4]=d[0]^d[1]^d[2]^d[5]^d[6]^d[8]^d[11];
+		
+		for (a=0;a<5;a++)	{
+			if (c[a]!=p[a]) return false;
+		}
+		
+		return true;
+	}
+	
 	
 }
