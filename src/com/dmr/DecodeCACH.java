@@ -75,13 +75,6 @@ public class DecodeCACH {
 		else if (lcss==1) line=line+" First fragment of LC ";
 		else if (lcss==2) line=line+" Last fragment of LC ";
 		else if (lcss==3) line=line+" Continuation fragment of LC ";
-
-		// Display for diagnosic purposes
-		for (a=7;a<24;a++)	{
-			if (dataCACH[a]==false) line=line+"0";
-			else line=line+"1";
-		}
-	
 		// If this is an short LC message pass the data on to the ShortLC object
 		if (lcss==3) fragType=1;
 		else if (lcss==2) fragType=2;
@@ -89,15 +82,15 @@ public class DecodeCACH {
 		// Below is commented out as the code contains a known bug
 		// Also other things need fixing first
 		if (fragType!=-1) theApp.short_lc.addData(dataCACH,fragType);
-		
 		// Is short LC data ready ?
 		if (theApp.short_lc.isDataReady()==true)	{
-			shortLCline="Short LC : "+theApp.short_lc.getLine();
+			// See if the short LC passed its error checks
+			if (theApp.short_lc.isCRCgood()==true) shortLCline="<b>Short LC : "+theApp.short_lc.getLine()+"</b>";
+			else shortLCline="Bad Short LC !";
 			theApp.short_lc.clrDataReady();
 			haveShortLC=true;
 		}
 		else haveShortLC=false;
-		
 		return true;
 	}
 	

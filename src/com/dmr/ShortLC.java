@@ -4,6 +4,7 @@ public class ShortLC {
 	private boolean dataReady;
 	private String line;
 	private boolean rawData[]=new boolean[69];
+	private boolean crcResult=false;
 	private int currentState=-1;
 	
 	// Add data to the Short LC data buffer
@@ -52,11 +53,7 @@ public class ShortLC {
 		// Add the data
 		for (a=rawCounter;a<(rawCounter+17);a++)	{
 			// Ignore the TACT
-			try	{
-				rawData[a]=CACHbuf[b];
-			} catch (Exception e)	{
-				String err=e.getMessage();
-			}
+			rawData[a]=CACHbuf[b];
 			b++;
 		}
 		// Has the fragment ended ?
@@ -72,9 +69,14 @@ public class ShortLC {
 		return line;
 	}
 	
-	// The main object if decoded data is available
+	// Tell the main object if decoded data is available
 	public boolean isDataReady()	{
 		return dataReady;
+	}
+	
+	// Tell the main object if the CRC and Hamming checks are OK
+	public boolean isCRCgood()	{
+		return crcResult;
 	}
 	
 	// Clear the data ready boolean
@@ -83,15 +85,16 @@ public class ShortLC {
 	}
 	
 	// Deinterleave and error check the short LC
-	private void decode()	{
-		int a;
-		
+	public void decode()	{
+		crcResult=false;
 		if (shortLCHamming(rawData)==true)	{
 			boolean shortLC[]=deInterleaveShortLC(rawData);
+			if (shortLCcrc(shortLC)==true)	{
+				line=decodeShortLC(shortLC);
+				crcResult=true;
+			}
 		}
 		else line="";
-		
-		
 		dataReady=true;
 	}
 	
@@ -107,14 +110,6 @@ public class ShortLC {
 			pos=sequence[a];
 			deinter[a]=raw[pos];
 		}
-		
-		line=" Verify ";
-		for (a=0;a<36;a++)	{
-			if (deinter[a]==true) line=line+"1";
-			else line=line+"0";
-			if (a==27) line=line+" ";
-		}
-		
 		return deinter;
 	}
 	
@@ -130,7 +125,7 @@ public class ShortLC {
 		boolean[] d=new boolean[12];
 		boolean[] p=new boolean[5];
 		boolean[] c=new boolean[5];
-		
+		// Row 1
 		for (a=0;a<12;a++)	{
 			pos=sequence1[a];
 			d[a]=raw[pos];
@@ -139,17 +134,15 @@ public class ShortLC {
 				p[a]=raw[pos];
 			}
 		}
-		
 		c[0]=d[0]^d[1]^d[2]^d[3]^d[6]^d[7]^d[9];
 		c[1]=d[0]^d[1]^d[2]^d[3]^d[4]^d[7]^d[8]^d[10];
 		c[2]=d[1]^d[2]^d[3]^d[4]^d[5]^d[8]^d[9]^d[11];
 		c[3]=d[0]^d[1]^d[4]^d[5]^d[7]^d[10];
 		c[4]=d[0]^d[1]^d[2]^d[5]^d[6]^d[8]^d[11];
-		
 		for (a=0;a<5;a++)	{
 			if (c[a]!=p[a]) return false;
 		}
-		
+		// Row 2
 		for (a=0;a<12;a++)	{
 			pos=sequence2[a];
 			d[a]=raw[pos];
@@ -158,17 +151,15 @@ public class ShortLC {
 				p[a]=raw[pos];
 			}
 		}
-		
 		c[0]=d[0]^d[1]^d[2]^d[3]^d[6]^d[7]^d[9];
 		c[1]=d[0]^d[1]^d[2]^d[3]^d[4]^d[7]^d[8]^d[10];
 		c[2]=d[1]^d[2]^d[3]^d[4]^d[5]^d[8]^d[9]^d[11];
 		c[3]=d[0]^d[1]^d[4]^d[5]^d[7]^d[10];
 		c[4]=d[0]^d[1]^d[2]^d[5]^d[6]^d[8]^d[11];
-		
 		for (a=0;a<5;a++)	{
 			if (c[a]!=p[a]) return false;
 		}
-
+		// Row 3
 		for (a=0;a<12;a++)	{
 			pos=sequence3[a];
 			d[a]=raw[pos];
@@ -177,19 +168,62 @@ public class ShortLC {
 				p[a]=raw[pos];
 			}
 		}
-		
 		c[0]=d[0]^d[1]^d[2]^d[3]^d[6]^d[7]^d[9];
 		c[1]=d[0]^d[1]^d[2]^d[3]^d[4]^d[7]^d[8]^d[10];
 		c[2]=d[1]^d[2]^d[3]^d[4]^d[5]^d[8]^d[9]^d[11];
 		c[3]=d[0]^d[1]^d[4]^d[5]^d[7]^d[10];
 		c[4]=d[0]^d[1]^d[2]^d[5]^d[6]^d[8]^d[11];
-		
 		for (a=0;a<5;a++)	{
 			if (c[a]!=p[a]) return false;
 		}
-		
+		// All done so must have passed
 		return true;
 	}
 	
+	// Test if the short LC passes its CRC8 test
+	private boolean shortLCcrc (boolean dataBits[])	{
+		int a;
+		crc tCRC=new crc();
+		tCRC.setCrc8Value(0);
+		for (a=0;a<dataBits.length;a++)	{
+			tCRC.crc8(dataBits[a]);
+		}
+		if (tCRC.getCrc8Value()==0) return true;
+		else return false;
+	}
+	
+	// Decode and display the info in SHORT LC PDUs
+	private String decodeShortLC (boolean db[])	{
+		int slco,a;
+		String dline;
+		// Calculate the SLCO
+		if (db[0]==true) slco=8;
+		else slco=0;
+		if (db[1]==true) slco=slco+4;
+		if (db[2]==true) slco=slco+2;
+		if (db[3]==true) slco++;
+		// Short LC Types
+		if (slco==0)	{
+			dline="Nul_Msg";
+		}
+		else if (slco==1)	{
+			dline="Act_Updt ";
+			// TODO : Decode and display the info in Act_Updt PDUs
+			for (a=4;a<24;a++)	{
+				if (db[a]==true) dline=dline+"1";
+				else dline=dline+"0";
+			}
+		}
+		else	{
+			dline="Unknown ";
+			// TODO : Display unknown SLCO values
+			for (a=0;a<24;a++)	{
+				if (db[a]==true) dline=dline+"1";
+				else dline=dline+"0";
+			}
+		}
+		
+		return dline;
+	}
 	
 }
