@@ -8,16 +8,22 @@ public class crcTest extends TestCase {
 	public void testCRC8 ()	{
 		int a,returnCRC;
 		crc crctest=new crc();
-		//boolean testBinary[]={true,true,true,true,false,false,false,true,false,false,false,false,false,false,false,false,false,false,true,true,false,false,false,false,false,false,false,false,false,true,false,false,true,true,true,true};
-		boolean testBinary[]={true,true,true,true,false,false,false,true,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,true,false,false,true,false,false};
-		//boolean testBinary[]={false,false,false,true,true,false,false,false,false,false,false,false,true,false,true,false,true,false,false,true,false,false,false,false,false,false,false,false,true,false,true,true,true,false,false,false};
-		//boolean testBinary[]={false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false};
+		boolean testBinaryPass[]={true,true,true,true,false,false,false,true,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,true,false,false,true,false,false};
+		boolean testBinaryFail[]={false,true,true,true,false,false,false,true,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,true,false,false,true,false,false};
+		// Test for a pass
 		crctest.setCrc8Value(0);
-		for (a=0;a<testBinary.length;a++)	{
-			crctest.crc8(testBinary[a]);
+		for (a=0;a<testBinaryPass.length;a++)	{
+			crctest.crc8(testBinaryPass[a]);
 		}
 		returnCRC=crctest.getCrc8Value();
 		assertEquals(0,returnCRC);
+		// Test for a failure
+		crctest.setCrc8Value(0);
+		for (a=0;a<testBinaryFail.length;a++)	{
+			crctest.crc8(testBinaryFail[a]);
+		}
+		returnCRC=crctest.getCrc8Value();
+		assertEquals(152,returnCRC);
 	}
 
 }
