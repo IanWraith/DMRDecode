@@ -14,8 +14,10 @@ Milestone 3 - To decode the CACH TACT (Reached 22nd October 2010)
 
 Milestone 3.5 (!) - To decode the SLOT TYPE PDU (Reached 4th November 2010)
 
-Milestone 4 - To decode the CACH payload
+Milestone 4 - To decode the Short LCs that make up the CACH payload. (Reached 25th November 2010)
 
-Ian Wraith (4th November 2010)
+Milestone 5 - To work out why and then fix the problem that is causing single bit errors in frames.
+
+Ian Wraith (25th November 2010)
 
 
