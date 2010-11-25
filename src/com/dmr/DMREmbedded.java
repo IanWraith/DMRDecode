@@ -22,7 +22,7 @@ public class DMREmbedded {
 				cachdecode.clearShortLC();
 			}
 		}
-		if ((resCACH==false)||(resEMB==false)) theApp.embeddedFrameCount=8;
+		if ((resCACH==false)&&(resEMB==false)) theApp.embeddedFrameCount=8;
 		theApp.frameCount++;
 		return line;
 	}
