@@ -595,8 +595,12 @@ public class DMRDecode {
 	
 	// Display the number of symbols since the last frame with a valid sync
 	public String dispSymbolsSinceLastFrame ()	{
-		String l=" (Symbols="+Integer.toString(symbolcnt)+")";
-		return l;
+		// Don't display anything if 144 symbols since the last frame.
+		if (symbolcnt!=144)	{
+			String l=" (Symbols="+Integer.toString(symbolcnt)+")";
+			return l;
+		}
+		else return "";
 	}
 	
 	// Grab 5 seconds worth of audio and write to the file "audiodump_out.csv"
