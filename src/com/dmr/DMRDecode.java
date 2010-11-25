@@ -41,7 +41,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 10";
+	public String program_version="DMR Decoder V0.00 Build 11";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -513,14 +513,11 @@ public class DMRDecode {
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Data Frame - Error ! ";
-			line[1]=null;
-			line[2]=null;
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 			int gval=DMRdata.getGolayValue();
 			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
-			
 			settingsChoice.badFrameRecord();
 		}
 		else	{
