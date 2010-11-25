@@ -207,17 +207,54 @@ public class ShortLC {
 			dline="Nul_Msg";
 		}
 		else if (slco==1)	{
-			dline="Act_Updt ";
-			// TODO : Decode and display the info in Act_Updt PDUs
-			for (a=4;a<24;a++)	{
-				if (db[a]==true) dline=dline+"1";
-				else dline=dline+"0";
+			int addr1,addr2;
+			dline="Act_Updt - ";
+			// Slot 1
+			if (db[4]==true) {
+				dline=dline+"Slot 1 Active with ";
+				if (db[5]==true) dline=dline+" Emergency";
+				if (db[6]==false) dline=dline+" Data";
+				else dline=dline+" Voice";
+				if (db[7]==false) dline=dline+" Group Call";
+				else dline=dline+" Call";
+				// Hashed Address
+				if (db[12]==true) addr1=128;
+				else addr1=0;
+				if (db[13]==true) addr1=addr1+64;
+				if (db[14]==true) addr1=addr1+32;
+				if (db[15]==true) addr1=addr1+16;
+				if (db[16]==true) addr1=addr1+8;
+				if (db[17]==true) addr1=addr1+4;
+				if (db[18]==true) addr1=addr1+2;
+				if (db[19]==true) addr1++;
+				dline=dline+" Hashed Addr "+Integer.toString(addr1);
 			}
+			else dline=dline+"Slot 1 Not Active";
+			// Slot 2
+			if (db[8]==true) {
+				dline=dline+" & Slot 2 Active with ";
+				if (db[9]==true) dline=dline+" Emergency";
+				if (db[10]==false) dline=dline+" Data";
+				else dline=dline+" Voice";
+				if (db[11]==false) dline=dline+" Group Call";
+				else dline=dline+" Call";
+				// Hashed Address
+				if (db[20]==true) addr2=128;
+				else addr2=0;
+				if (db[21]==true) addr2=addr2+64;
+				if (db[22]==true) addr2=addr2+32;
+				if (db[23]==true) addr2=addr2+16;
+				if (db[24]==true) addr2=addr2+8;
+				if (db[25]==true) addr2=addr2+4;
+				if (db[26]==true) addr2=addr2+2;
+				if (db[27]==true) addr2++;
+				dline=dline+" Hashed Addr "+Integer.toString(addr2);
+			}
+			else dline=dline+" & Slot 2 Not Active";
 		}
 		else	{
-			dline="Unknown ";
-			// TODO : Display unknown SLCO values
-			for (a=0;a<24;a++)	{
+			dline="Unknown SLCO="+Integer.toString(slco)+" ";
+			for (a=4;a<28;a++)	{
 				if (db[a]==true) dline=dline+"1";
 				else dline=dline+"0";
 			}

@@ -85,8 +85,8 @@ public class DecodeCACH {
 		// Is short LC data ready ?
 		if (theApp.short_lc.isDataReady()==true)	{
 			// See if the short LC passed its error checks
-			if (theApp.short_lc.isCRCgood()==true) shortLCline="<b>Short LC : "+theApp.short_lc.getLine()+"</b>";
-			else shortLCline="Bad Short LC !";
+			if (theApp.short_lc.isCRCgood()==true) shortLCline="<b>"+theApp.getTimeStamp()+" Short LC : "+theApp.short_lc.getLine()+"</b>";
+			else shortLCline=theApp.getTimeStamp()+" Bad Short LC !";
 			theApp.short_lc.clrDataReady();
 			haveShortLC=true;
 		}
