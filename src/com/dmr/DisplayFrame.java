@@ -33,11 +33,13 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuItem save_to_file,inverted_item,debug_item;
 	private JMenuItem view_voice_frames,view_data_frames,view_embedded_frames,error_rate;
 	private JMenuItem exit_item,about_item,help_item;
+	private JStatusBar status_bar=new JStatusBar();
 
 	// Constructor
 	public DisplayFrame(String title,DMRDecode theApp) {
 		setTitle(title);
 		this.theApp=theApp;
+		status_bar.setTheApp(this.theApp);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		getContentPane().setBackground(Color.WHITE);
 		// Menu setup
@@ -74,6 +76,9 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		helpMenu.add(help_item=new JMenuItem("Help"));		
 		help_item.addActionListener(this);		
 		menuBar.add(helpMenu);
+		// Setup the status bar
+		getContentPane().add(status_bar, java.awt.BorderLayout.SOUTH);
+		status_bar.setLoggingStatus("Not Logging");
 		}
 
 	// Handle messages from the scrollbars
@@ -114,8 +119,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 					return;
 				}
 				theApp.saveToFile=true;
+				status_bar.setLoggingStatus("Logging");
 			}
-			 else theApp.saveToFile=false;
+			 else	{
+				 theApp.saveToFile=false;
+				 status_bar.setLoggingStatus("Not Logging");
+			 }
 			// Restart the audio in thread
 			theApp.lineInThread.startAudio();
 		}	
@@ -235,6 +244,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			line=df.format(err)+"% of frames were bad.";
 		}
 		JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	// Set the volume indicating progress bar //
+	public void updateVolumeBar(int val) {
+		int pval=val/1500;
+		status_bar.setVolumeBar(pval);
 	}
 	
 }
