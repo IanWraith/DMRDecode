@@ -8,6 +8,7 @@ public class SettingsChoice {
 	private int bestMin=0;
 	private int bestMax=0;
 	private int bestScore=5;
+	private int bestJitter=-1;
 	private boolean debug=false;
 	
 	// Return the best number of good data frames so far
@@ -23,25 +24,30 @@ public class SettingsChoice {
 		return bestMin;
 	}
 	
+	public int getBestJitter()	{
+		return bestJitter;
+	}
+	
 	public void setDebug (boolean d)	{
 		debug=d;
 	}
 		
 	// Set the best max , min and good frame score
-	public void	setBestChoice (int tmax,int tmin,int tscore)	{
+	public void	setBestChoice (int tmax,int tmin,int tjitter,int tscore)	{
 		bestMin=tmin;
 		bestMax=tmax;
 		bestScore=tscore;
+		bestJitter=tjitter;
 		// If debugging record this
 		if (debug==true)	{
-			String l=getTimeStamp()+",Set,"+Integer.toString(tmax)+","+Integer.toString(tmin)+","+Integer.toString(tscore);
+			String l=getTimeStamp()+",Set,"+Integer.toString(tmax)+","+Integer.toString(tmin)+","+Integer.toString(tjitter)+","+Integer.toString(tscore);
 			debugDump(l);
 		}
 	}
 	
 	// See if the max and min measured are within 5% of the best so far
 	// if it is return true and if not return false
-	public boolean testChoice (int tmax,int tmin)	{
+	public boolean testChoice (int tmax,int tmin,int tjitter)	{
 		boolean res=false;
 		// If we haven't had 5 good frames always return true
 		// This allows the program to hunt for the best settings
@@ -59,7 +65,7 @@ public class SettingsChoice {
 			if (res==true) l=l+",OK,";
 			else l=l+",FAIL,";
 			l=l+Integer.toString(tmax)+","+Integer.toString(tmin);
-			l=l+","+Integer.toString(bestMax)+","+Integer.toString(bestMin)+","+Integer.toString(bestScore);
+			l=l+","+Integer.toString(bestMax)+","+Integer.toString(bestMin)+","+Integer.toString(bestJitter)+","+Integer.toString(bestScore);
 			debugDump(l);
 		}
 		return res;
@@ -67,7 +73,7 @@ public class SettingsChoice {
 	
 	public void recordForce()	{
 		if (debug==false) return;
-		String l=getTimeStamp()+",Force,"+Integer.toString(bestMax)+","+Integer.toString(bestMin);
+		String l=getTimeStamp()+",Force,"+Integer.toString(bestMax)+","+Integer.toString(bestMin)+","+Integer.toString(bestJitter);
 		debugDump(l);
 	}
 	

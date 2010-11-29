@@ -465,10 +465,11 @@ public class DMRDecode {
 	    minref=min;
 	    if (firstframe==true)	{	
 	    	// Check if these settings are any good
-	    	if (settingsChoice.testChoice(max,min)==false)	{
+	    	if (settingsChoice.testChoice(max,min,jitter)==false)	{
 	    		settingsChoice.recordForce();
 	    		max=settingsChoice.getBestMax();
 	    		min=settingsChoice.getBestMin();
+	    		jitter=settingsChoice.getBestJitter();
 	    		calcMids();
 	    		}
 	    	// If debug enabled record obtaining sync
@@ -537,7 +538,7 @@ public class DMRDecode {
 			errorFreeFrameCount++;
 			if (errorFreeFrameCount>settingsChoice.getBestScore())	{
 				if (debug==true) addLine(getTimeStamp()+" Best Score so far");
-				settingsChoice.setBestChoice(max,min,errorFreeFrameCount);
+				settingsChoice.setBestChoice(max,min,jitter,errorFreeFrameCount);
 			}
 			settingsChoice.goodFrameRecord();
 		}
