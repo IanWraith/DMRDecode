@@ -177,8 +177,8 @@ public class DMRDecode {
 		max=lmax;
 		min=lmin;
 		///////////////////
-		maxref=max;
-		minref=min;
+		maxref=(int)((float)max*(float)1.25);
+		minref=(int)((float)min*(float)1.25);;
 	}
 	
 	
@@ -207,9 +207,9 @@ public class DMRDecode {
 			  if ((sample>max)&&(have_sync==true)) sample=max;  
 			    else if ((sample<min)&&(have_sync==true)) sample=min;
 		      if (sample>centre)	{
-		    	  if ((jitter<0)&&(lastsample<centre)&&(sample<(maxref*1.25))) jitter=i;   
+		    	  if ((jitter<0)&&(lastsample<centre)&&(sample<maxref)) jitter=i;   
 		        }
-		      else if ((sample>(minref*1.25))&&(jitter<0)&&(lastsample>centre)) jitter=i;
+		      else if ((sample>minref)&&(jitter<0)&&(lastsample>centre)) jitter=i;
       
 		      if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2)) {
 		    	  sum=sum+sample;
@@ -514,8 +514,9 @@ public class DMRDecode {
 		DMRDataDecode DMRdata=new DMRDataDecode();
 		String line[]=new String[10];
 		line=DMRdata.decode(theApp,dibitFrame);
-		line[0]=line[0]+dispSymbolsSinceLastFrame();
+		line[0]=line[0]+dispSymbolsSinceLastFrame();		
 		if (debug==true)	{
+			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
@@ -526,6 +527,7 @@ public class DMRDecode {
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 			int gval=DMRdata.getGolayValue();
 			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
+			if (debug==true) line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			settingsChoice.badFrameRecord();
