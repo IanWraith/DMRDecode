@@ -39,7 +39,6 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public DisplayFrame(String title,DMRDecode theApp) {
 		setTitle(title);
 		this.theApp=theApp;
-		status_bar.setTheApp(this.theApp);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		getContentPane().setBackground(Color.WHITE);
 		// Menu setup
@@ -248,9 +247,14 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	
 	// Set the volume indicating progress bar //
 	public void updateVolumeBar(int val) {
-		// Divide by 2500 to get a value between 0 and 10
-		int pval=val/2500;
+		// Calculate as a percentage of 32768 (the max value)
+		int pval=(int)(((float)val/(float)32768.0)*(float)100);
 		status_bar.setVolumeBar(pval);
+	}
+	
+	// Update the sync label
+	public void updateSyncLabel (boolean sync)	{
+		status_bar.setSyncLabel(sync);
 	}
 	
 }

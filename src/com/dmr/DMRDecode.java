@@ -360,6 +360,8 @@ public class DMRDecode {
 		centre=0;
 		firstframe=false;
 		errorFreeFrameCount=0;
+		// Update the sync label
+		window.updateSyncLabel(false);
 	  	}
 	
 	// Given a symbol return a dibit
@@ -480,6 +482,9 @@ public class DMRDecode {
 			}
 			return;
 	    }
+	    // Update the sync label
+	    window.updateSyncLabel(frameSync);
+	    // Deal with the frame
 	    if ((synctype==12)&&(viewVoiceFrames==true)) processDMRvoice ();
 	    else if ((synctype==10)&&(viewDataFrames==true)) processDMRdata ();
 	    else if ((synctype==13)&&(viewEmbeddedFrames==true)) processEmbedded ();
