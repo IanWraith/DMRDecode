@@ -248,7 +248,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	
 	// Set the volume indicating progress bar //
 	public void updateVolumeBar(int val) {
-		int pval=val/1500;
+		// Divide by 2500 to get a value between 0 and 10
+		int pval=val/2500;
 		status_bar.setVolumeBar(pval);
 	}
 	

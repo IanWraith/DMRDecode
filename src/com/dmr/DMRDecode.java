@@ -41,7 +41,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 11";
+	public String program_version="DMR Decoder V0.00 Build 12";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -227,7 +227,7 @@ public class DMRDecode {
 	// them accordingly
 	public int getFrameSync ()	{
 		int t=0,dibit,symbol,synctest_pos=0,syncType;
-		int lmin=0,lmax=0,a;
+		int lmin=0,lmax=0,a,highVol;
 		// Clear the symbol counter
 		symbolcnt=0;
 
@@ -257,6 +257,11 @@ public class DMRDecode {
 					}
 					maxref=max;
 					minref=min;
+				}
+				// Update the volume bar every 6 frames
+				if ((t%864)==0)	{
+					highVol=lineInThread.getHighest();
+					window.updateVolumeBar(highVol);
 				}
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have

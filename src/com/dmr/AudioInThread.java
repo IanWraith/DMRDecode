@@ -12,6 +12,7 @@ public class AudioInThread extends Thread {
 	private int writePos;
 	private int readPos;
 	private int lastWritePos;
+	private int highestSoFar=0;
 	// A 256 K Byte buffer seems to do the job
 	private static int BUFFERSIZE=256*1024;
 	private int audioBuffer[]=new int [BUFFERSIZE];
@@ -93,7 +94,7 @@ public class AudioInThread extends Thread {
     // then write that into the sound buffer
     private void getSample ()	{
     	gettingAudio=true;
-    	int sample,count,total=0;
+    	int a,sample,count,total=0;
     	// READ in ISIZE bytes and convert them into ISIZE/2 integers
     	// Doing it this way reduces CPU loading
     	final int ISIZE=32;
@@ -107,10 +108,11 @@ public class AudioInThread extends Thread {
 			  		String err=e.getMessage();
 			  		JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
 			  	}
-			  	
-		int a;
+		// Get the required number of samples
 		for (a=0;a<ISIZE;a=a+2)	{
 		sample=(buffer[a]<<8)+buffer[a+1];
+		// See if this is the largest signal so far
+		testIfHigh(sample);
 		// Put this through a root raised filter
 		// then put the filtered sample in the buffer
 		audioBuffer[writePos]=rootRaisedFilter(sample);
@@ -179,5 +181,17 @@ public class AudioInThread extends Thread {
     	 else return true;
     }
     
+    // Test if this is the highest sample so far and if it is set the vairable
+    // highestSoFar to it. This is used to update the volume indicator bar
+    public void testIfHigh (int tsample)	{
+    	if (tsample>highestSoFar) highestSoFar=tsample;
+    }
+    
+    // Return the highestSoFar variable and clear it at the same time
+    public int getHighest()	{
+    	int thigh=highestSoFar;
+    	highestSoFar=0;
+    	return thigh;
+    }
     
 }
