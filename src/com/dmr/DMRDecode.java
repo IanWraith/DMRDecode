@@ -91,6 +91,7 @@ public class DMRDecode {
 	public int embeddedFrameCount=0;
 	private int symbolBufferCounter=0;
 	private int errorFreeFrameCount=0;
+	private int continousBadFrameCount=0;
 	private SettingsChoice settingsChoice=new SettingsChoice();
 	
 	public static void main(String[] args) {
@@ -360,6 +361,7 @@ public class DMRDecode {
 		centre=0;
 		firstframe=false;
 		errorFreeFrameCount=0;
+		continousBadFrameCount=0;
 		// Update the sync label
 		window.updateSyncLabel(false);
 	  	}
@@ -469,7 +471,8 @@ public class DMRDecode {
 	    		settingsChoice.recordForce();
 	    		max=settingsChoice.getBestMax();
 	    		min=settingsChoice.getBestMin();
-	    		jitter=settingsChoice.getBestJitter();
+	    		
+	    		
 	    		calcMids();
 	    		}
 	    	// If debug enabled record obtaining sync
@@ -489,6 +492,18 @@ public class DMRDecode {
 	    if ((synctype==12)&&(viewVoiceFrames==true)) processDMRvoice ();
 	    else if ((synctype==10)&&(viewDataFrames==true)) processDMRdata ();
 	    else if ((synctype==13)&&(viewEmbeddedFrames==true)) processEmbedded ();
+	    
+	    if (continousBadFrameCount==5)	{
+	    	jitter=settingsChoice.giveGoodJitter(jitter);
+	    	if (debug==true)	{
+	    		l=getTimeStamp()+" Got new Jitter value "+Integer.toString(jitter);
+	    		addLine(l);
+	    		fileWrite(l);
+	    	}
+	    	
+	    	continousBadFrameCount=0;
+	    }
+	    
 	}
 
 	// Handle a DMR Voice Frame
@@ -504,8 +519,12 @@ public class DMRDecode {
 		frameCount++;
 		if (DMRvoice.isError()==false)	{
 			badFrameCount++;
+			continousBadFrameCount++;
 			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
+		}
+		else	{
+			continousBadFrameCount=0;
 		}
 		displayLines(line);
 	}
@@ -531,16 +550,18 @@ public class DMRDecode {
 			if (debug==true) line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
-			settingsChoice.badFrameRecord();
+			settingsChoice.badFrameRecord(max,min,jitter);
+			continousBadFrameCount++;
 		}
 		else	{
 			// Record that there has been an error free frame
 			errorFreeFrameCount++;
+			continousBadFrameCount=0;
 			if (errorFreeFrameCount>settingsChoice.getBestScore())	{
 				if (debug==true) addLine(getTimeStamp()+" Best Score so far");
 				settingsChoice.setBestChoice(max,min,jitter,errorFreeFrameCount);
 			}
-			settingsChoice.goodFrameRecord();
+			settingsChoice.goodFrameRecord(max,min,jitter);
 		}
 		// Display the info
 		displayLines(line);
@@ -563,10 +584,12 @@ public class DMRDecode {
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
+			continousBadFrameCount++;
 		}
 		else	{
 			// Set last sync type to 14 to show this was a good embedded frame
 			lastsynctype=14;
+			continousBadFrameCount=0;
 		}
 		// Display the info
 		displayLines(line);
@@ -590,7 +613,7 @@ public class DMRDecode {
 	// Write to a string to the logging file
 	public boolean fileWrite(String fline) {
 		// Add a CR to the end of each line
-		fline=fline+"\r\n";
+		fline=fline+"<br>\r\n";
 		// If we aren't logging don't try to do anything
 		if (logging==false)
 			return false;

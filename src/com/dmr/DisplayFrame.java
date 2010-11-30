@@ -121,8 +121,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 				status_bar.setLoggingStatus("Logging");
 			}
 			 else	{
-				 theApp.saveToFile=false;
-				 status_bar.setLoggingStatus("Not Logging");
+				 closeLogFile();
 			 }
 			// Restart the audio in thread
 			theApp.lineInThread.startAudio();
@@ -159,6 +158,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		
 		// Exit 
 		if (event_name=="Exit") {
+			// If logging close the file
+			if (theApp.saveToFile==true) closeLogFile();
 			// Close the audio down //
 			theApp.lineInThread.shutDownAudio();
 			// Stop the program //
@@ -201,11 +202,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		if (returnval==JFileChooser.CANCEL_OPTION) return false;
 		// Get the file name an path of the selected file
 		file_name=fc.getSelectedFile().getPath();
-		// Does the file name end in .txt ? //
-		// If not then automatically add a .txt ending //
-		int last_index=file_name.lastIndexOf(".txt");
-		if (last_index!=(file_name.length() - 4))
-			file_name=file_name + ".txt";
+		// Does the file name end in .html ? //
+		// If not then automatically add a .html ending //
+		int last_index=file_name.lastIndexOf(".html");
+		if (last_index!=(file_name.length()-5))
+			file_name=file_name + ".html";
 		// Create a file with this name //
 		File tfile = new File(file_name);
 		// If the file exists ask the user if they want to overwrite it
@@ -220,7 +221,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		try {
 			theApp.file=new FileWriter(tfile);
 			// Write the program version as the first line of the log
-			String fline=theApp.program_version+"\r\n";
+			String fline="<HTML>"+theApp.program_version+"\r\n";
 			theApp.file.write(fline);
 			
 		} catch (Exception e) {
@@ -229,6 +230,19 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		}
 		theApp.logging=true;
 		return true;
+	}
+	
+	public void closeLogFile()	{
+		theApp.saveToFile=false;
+		 status_bar.setLoggingStatus("Not Logging");
+		 try	{
+			 theApp.file.write("</HTML>");
+			 theApp.file.flush();
+			 theApp.file.close();
+		 }
+		 catch (Exception e)	{
+			 JOptionPane.showMessageDialog(null,"Error closing Log file","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+		 }
 	}
 	
 	// Display the percentage of bad frames received

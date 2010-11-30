@@ -10,8 +10,8 @@ public class TextfileFilter extends javax.swing.filechooser.FileFilter {
 			return true;
 		// get the extension of the file
 		String extension = getExtension(f);
-		// check to see if the extension is equal to "txt"
-		if (extension.equals("txt"))
+		// check to see if the extension is equal to "html"
+		if (extension.equals("html"))
 			return true;
 		// default -- fall through. False is return on all
 		// occasions except:
@@ -25,18 +25,17 @@ public class TextfileFilter extends javax.swing.filechooser.FileFilter {
 	 * filter
 	 */
 	public String getDescription() {
-		return "Text files";
+		return "HTML files";
 	}
 
 	/**
 	 * Method to get the extension of the file, in lowercase
 	 */
 	private String getExtension(File f) {
-		String s = f.getName();
-		int i = s.lastIndexOf('.');
-		if (i > 0 && i < s.length() - 1)
-			return s.substring(i + 1).toLowerCase();
-		return "";
+		String s=f.getName();
+		int i=s.lastIndexOf('.');
+		if (i>0&&i<s.length()-1) return s.substring(i+1).toLowerCase();
+		else return "";
 	}
 }
 
