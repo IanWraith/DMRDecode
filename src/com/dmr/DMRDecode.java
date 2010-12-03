@@ -92,7 +92,6 @@ public class DMRDecode {
 	private int symbolBufferCounter=0;
 	private int errorFreeFrameCount=0;
 	private int continousBadFrameCount=0;
-	private SettingsChoice settingsChoice=new SettingsChoice();
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -100,8 +99,6 @@ public class DMRDecode {
 		// If sucking in test data then open the file
 		if (theApp.audioSuck==true) theApp.prepareAudioSuck("aor3000_audiodump.csv");
 		 else theApp.lineInThread.startAudio();
-		// Set the debug mode in the settings choice object
-		theApp.settingsChoice.setDebug(true);
 		// The main routine
 		while (RUNNING)	{
 			if ((theApp.lineInThread.getAudioReady()==true)&&(theApp.pReady==true)) theApp.decode();
@@ -179,7 +176,7 @@ public class DMRDecode {
 		min=lmin;
 		///////////////////
 		maxref=(int)((float)max*(float)1.25);
-		minref=(int)((float)min*(float)1.25);;
+		minref=(int)((float)min*(float)1.25);
 	}
 	
 	
@@ -466,15 +463,16 @@ public class DMRDecode {
 	    maxref=max;
 	    minref=min;
 	    if (firstframe==true)	{	
+	    	recordSyncSymbols(2);
 	    	// Check if these settings are any good
-	    	if (settingsChoice.testChoice(max,min,jitter)==false)	{
-	    		settingsChoice.recordForce();
-	    		max=settingsChoice.getBestMax();
-	    		min=settingsChoice.getBestMin();
+	    	//if (settingsChoice.testChoice(max,min,jitter)==false)	{
+	    		//settingsChoice.recordForce();
+	    		//max=settingsChoice.getBestMax();
+	    		//min=settingsChoice.getBestMin();
 	    		
 	    		
-	    		calcMids();
-	    		}
+	    		//calcMids();
+	    		//}
 	    	// If debug enabled record obtaining sync
 			if (debug==true)	{
 				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
@@ -492,18 +490,6 @@ public class DMRDecode {
 	    if ((synctype==12)&&(viewVoiceFrames==true)) processDMRvoice ();
 	    else if ((synctype==10)&&(viewDataFrames==true)) processDMRdata ();
 	    else if ((synctype==13)&&(viewEmbeddedFrames==true)) processEmbedded ();
-	    
-	    if (continousBadFrameCount==5)	{
-	    	jitter=settingsChoice.giveGoodJitter(jitter);
-	    	if (debug==true)	{
-	    		l=getTimeStamp()+" Got new Jitter value "+Integer.toString(jitter);
-	    		addLine(l);
-	    		fileWrite(l);
-	    	}
-	    	
-	    	continousBadFrameCount=0;
-	    }
-	    
 	}
 
 	// Handle a DMR Voice Frame
@@ -548,20 +534,18 @@ public class DMRDecode {
 			int gval=DMRdata.getGolayValue();
 			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
 			if (debug==true) line[0]=line[0]+" jitter="+Integer.toString(jitter);
+			
+			recordSyncSymbols(0);
+			
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
-			settingsChoice.badFrameRecord(max,min,jitter);
 			continousBadFrameCount++;
 		}
 		else	{
 			// Record that there has been an error free frame
 			errorFreeFrameCount++;
 			continousBadFrameCount=0;
-			if (errorFreeFrameCount>settingsChoice.getBestScore())	{
-				if (debug==true) addLine(getTimeStamp()+" Best Score so far");
-				settingsChoice.setBestChoice(max,min,jitter,errorFreeFrameCount);
-			}
-			settingsChoice.goodFrameRecord(max,min,jitter);
+			recordSyncSymbols(1);
 		}
 		// Display the info
 		displayLines(line);
@@ -777,6 +761,20 @@ public class DMRDecode {
 			circPos++;
 			if (circPos==144) circPos=0;
 		}
+	}
+	
+	private void recordSyncSymbols (int gb){
+		int sbuf[]=getSyncSymbols();
+		int a;
+		String l=getTimeStamp()+",Sync";
+		if (gb==1) l=l+" G";
+		else if (gb==0) l=l+" B";
+		else if (gb==2) l=l+" In";
+		l=l+","+Integer.toString(max)+","+Integer.toString(min)+","+Integer.toString(jitter);
+		for (a=0;a<24;a++)	{
+			l=l+","+Integer.toString(sbuf[a]);
+		}
+		debugDump(l);
 	}
 	
 	
