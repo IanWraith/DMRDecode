@@ -30,7 +30,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
 	private DMRDecode theApp;
 	public static final long serialVersionUID=1;
-	private JMenuItem save_to_file,inverted_item,debug_item;
+	private JMenuItem save_to_file,inverted_item,debug_item,capture_item;
 	private JMenuItem view_voice_frames,view_data_frames,view_embedded_frames,error_rate;
 	private JMenuItem exit_item,about_item,help_item;
 	private JStatusBar status_bar=new JStatusBar();
@@ -45,6 +45,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		setJMenuBar(menuBar);
 		// Main
 		JMenu mainMenu=new JMenu("Main");
+		mainMenu.add(capture_item=new JRadioButtonMenuItem("Capture",theApp.isCapture()));
+		capture_item.addActionListener(this);
 		mainMenu.add(debug_item=new JRadioButtonMenuItem("Debug Mode",theApp.isDebug()));
 		debug_item.addActionListener(this);
 		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted));
@@ -95,6 +97,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		if (event_name=="About")	{
 			String line=theApp.program_version+"\r\n"+"by Ian Wraith (iwraith@gmail.com)\r\nwith code taken from the DSD program.";
 			JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+		}
+		
+		// Capture
+		if (event_name=="Capture")	{
+			if (theApp.isCapture()==false) theApp.setCapture(true);
+			else theApp.setCapture(false);
 		}
 		
 		// Debug Mode

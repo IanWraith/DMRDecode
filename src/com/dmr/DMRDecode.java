@@ -76,6 +76,7 @@ public class DMRDecode {
 	private boolean frameSync=false;
 	public boolean saveToFile=false;
 	public FileWriter file;
+	public FileWriter captureFile;
 	public boolean logging=false;
 	public boolean pReady=false;
 	private boolean audioSuck=false;
@@ -92,6 +93,8 @@ public class DMRDecode {
 	private int symbolBufferCounter=0;
 	private int errorFreeFrameCount=0;
 	private int continousBadFrameCount=0;
+	private boolean captureMode=false;
+	private long captureCount=0;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -195,6 +198,8 @@ public class DMRDecode {
 				  while (lineInThread.sampleReady()==false)	{}
 				  // Get the sample from the sound card via the sound thread
 				  sample=lineInThread.returnSample();
+				  // If in capture mode record the sample in the capture file
+				  if (captureMode==true) audioDump(sample);
 			  }
 			  else	{
 				  // Get the data from the suck file
@@ -216,6 +221,8 @@ public class DMRDecode {
 		      lastsample=sample;
 		    }
 		  symbol=(sum/count);
+		  // If in capture mode record the symbol value
+		  if (captureMode==true) symbolDump(symbol);
 		  symbolcnt++;		  
 		  return symbol;
 	  }
@@ -463,16 +470,6 @@ public class DMRDecode {
 	    maxref=max;
 	    minref=min;
 	    if (firstframe==true)	{	
-	    	recordSyncSymbols(2);
-	    	// Check if these settings are any good
-	    	//if (settingsChoice.testChoice(max,min,jitter)==false)	{
-	    		//settingsChoice.recordForce();
-	    		//max=settingsChoice.getBestMax();
-	    		//min=settingsChoice.getBestMin();
-	    		
-	    		
-	    		//calcMids();
-	    		//}
 	    	// If debug enabled record obtaining sync
 			if (debug==true)	{
 				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
@@ -534,9 +531,6 @@ public class DMRDecode {
 			int gval=DMRdata.getGolayValue();
 			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
 			if (debug==true) line[0]=line[0]+" jitter="+Integer.toString(jitter);
-			
-			recordSyncSymbols(0);
-			
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
@@ -545,7 +539,6 @@ public class DMRDecode {
 			// Record that there has been an error free frame
 			errorFreeFrameCount++;
 			continousBadFrameCount=0;
-			recordSyncSymbols(1);
 		}
 		// Display the info
 		displayLines(line);
@@ -623,27 +616,39 @@ public class DMRDecode {
 		else return "";
 	}
 	
-	// Grab 5 seconds worth of audio and write to the file "audiodump_out.csv"
-	public void audioDump ()	{
-		long a;
-		final long sample_max=48000*5;
-		int samples[]=new int[48000*5];
-		for (a=0;a<sample_max;a++)	{
-			samples[(int)a]=lineInThread.returnSample();
-		}	
-	    try	{
-	    	FileWriter dfile=new FileWriter("audiodump_out.csv");
-			for (a=0;a<sample_max;a++)	{
-				dfile.write(Integer.toString(samples[(int)a]));
-				dfile.write("\r\n");
+	// Grab a sample and write it to the capture file
+	public void audioDump (int sample)	{
+		try	{
+			captureFile.write(Integer.toString(sample));
+			captureFile.write("\r\n");	
 			}
-	    	dfile.flush();  
-	    	dfile.close();
-	    	}catch (Exception e)	{
-	    		System.err.println("Error: " + e.getMessage());
-	    		}
-	    // Saved everything so shut down the program
-	    System.exit(0);
+		catch (Exception e)	{
+			System.err.println("Error: " + e.getMessage());
+			captureMode=false;
+		}
+		captureCount++;
+		if (captureCount>48000)	{
+			closeCaptureFile();
+			captureMode=false;
+		}
+		}
+	
+	
+	// Grab a symbol and write it to the capture file
+	public void symbolDump (int sample)	{
+		try	{
+			captureFile.write(",");
+			captureFile.write(Integer.toString(sample));
+			// Record the frame sync state
+			captureFile.write(",");
+			if (frameSync==true) captureFile.write("1");
+			else captureFile.write("0");
+			captureFile.write("\r\n");	
+			}
+		catch (Exception e)	{
+			System.err.println("Error: " + e.getMessage());
+			captureMode=false;
+		}
 		}
 	
 	// Write a line to the debug file
@@ -763,6 +768,7 @@ public class DMRDecode {
 		}
 	}
 	
+	// Code used to record the symbols in the syncronisation sequence
 	private void recordSyncSymbols (int gb){
 		int sbuf[]=getSyncSymbols();
 		int a;
@@ -776,6 +782,47 @@ public class DMRDecode {
 		}
 		debugDump(l);
 	}
+	
+	// Set the audio capture mode
+	public void setCapture (boolean c)	{
+		
+		if ((captureMode==false)&&(c==true))	{
+			openCaptureFile();
+			captureCount=0;
+			
+		}
+		else if ((captureMode==true)&&(c==false))	{
+			closeCaptureFile();
+			captureMode=false;
+		}
+	}
+	
+	// Tell the program if it is in audio capture mode
+	public boolean isCapture (){
+		return captureMode;
+	}
+	
+	private void openCaptureFile()	{
+		try	{
+			captureFile=new FileWriter("capture_dump.csv");
+			captureMode=true;
+		}
+		catch (Exception e)	{
+			captureMode=false;
+		}
+	}
+	
+	private void closeCaptureFile()	{
+		try	{
+			captureFile.flush();
+			captureFile.close();
+		}
+		catch (Exception e)	{
+			
+		}
+		captureMode=false;
+	}
+	
 	
 	
 }
