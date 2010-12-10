@@ -619,8 +619,8 @@ public class DMRDecode {
 	// Grab a sample and write it to the capture file
 	public void audioDump (int sample)	{
 		try	{
-			captureFile.write(Integer.toString(sample));
 			captureFile.write("\r\n");	
+			captureFile.write(Integer.toString(sample));
 			}
 		catch (Exception e)	{
 			System.err.println("Error: " + e.getMessage());
@@ -643,7 +643,6 @@ public class DMRDecode {
 			captureFile.write(",");
 			if (frameSync==true) captureFile.write("1");
 			else captureFile.write("0");
-			captureFile.write("\r\n");	
 			}
 		catch (Exception e)	{
 			System.err.println("Error: " + e.getMessage());
