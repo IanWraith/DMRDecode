@@ -221,8 +221,8 @@ public class DMRDecode {
 		      lastsample=sample;
 		    }
 		  symbol=(sum/count);
-		  // If in capture mode record the symbol value
-		  if (captureMode==true) symbolDump(symbol);
+		  // If in capture mode record the symbol value plus other info
+		  if (captureMode==true) symbolDump(symbol,max,min,jitter);
 		  symbolcnt++;		  
 		  return symbol;
 	  }
@@ -634,11 +634,18 @@ public class DMRDecode {
 		}
 	
 	
-	// Grab a symbol and write it to the capture file
-	public void symbolDump (int sample)	{
+	// Grab a symbol + max , min and jitter then write it all to the capture file
+	public void symbolDump (int symbol,int tmax,int tmin,int tjitter)	{
 		try	{
 			captureFile.write(",");
-			captureFile.write(Integer.toString(sample));
+			captureFile.write(Integer.toString(symbol));
+			// Write the max , min and jitter to the file
+			captureFile.write(",");
+			captureFile.write(Integer.toString(tmax));
+			captureFile.write(",");
+			captureFile.write(Integer.toString(tmin));
+			captureFile.write(",");
+			captureFile.write(Integer.toString(tjitter));
 			// Record the frame sync state
 			captureFile.write(",");
 			if (frameSync==true) captureFile.write("1");
