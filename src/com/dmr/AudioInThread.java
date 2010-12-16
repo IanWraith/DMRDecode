@@ -98,7 +98,7 @@ public class AudioInThread extends Thread {
     	// READ in ISIZE bytes and convert them into ISIZE/2 integers
     	// Doing it this way reduces CPU loading
     	final int ISIZE=32;
-		byte buffer[]=new byte[ISIZE];
+		byte buffer[]=new byte[ISIZE+1];
 		try	{
 				while (total<ISIZE)	{
 					count=Line.read(buffer,0,ISIZE);

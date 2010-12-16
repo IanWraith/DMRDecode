@@ -164,8 +164,8 @@ public class DMRDecode {
 	// Calculate the waveform centre and mid points
 	public void calcMids()	{
 			centre=(max+min)/2;
-			umid=((max-centre)*5/8)+centre;
-		    lmid=((min-centre)*5/8)+centre;		
+			umid=(int)((float)(max-centre)*(float)0.625)+centre;
+		    lmid=(int)((float)(min-centre)*(float)0.625)+centre;		
 	}
 	
 	// A function containing the calculations required when a frame is detected
@@ -195,7 +195,10 @@ public class DMRDecode {
 		       }
 			  if (audioSuck==false)	{ 
 				  // Loop until a sample is ready
-				  while (lineInThread.sampleReady()==false)	{}
+				  while (lineInThread.sampleReady()==false)	{
+					  // Yield to allow the processor to do other things
+					  Thread.yield();
+				  }
 				  // Get the sample from the sound card via the sound thread
 				  sample=lineInThread.returnSample();
 				  // If in capture mode record the sample in the capture file
