@@ -95,7 +95,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		
 		// About
 		if (event_name=="About")	{
-			String line=theApp.program_version+"\r\n"+"by Ian Wraith (iwraith@gmail.com)\r\nwith code taken from the DSD program.";
+			String line=theApp.program_version+"\r\n"+"by Ian Wraith (ianwraith@gmail.com)\r\nwith code taken from the DSD program.";
 			JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
@@ -269,8 +269,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	
 	// Set the volume indicating progress bar //
 	public void updateVolumeBar(int val) {
-		// Calculate as a percentage of 32768 (the max value)
-		int pval=(int)(((float)val/(float)32768.0)*(float)100);
+		// Calculate as a percentage of 18000 (the max value)
+		int pval=(int)(((float)val/(float)18000.0)*(float)100);
 		status_bar.setVolumeBar(pval);
 	}
 	
