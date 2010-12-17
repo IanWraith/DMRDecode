@@ -48,16 +48,12 @@ public class JStatusBar extends JPanel {
 	
 	// Set the volume bar display
 	public void setVolumeBar(int val) {
-		if (val<20){
-			//0<->2 so set to YELLOW
+		if (val<40){
 			volumeBar.setForeground(Color.yellow);
-		}else if((val>20)&&(val<70)){
-			//2<->7 so set to GREEN
+		}else if((val>40)&&(val<70)){
 			volumeBar.setForeground(Color.green);
-		}else if ((val>70)&&(val<100)){
-			//7<->10 so set to RED
+		}else {
 			volumeBar.setForeground(Color.red);
-		}else{
 			//greater 100 reset vol bar to 100
 			val=100;
 		}

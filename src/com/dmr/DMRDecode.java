@@ -266,9 +266,9 @@ public class DMRDecode {
 					maxref=max;
 					minref=min;
 				}
-				// Update the volume bar every 6 frames
-				if ((t%864)==0)	{
-					highVol=lineInThread.getHighest();
+				// Update the volume bar every 25 frames
+				if ((t%3600)==0)	{
+					highVol=lineInThread.returnVolumeAverage();
 					window.updateVolumeBar(highVol);
 				}
 				// Check if a frame has a voice or data sync

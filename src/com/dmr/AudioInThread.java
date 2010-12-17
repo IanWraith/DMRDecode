@@ -12,13 +12,18 @@ public class AudioInThread extends Thread {
 	private int writePos;
 	private int readPos;
 	private int lastWritePos;
-	private int highestSoFar=0;
 	// A 256 K Byte buffer seems to do the job
 	private static int BUFFERSIZE=256*1024;
-	private int audioBuffer[]=new int [BUFFERSIZE];
+	private int audioBuffer[]=new int[BUFFERSIZE];
 	private TargetDataLine Line;
 	private AudioFormat format;
 	private boolean gettingAudio;
+	private static int VOLUMEBUFFERSIZE=100;
+	private int volumeBuffer[]=new int[VOLUMEBUFFERSIZE];
+	private int volumeBufferCounter=0;
+	private static int ISIZE=128;
+	private byte buffer[]=new byte[ISIZE+1];
+	
 	// Filter details ..
 	// filtertype	 =	 Raised Cosine
 	// samplerate	 =	 48000
@@ -99,12 +104,11 @@ public class AudioInThread extends Thread {
     // Read in 2 bytes from the audio source combine them together into a single integer
     // then write that into the sound buffer
     private void getSample ()	{
+    	// Tell the main thread we getting audio
     	gettingAudio=true;
     	int a,sample,count,total=0;
     	// READ in ISIZE bytes and convert them into ISIZE/2 integers
     	// Doing it this way reduces CPU loading
-    	final int ISIZE=64;
-		byte buffer[]=new byte[ISIZE+1];
 		try	{
 				while (total<ISIZE)	{
 					count=Line.read(buffer,0,ISIZE);
@@ -117,8 +121,8 @@ public class AudioInThread extends Thread {
 		// Get the required number of samples
 		for (a=0;a<ISIZE;a=a+2)	{
 		sample=(buffer[a]<<8)+buffer[a+1];
-		// See if this is the largest signal so far
-		testIfHigh(sample);
+		// Add this sample to the circular volume buffer
+		addToVolumeBuffer(sample);
 		// Put this through a root raised filter
 		// then put the filtered sample in the buffer
 		audioBuffer[writePos]=rootRaisedFilter(sample);
@@ -127,7 +131,7 @@ public class AudioInThread extends Thread {
 		// If the write buffer pointer has reached maximum then reset it to zero
 		if (writePos==BUFFERSIZE) writePos=0;
 		}
-		
+		// The the main thread we have stopped fetching audio
 		gettingAudio=false;	
     }
     
@@ -187,17 +191,21 @@ public class AudioInThread extends Thread {
     	 else return true;
     }
     
-    // Test if this is the highest sample so far and if it is set the vairable
-    // highestSoFar to it. This is used to update the volume indicator bar
-    public void testIfHigh (int tsample)	{
-    	if (tsample>highestSoFar) highestSoFar=tsample;
+    // Add this sample to the circular volume buffer
+    private void addToVolumeBuffer (int tsample)	{
+    	volumeBuffer[volumeBufferCounter]=tsample;
+    	volumeBufferCounter++;
+    	if (volumeBufferCounter==VOLUMEBUFFERSIZE) volumeBufferCounter=0;
     }
     
-    // Return the highestSoFar variable and clear it at the same time
-    public int getHighest()	{
-    	int thigh=highestSoFar;
-    	highestSoFar=0;
-    	return thigh;
+    // Return the average volume over the last VOLUMEBUFFERSIZE samples
+    public int returnVolumeAverage ()	{
+    	long va=0;
+    	int a,volumeAverage=0;
+    	for (a=0;a<VOLUMEBUFFERSIZE;a++)	{
+    		va=va+Math.abs(volumeBuffer[a]);
+    	}
+    	volumeAverage=(int)va/VOLUMEBUFFERSIZE;	
+    	return volumeAverage;
     }
-    
 }
