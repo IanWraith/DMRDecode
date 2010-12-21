@@ -33,7 +33,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item;
 	private JMenuItem view_voice_frames,view_data_frames,view_embedded_frames,error_rate;
 	private JMenuItem exit_item,about_item,help_item;
-	private JStatusBar status_bar=new JStatusBar();
+	private JStatusBar statusBar=new JStatusBar();
+	private DisplayBar displayBar=new DisplayBar();
 
 	// Constructor
 	public DisplayFrame(String title,DMRDecode theApp) {
@@ -78,8 +79,10 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		help_item.addActionListener(this);		
 		menuBar.add(helpMenu);
 		// Setup the status bar
-		getContentPane().add(status_bar, java.awt.BorderLayout.SOUTH);
-		status_bar.setLoggingStatus("Not Logging");
+		getContentPane().add(statusBar, java.awt.BorderLayout.SOUTH);
+		statusBar.setLoggingStatus("Not Logging");
+		// Setup the display bar
+		getContentPane().add(displayBar, java.awt.BorderLayout.WEST);
 		}
 
 	// Handle messages from the scrollbars
@@ -126,7 +129,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 					return;
 				}
 				theApp.saveToFile=true;
-				status_bar.setLoggingStatus("Logging");
+				statusBar.setLoggingStatus("Logging");
 			}
 			 else	{
 				 closeLogFile();
@@ -242,7 +245,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	
 	public void closeLogFile()	{
 		theApp.saveToFile=false;
-		 status_bar.setLoggingStatus("Not Logging");
+		 statusBar.setLoggingStatus("Not Logging");
 		 try	{
 			 theApp.file.write("</HTML>");
 			 theApp.file.flush();
@@ -271,12 +274,24 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public void updateVolumeBar(int val) {
 		// Calculate as a percentage of 18000 (the max value)
 		int pval=(int)(((float)val/(float)18000.0)*(float)100);
-		status_bar.setVolumeBar(pval);
+		statusBar.setVolumeBar(pval);
 	}
 	
 	// Update the sync label
 	public void updateSyncLabel (boolean sync)	{
-		status_bar.setSyncLabel(sync);
+		statusBar.setSyncLabel(sync);
 	}
+	
+	// Pass a symbol to the display bar symbol buffer
+	public void displaySymbol (int tsymb)	{
+		displayBar.addToBuffer(tsymb);
+	}
+	
+	// Set the display bar parameters
+	public void displayParams (int tmax,int tmin,int tcentre,int tumid,int tlmid)	{
+		displayBar.setDisplayBarParams(tmax,tmin,tcentre,tumid,tlmid);
+	}
+	
+	
 	
 }

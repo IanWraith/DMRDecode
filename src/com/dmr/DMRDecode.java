@@ -245,7 +245,9 @@ public class DMRDecode {
 			symbol=getSymbol(frameSync);
 			// Store this in the rotating symbol buffer
 			// Only needed if we don't have frame sync
+			// If we do have sync pass the data to the display bar
 			if (frameSync==false) addToSymbolBuffer(symbol);
+			else window.displaySymbol(symbol);
 			// Set the dibit state
 			dibit=symboltoDibit(symbol);
 			// Add the dibit to the circular dibit buffer
