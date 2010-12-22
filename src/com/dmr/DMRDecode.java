@@ -41,7 +41,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 12";
+	public String program_version="DMR Decoder V0.00 Build 13";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -166,6 +166,8 @@ public class DMRDecode {
 			centre=(max+min)/2;
 			umid=(int)((float)(max-centre)*(float)0.625)+centre;
 		    lmid=(int)((float)(min-centre)*(float)0.625)+centre;		
+		    // Pass these settings to the display bar
+		    window.displayBarParams(max,min,umid,lmid);
 	}
 	
 	// A function containing the calculations required when a frame is detected
@@ -238,7 +240,6 @@ public class DMRDecode {
 		int lmin=0,lmax=0,a,highVol;
 		// Clear the symbol counter
 		symbolcnt=0;
-
 		while (true) {
 			t++;
 			// Get a symbol from the soundcard
@@ -373,6 +374,8 @@ public class DMRDecode {
 		continousBadFrameCount=0;
 		// Update the sync label
 		window.updateSyncLabel(false);
+		// Stop the display bar
+		window.stopDisplayBar();
 	  	}
 	
 	// Given a symbol return a dibit

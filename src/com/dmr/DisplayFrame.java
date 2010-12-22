@@ -288,10 +288,13 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	}
 	
 	// Set the display bar parameters
-	public void displayParams (int tmax,int tmin,int tcentre,int tumid,int tlmid)	{
-		displayBar.setDisplayBarParams(tmax,tmin,tcentre,tumid,tlmid);
+	public void displayBarParams (int tmax,int tmin,int tumid,int tlmid)	{
+		displayBar.setDisplayBarParams(tmax,tmin,tumid,tlmid);
 	}
 	
-	
+	// Stop the display bar 
+	public void stopDisplayBar()	{
+		displayBar.stopDisplay();
+	}
 	
 }

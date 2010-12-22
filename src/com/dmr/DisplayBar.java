@@ -5,41 +5,74 @@ import javax.swing.*;
 import javax.swing.border.Border;
 
 public class DisplayBar extends JPanel {
-	public static final long serialVersionUID = 1;
+	public static final long serialVersionUID=1;
 	private Border loweredbevel=BorderFactory.createLoweredBevelBorder();
-	static final int BUFFERMAX=200;
+	static final int BUFFERMAX=144;
 	private int bufferCounter=0;
 	private int symbolBuffer[]=new int[BUFFERMAX];
-	private int max,min,centre,umid,lmid;
+	private int max,min,umid,lmid,fullRange;
+	private boolean displayActive=false;
 	
 	public DisplayBar () {
 		this.setBorder(loweredbevel);
 	}
 	
+	// Draw the display in the JPanel
 	@Override public void paintComponent(Graphics g) {
-        super.paintComponent(g);    // paints background
-        int a;
-        if (bufferCounter==0) return;
+		int a,val;
+		int height=this.getHeight();
+		int width=this.getWidth();
+		double modFactor=((float)height/(float)fullRange);
+		// Repaint the background
+		super.paintComponent(g);  
+		// If the display isn't active then don't go any further
+		if (displayActive==false) return;
+        // Draw the centre line 
+        g.drawLine(0,(height/2),width,(height/2));
+        // Draw the lmid line
+        val=lmid+Math.abs(min);
+        val=(int)((float)val*modFactor);
+        g.drawLine(0,val,width,val);
+        // Draw the lmid line
+        val=umid+Math.abs(min);
+        val=(int)((float)val*modFactor);
+        g.drawLine(0,val,width,val);
+        // Draw the symbol points
         for (a=0;a<BUFFERMAX;a++)	{
-        	g.drawRect(5,symbolBuffer[a],2,2);
+        	val=symbolBuffer[a]+Math.abs(min);
+        	val=(int)((float)val*modFactor);
+          	g.fillRect((width/2)-2,val,5,5);
         }
    }
 	
+	// Add a symbol to a circular buffer which is displayed
 	public void addToBuffer (int tsymbol)	{
-		symbolBuffer[bufferCounter]=tsymbol+300;
+		symbolBuffer[bufferCounter]=tsymbol;
 		bufferCounter++;
-		if (bufferCounter==BUFFERMAX)	{
-			repaint();
-			bufferCounter=0;
-		}
+		// Repaint every 5 samples
+		if ((bufferCounter%5)==0) repaint();
+		// Check if the circular buffer counter has reached its maximum
+		if (bufferCounter==BUFFERMAX) bufferCounter=0;	
 	}
 	
-	public void setDisplayBarParams (int tmax,int tmin,int tcentre,int tumid,int tlmid)	{
+	// Set the displays parameters
+	public void setDisplayBarParams (int tmax,int tmin,int tumid,int tlmid)	{
 		max=tmax;
 		min=tmin;
-		centre=tcentre;
 		umid=tumid;
 		lmid=tlmid;
+		// Calculate the full range needed
+		fullRange=Math.abs(max)+Math.abs(min);
+		// Enable the display and do a repaint
+		displayActive=true;
+		repaint();
+	}
+	
+	public void stopDisplay()	{
+		displayActive=false;
+		repaint();
 	}
 
+	
+	
 }

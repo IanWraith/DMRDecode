@@ -21,7 +21,7 @@ public class AudioInThread extends Thread {
 	private static int VOLUMEBUFFERSIZE=100;
 	private int volumeBuffer[]=new int[VOLUMEBUFFERSIZE];
 	private int volumeBufferCounter=0;
-	private static int ISIZE=128;
+	private static int ISIZE=16;
 	private byte buffer[]=new byte[ISIZE+1];
 	
 	// Filter details ..
