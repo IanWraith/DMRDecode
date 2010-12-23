@@ -7,7 +7,7 @@ import javax.swing.border.Border;
 public class DisplayBar extends JPanel {
 	public static final long serialVersionUID=1;
 	private Border loweredbevel=BorderFactory.createLoweredBevelBorder();
-	static final int BUFFERMAX=144;
+	static final int BUFFERMAX=75;
 	private int bufferCounter=0;
 	private int symbolBuffer[]=new int[BUFFERMAX];
 	private int max,min,umid,lmid,fullRange;
@@ -49,8 +49,8 @@ public class DisplayBar extends JPanel {
 	public void addToBuffer (int tsymbol)	{
 		symbolBuffer[bufferCounter]=tsymbol;
 		bufferCounter++;
-		// Repaint every 5 samples
-		if ((bufferCounter%5)==0) repaint();
+		// Repaint every 25 samples
+		if ((bufferCounter%25)==0) repaint();
 		// Check if the circular buffer counter has reached its maximum
 		if (bufferCounter==BUFFERMAX) bufferCounter=0;	
 	}
