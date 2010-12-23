@@ -174,7 +174,10 @@ public class AudioInThread extends Thread {
     public int rootRaisedFilter (int sample)	{
     	int i;
     	double sum=0.0;
-    	double in=(double) sample;
+    	double in=(double)sample;
+    	
+    	// TODO : Convert the xv array into a circular buffer
+    	
     	for (i=0;i<NZEROS;i++)	{
     		xv[i]=xv[i+1];
     	}
