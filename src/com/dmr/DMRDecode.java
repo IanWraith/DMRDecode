@@ -95,6 +95,7 @@ public class DMRDecode {
 	private int continousBadFrameCount=0;
 	private boolean captureMode=false;
 	private long captureCount=0;
+	private boolean enableDisplayBar=false;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -461,7 +462,7 @@ public class DMRDecode {
 			  doc.insertAfterStart(el,"<tr>"+line +"</tr>");
 		  }
 		  catch (Exception e) {
-			  System.out.println("Exception:" + e.getMessage());
+			  JOptionPane.showMessageDialog(null,"Error in addLine()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 		  }		
 	}
 
@@ -782,28 +783,11 @@ public class DMRDecode {
 		}
 	}
 	
-	// Code used to record the symbols in the syncronisation sequence
-	private void recordSyncSymbols (int gb){
-		int sbuf[]=getSyncSymbols();
-		int a;
-		String l=getTimeStamp()+",Sync";
-		if (gb==1) l=l+" G";
-		else if (gb==0) l=l+" B";
-		else if (gb==2) l=l+" In";
-		l=l+","+Integer.toString(max)+","+Integer.toString(min)+","+Integer.toString(jitter);
-		for (a=0;a<24;a++)	{
-			l=l+","+Integer.toString(sbuf[a]);
-		}
-		debugDump(l);
-	}
-	
 	// Set the audio capture mode
 	public void setCapture (boolean c)	{
-		
 		if ((captureMode==false)&&(c==true))	{
 			openCaptureFile();
 			captureCount=0;
-			
 		}
 		else if ((captureMode==true)&&(c==false))	{
 			closeCaptureFile();
@@ -816,6 +800,7 @@ public class DMRDecode {
 		return captureMode;
 	}
 	
+	// Open the capture file
 	private void openCaptureFile()	{
 		try	{
 			captureFile=new FileWriter("capture_dump.csv");
@@ -826,15 +811,28 @@ public class DMRDecode {
 		}
 	}
 	
+	// Close the capture file
 	private void closeCaptureFile()	{
 		try	{
 			captureFile.flush();
 			captureFile.close();
 		}
 		catch (Exception e)	{
-			
+			JOptionPane.showMessageDialog(null,"Error closing the capture file","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 		}
 		captureMode=false;
+	}
+
+	
+	// Enable or disable the symbol display bar
+	public void setEnableDisplayBar(boolean enableDisplayBar) {
+		this.enableDisplayBar=enableDisplayBar;
+		window.switchDisplayBar(this.enableDisplayBar);
+	}
+
+	// Tell other classes if the symbol display bar is enabled or disabled 
+	public boolean isEnableDisplayBar() {
+		return enableDisplayBar;
 	}
 	
 	

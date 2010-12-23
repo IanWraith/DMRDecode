@@ -32,7 +32,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item;
 	private JMenuItem view_voice_frames,view_data_frames,view_embedded_frames,error_rate;
-	private JMenuItem exit_item,about_item,help_item;
+	private JMenuItem exit_item,about_item,help_item,view_display_bar;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
 
@@ -59,6 +59,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		menuBar.add(mainMenu);
 		// Info
 		JMenu infoMenu=new JMenu("Info");
+		infoMenu.add(view_display_bar=new JRadioButtonMenuItem("Enable Symbol Display",theApp.isEnableDisplayBar()));
+		view_display_bar.addActionListener(this);
 		infoMenu.add(error_rate=new JMenuItem("Error Check Info"));		
 		error_rate.addActionListener(this);
 		menuBar.add(infoMenu);
@@ -167,6 +169,14 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			errorDialogBox();
 		}
 		
+		// Enable/Disable the symbol display
+		if (event_name=="Enable Symbol Display")	{
+			boolean estate=theApp.isEnableDisplayBar();
+			if (estate==true) estate=false;
+			else estate=true;
+			theApp.setEnableDisplayBar(estate);
+		}
+		
 		// Exit 
 		if (event_name=="Exit") {
 			// If logging close the file
@@ -232,7 +242,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		try {
 			theApp.file=new FileWriter(tfile);
 			// Write the program version as the first line of the log
-			String fline="<HTML>"+theApp.program_version+"\r\n";
+			String fline="<HTML>"+theApp.program_version+"<br>\r\n";
 			theApp.file.write(fline);
 			
 		} catch (Exception e) {
@@ -243,6 +253,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		return true;
 	}
 	
+	// Close the log file
 	public void closeLogFile()	{
 		theApp.saveToFile=false;
 		 statusBar.setLoggingStatus("Not Logging");
@@ -295,6 +306,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	// Stop the display bar 
 	public void stopDisplayBar()	{
 		displayBar.stopDisplay();
+	}
+	
+	// Enable or disable the display bar
+	public void switchDisplayBar (boolean st)	{
+		displayBar.setEnableDisplay(st);
 	}
 	
 }

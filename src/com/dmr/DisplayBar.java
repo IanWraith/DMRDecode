@@ -11,7 +11,7 @@ public class DisplayBar extends JPanel {
 	private int bufferCounter=0;
 	private int symbolBuffer[]=new int[BUFFERMAX];
 	private int max,min,umid,lmid,fullRange;
-	private boolean displayActive=false;
+	private boolean displayActive=false,enableDisplay=false;
 	
 	public DisplayBar () {
 		this.setBorder(loweredbevel);
@@ -26,7 +26,7 @@ public class DisplayBar extends JPanel {
 		// Repaint the background
 		super.paintComponent(g);  
 		// If the display isn't active then don't go any further
-		if (displayActive==false) return;
+		if ((displayActive==false)||(enableDisplay==false)) return;
         // Draw the centre line 
         g.drawLine(0,(height/2),width,(height/2));
         // Draw the lmid line
@@ -68,8 +68,15 @@ public class DisplayBar extends JPanel {
 		repaint();
 	}
 	
+	// Stop the display if sync is lost
 	public void stopDisplay()	{
 		displayActive=false;
+		repaint();
+	}
+	
+	// Enable or disable the display
+	public void setEnableDisplay (boolean val)	{
+		enableDisplay=val;
 		repaint();
 	}
 
