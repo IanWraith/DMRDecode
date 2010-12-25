@@ -1,32 +1,30 @@
 package com.dmr;
 
 public class DecodeCACH {
-
-	private int dibit_buf[]=new int[144];
 	private String line;
+	private String shortLCline;
 	private boolean at;
 	private boolean channel;
 	private int lcss;
 	private boolean passErrorCheck=false;
+	private boolean haveShortLC=false;
 	private int errorRes;
 	private DMRDecode theApp;
 	
-	public String decode (DMRDecode TtheApp,int[] buf)	{
-		dibit_buf=buf;
+	public String decode (DMRDecode TtheApp,byte[] dibit_buf)	{
 		theApp=TtheApp;
 		line="CACH : TACT ";
 		// CACH decode
-		passErrorCheck=mainDecode();
+		passErrorCheck=mainDecode(dibit_buf);
 		return line;
 	}
 	
 	// De-interleave , CRC check and decode the CACH
 	// With code added to work out which interleave sequence to use
-	private boolean mainDecode ()	{
+	private boolean mainDecode (byte[] dibit_buf)	{
 		int a,r=0,fragType=-1;
 		boolean rawdataCACH[]=new boolean[24];
 		boolean dataCACH[]=new boolean[24];
-		boolean res;
 		final int[]interleaveCACH={0,4,8,12,14,18,22,1,2,3,5,6,7,9,10,11,13,15,16,17,19,20,21,23};	
 		// Convert from dibits into boolean
 		for (a=0;a<12;a++)	{
@@ -62,7 +60,7 @@ public class DecodeCACH {
 		if (dataCACH[4]==true) errorRes=errorRes+4;
 		if (dataCACH[5]==true) errorRes=errorRes+2;
 		if (dataCACH[6]==true) errorRes++;
-		res=errorCheckHamming743(errorRes);
+		if (errorCheckHamming743(errorRes)==false) return false;
 		// Decode the TACT
 		at=dataCACH[0];
 		channel=dataCACH[1];
@@ -75,29 +73,25 @@ public class DecodeCACH {
 		else line=line+" Ch 2";
 		if (lcss==0) line=line+" First fragment of CBSK ";
 		else if (lcss==1) line=line+" First fragment of LC ";
-		else if (lcss==2) line=line+" Last fragment of LC or CSBK ";
-		else if (lcss==3) line=line+" Continuation fragment of LC or CSBK ";
-
-		// Display for diagnosic purposes
-		for (a=0;a<24;a++)	{
-			if (dataCACH[a]==false) line=line+"0";
-			else line=line+"1";
-		}
-	
+		else if (lcss==2) line=line+" Last fragment of LC ";
+		else if (lcss==3) line=line+" Continuation fragment of LC ";
 		// If this is an short LC message pass the data on to the ShortLC object
 		if (lcss==3) fragType=1;
 		else if (lcss==2) fragType=2;
 		else if (lcss==1) fragType=0;
 		// Below is commented out as the code contains a known bug
 		// Also other things need fixing first
-		//if (fragType!=-1) theApp.short_lc.addData(dataCACH,fragType);
-		
+		if (fragType!=-1) theApp.short_lc.addData(dataCACH,fragType);
 		// Is short LC data ready ?
 		if (theApp.short_lc.isDataReady()==true)	{
-			line=line+" Short LC : "+theApp.short_lc.getLine();
+			// See if the short LC passed its error checks
+			if (theApp.short_lc.isCRCgood()==true) shortLCline="<b>"+theApp.getTimeStamp()+" Short LC : "+theApp.short_lc.getLine()+"</b>";
+			else shortLCline=theApp.getTimeStamp()+" Bad Short LC !";
+			theApp.short_lc.clrDataReady();
+			haveShortLC=true;
 		}
-		
-		return res;
+		else haveShortLC=false;
+		return true;
 	}
 	
 	// Error check the CACH TACT
@@ -157,5 +151,20 @@ public class DecodeCACH {
 	public int getErrorRes() {
 		return errorRes;
 	}	
+	
+	// Tell the user we have a Short LC
+	public boolean getShortLC()	{
+		return haveShortLC;
+	}
+	
+	// Clear the Short LC variables
+	public void clearShortLC()	{
+		haveShortLC=false;
+	}
+	
+	// Return the decoded short LC
+	public String getShortLCline()	{
+		return shortLCline;
+	}
 	
 }

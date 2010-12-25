@@ -30,9 +30,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
 	private DMRDecode theApp;
 	public static final long serialVersionUID=1;
-	private JMenuItem save_to_file,inverted_item,debug_item;
+	private JMenuItem save_to_file,inverted_item,debug_item,capture_item;
 	private JMenuItem view_voice_frames,view_data_frames,view_embedded_frames,error_rate;
-	private JMenuItem exit_item,about_item,help_item;
+	private JMenuItem exit_item,about_item,help_item,view_display_bar;
+	private JStatusBar statusBar=new JStatusBar();
+	private DisplayBar displayBar=new DisplayBar();
 
 	// Constructor
 	public DisplayFrame(String title,DMRDecode theApp) {
@@ -44,6 +46,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		setJMenuBar(menuBar);
 		// Main
 		JMenu mainMenu=new JMenu("Main");
+		mainMenu.add(capture_item=new JRadioButtonMenuItem("Capture",theApp.isCapture()));
+		capture_item.addActionListener(this);
 		mainMenu.add(debug_item=new JRadioButtonMenuItem("Debug Mode",theApp.isDebug()));
 		debug_item.addActionListener(this);
 		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted));
@@ -55,6 +59,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		menuBar.add(mainMenu);
 		// Info
 		JMenu infoMenu=new JMenu("Info");
+		infoMenu.add(view_display_bar=new JRadioButtonMenuItem("Enable Symbol Display",theApp.isEnableDisplayBar()));
+		view_display_bar.addActionListener(this);
 		infoMenu.add(error_rate=new JMenuItem("Error Check Info"));		
 		error_rate.addActionListener(this);
 		menuBar.add(infoMenu);
@@ -74,6 +80,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		helpMenu.add(help_item=new JMenuItem("Help"));		
 		help_item.addActionListener(this);		
 		menuBar.add(helpMenu);
+		// Setup the status bar
+		getContentPane().add(statusBar, java.awt.BorderLayout.SOUTH);
+		statusBar.setLoggingStatus("Not Logging");
+		// Setup the display bar
+		getContentPane().add(displayBar, java.awt.BorderLayout.WEST);
 		}
 
 	// Handle messages from the scrollbars
@@ -89,8 +100,14 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		
 		// About
 		if (event_name=="About")	{
-			String line=theApp.program_version+"\r\n"+"by Ian Wraith (iwraith@gmail.com)\r\nwith code taken from the DSD program.";
+			String line=theApp.program_version+"\r\n"+"by Ian Wraith (ianwraith@gmail.com)\r\nwith code taken from the DSD program.";
 			JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+		}
+		
+		// Capture
+		if (event_name=="Capture")	{
+			if (theApp.isCapture()==false) theApp.setCapture(true);
+			else theApp.setCapture(false);
 		}
 		
 		// Debug Mode
@@ -107,8 +124,6 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		
 		// Save to File
 		if (event_name=="Save to File")	{		
-		    // Tell the audio in thread to stop
-			theApp.lineInThread.suspendAudio();
 			if (theApp.saveToFile==false)	{
 				if (saveDialogBox()==false)	{
 					// Restart the audio in thread
@@ -116,8 +131,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 					return;
 				}
 				theApp.saveToFile=true;
+				statusBar.setLoggingStatus("Logging");
 			}
-			 else theApp.saveToFile=false;
+			 else	{
+				 closeLogFile();
+			 }
 			// Restart the audio in thread
 			theApp.lineInThread.startAudio();
 		}	
@@ -151,8 +169,18 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			errorDialogBox();
 		}
 		
+		// Enable/Disable the symbol display
+		if (event_name=="Enable Symbol Display")	{
+			boolean estate=theApp.isEnableDisplayBar();
+			if (estate==true) estate=false;
+			else estate=true;
+			theApp.setEnableDisplayBar(estate);
+		}
+		
 		// Exit 
 		if (event_name=="Exit") {
+			// If logging close the file
+			if (theApp.saveToFile==true) closeLogFile();
 			// Close the audio down //
 			theApp.lineInThread.shutDownAudio();
 			// Stop the program //
@@ -195,11 +223,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		if (returnval==JFileChooser.CANCEL_OPTION) return false;
 		// Get the file name an path of the selected file
 		file_name=fc.getSelectedFile().getPath();
-		// Does the file name end in .txt ? //
-		// If not then automatically add a .txt ending //
-		int last_index=file_name.lastIndexOf(".txt");
-		if (last_index!=(file_name.length() - 4))
-			file_name=file_name + ".txt";
+		// Does the file name end in .html ? //
+		// If not then automatically add a .html ending //
+		int last_index=file_name.lastIndexOf(".html");
+		if (last_index!=(file_name.length()-5))
+			file_name=file_name + ".html";
 		// Create a file with this name //
 		File tfile = new File(file_name);
 		// If the file exists ask the user if they want to overwrite it
@@ -214,7 +242,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		try {
 			theApp.file=new FileWriter(tfile);
 			// Write the program version as the first line of the log
-			String fline=theApp.program_version+"\r\n";
+			String fline="<HTML>"+theApp.program_version+"<br>\r\n";
 			theApp.file.write(fline);
 			
 		} catch (Exception e) {
@@ -223,6 +251,20 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		}
 		theApp.logging=true;
 		return true;
+	}
+	
+	// Close the log file
+	public void closeLogFile()	{
+		theApp.saveToFile=false;
+		 statusBar.setLoggingStatus("Not Logging");
+		 try	{
+			 theApp.file.write("</HTML>");
+			 theApp.file.flush();
+			 theApp.file.close();
+		 }
+		 catch (Exception e)	{
+			 JOptionPane.showMessageDialog(null,"Error closing Log file","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+		 }
 	}
 	
 	// Display the percentage of bad frames received
@@ -237,6 +279,38 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			line=df.format(err)+"% of frames were bad.";
 		}
 		JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	// Set the volume indicating progress bar //
+	public void updateVolumeBar(int val) {
+		// Calculate as a percentage of 18000 (the max value)
+		int pval=(int)(((float)val/(float)18000.0)*(float)100);
+		statusBar.setVolumeBar(pval);
+	}
+	
+	// Update the sync label
+	public void updateSyncLabel (boolean sync)	{
+		statusBar.setSyncLabel(sync);
+	}
+	
+	// Pass a symbol to the display bar symbol buffer
+	public void displaySymbol (int tsymb)	{
+		displayBar.addToBuffer(tsymb);
+	}
+	
+	// Set the display bar parameters
+	public void displayBarParams (int tmax,int tmin,int tumid,int tlmid)	{
+		displayBar.setDisplayBarParams(tmax,tmin,tumid,tlmid);
+	}
+	
+	// Stop the display bar 
+	public void stopDisplayBar()	{
+		displayBar.stopDisplay();
+	}
+	
+	// Enable or disable the display bar
+	public void switchDisplayBar (boolean st)	{
+		displayBar.setEnableDisplay(st);
 	}
 	
 }

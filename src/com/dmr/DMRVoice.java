@@ -1,19 +1,24 @@
 package com.dmr;
 
 public class DMRVoice {
-	private int dibit_buf[]=new int[144];
 	private String line[]=new String[10];
 	private boolean res;
 	
-	public String[] decode (DMRDecode theApp,int[] buf)	{
+	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
 		DecodeCACH cachdecode=new DecodeCACH();
-		dibit_buf=buf;
-		line[0]=theApp.getTimeStamp()+" DMR Voice Frame ";
+		line[0]="<b>"+theApp.getTimeStamp()+" DMR Voice Frame </b>";
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
 		res=cachdecode.isPassErrorCheck();
-		if (res==true) line[1]=cline;
+		if (res==true)	{
+			line[1]=cline;
+			// If short LC data is available then display it
+			if (cachdecode.getShortLC()==true)	{
+				line[2]=cachdecode.getShortLCline();
+				cachdecode.clearShortLC();
+			}
+		}
 		theApp.frameCount++;
 		return line;
 	}

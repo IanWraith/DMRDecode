@@ -14,8 +14,14 @@ Milestone 3 - To decode the CACH TACT (Reached 22nd October 2010)
 
 Milestone 3.5 (!) - To decode the SLOT TYPE PDU (Reached 4th November 2010)
 
-Milestone 4 - To decode the CACH payload
+Milestone 4 - To decode the Short LCs that make up the CACH payload. (Reached 25th November 2010)
 
-Ian Wraith (4th November 2010)
+Milestone 5 - To work out why and then fix the problem that is causing single bit errors in frames.
+
+Update : I have just added a display bar in build 13 which shows symbol values in a graphical form.
+With this I see the program sometimes achieves a good sync with the DMR data stream (you see all
+the symbol values clustered around 4 points) but then it looses sync for an unknown reason.
+
+Ian Wraith (23rd December 2010)
 
 
