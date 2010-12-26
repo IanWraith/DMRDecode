@@ -36,6 +36,7 @@ public class AudioInThread extends Thread {
 	// logmin	 =	
 	private static int NZEROS=80;
 	private double xv[]=new double [NZEROS+1];
+	private int xvCounter=0;
 	// 0.2 //
 	private static double GAIN=9.868410946e+00;
 	private static double XCOEFFS[]=
@@ -170,21 +171,24 @@ public class AudioInThread extends Thread {
     	Line.close();
     }
     
-    // A root raised pulse shaping filter
+    // A root raised cosine pulse shaping filter
     public int rootRaisedFilter (int sample)	{
     	int i;
     	double sum=0.0;
     	double in=(double)sample;
-    	
-    	// TODO : Convert the xv array into a circular buffer
-    	
-    	for (i=0;i<NZEROS;i++)	{
-    		xv[i]=xv[i+1];
-    	}
-    	xv[NZEROS]=in/GAIN;
+    	// Add the latest sample to the xv circular buffer
+    	xv[xvCounter]=in/GAIN;
+    	// Increment the circular buffer counter and zero it if needed
+    	xvCounter++;
+    	if (xvCounter==(NZEROS+1)) xvCounter=0;
+    	// Do the RRC maths taking account of the fact that XV is a circular buffer
+    	int xvShadow=xvCounter;
     	for (i=0;i<=NZEROS;i++)	{
-    		sum=sum+(XCOEFFS[i]*xv[i]);
+    		sum=sum+(XCOEFFS[i]*xv[xvShadow]);
+    		xvShadow++;
+    		if (xvShadow==(NZEROS+1)) xvShadow=0;
     	}
+    	// All done
     	return (int)sum;
     }
 
