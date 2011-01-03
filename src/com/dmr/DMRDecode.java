@@ -46,16 +46,12 @@ public class DMRDecode {
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
 	private static final int SAMPLESPERSYMBOL=10;
-	private int jitter=-1;
 	private static final int SYMBOLCENTRE=4;
 	private static final int MAXSTARTVALUE=15000;
 	private static final int MINSTARTVALUE=-15000;
 	private int max=MAXSTARTVALUE;
 	private int min=MINSTARTVALUE;
 	private int centre=0;
-	private int lastsample=0;
-	private int maxref=12000;
-	private int minref=-12000;
 	private int lastsynctype=-1;
 	private int symbolcnt=0;
 	private static final byte DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
@@ -96,6 +92,14 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
+	private static final int SYMBOLSAHEAD=25;
+	private static final int SAMPLESAHEADSIZE=SYMBOLSAHEAD*SAMPLESPERSYMBOL;
+	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
+	private int samplesAheadCounter=0;
+	private int jitter=-1;
+	private boolean changeJitter=false;
+	private static final int CHECKJITTERINTERVAL=2;
+	
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -180,55 +184,33 @@ public class DMRDecode {
 		// Acer PC Code 
 		max=lmax;
 		min=lmin;
-		///////////////////
-		maxref=(int)((float)max*(float)1.25);
-		minref=(int)((float)min*(float)1.25);
+		
 	}
-	
 	
 	// This code lifted straight from the DSD source code converted to Java 
 	// and tidied up removing non DMR code
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
-		      if ((i==0)&&(have_sync==false))	{
-		        if ((jitter>0)&&(jitter<=SYMBOLCENTRE)) i--;          
-		         else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i++;          
-		        jitter=-1;
-		       }
-			  if (audioSuck==false)	{ 
-				  // Loop until a sample is ready
-				  while (lineInThread.sampleReady()==false)	{
-					  // Yield to allow the processor to do other things
-					  Thread.yield();
-				  }
-				  // Get the sample from the sound card via the sound thread
-				  sample=lineInThread.returnSample();
-				  // If in capture mode record the sample in the capture file
-				  if (captureMode==true) audioDump(sample);
-			  }
-			  else	{
-				  // Get the data from the suck file
-				  int fsample=getSuckData();
-				  // Push this through a root raised filter
-				  sample=lineInThread.rootRaisedFilter(fsample);
-			  }
-			  if ((sample>max)&&(have_sync==true)) sample=max;  
-			    else if ((sample<min)&&(have_sync==true)) sample=min;
-		      if (sample>centre)	{
-		    	  if ((jitter<0)&&(lastsample<centre)&&(sample<maxref)) jitter=i;   
-		        }
-		      else if ((sample>minref)&&(jitter<0)&&(lastsample>centre)) jitter=i;
-      
+			  // Allow extra samples to be added or removed to allow for jitter
+		      if ((i==0)&&(changeJitter==true))	{
+		    	 if ((jitter>0)&&(jitter<=SYMBOLCENTRE)) i--;
+		    	 else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i++;  
+		    	 // Mark the jitter action as complete
+		         changeJitter=false;
+		      }
+		      // Get the sample from whatever source
+			  sample=getSample(false);
+			  // Add this sample to the samples ahead buffer
+			  addToSamplesAheadBuffer(sample);
 		      if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2)) {
 		    	  sum=sum+sample;
 		          count++;
 		          }
-		      lastsample=sample;
 		    }
 		  symbol=(sum/count);
 		  // If in capture mode record the symbol value plus other info
-		  if (captureMode==true) symbolDump(symbol,max,min,jitter);
+		  if (captureMode==true) symbolDump(symbol,max,min);
 		  symbolcnt++;		  
 		  return symbol;
 	  }
@@ -267,13 +249,16 @@ public class DMRDecode {
 						if (lbuf2[a]<lmin) lmin=lbuf2[a];
 						if (lbuf2[a]>lmax) lmax=lbuf2[a];
 					}
-					maxref=max;
-					minref=min;
 				}
 				// Update the volume bar every 25 frames
 				if ((t%3600)==0)	{
 					highVol=lineInThread.returnVolumeAverage();
 					window.updateVolumeBar(highVol);
+				}
+				// If we have frame sync then check if the jitter needs checking
+				if (((t%CHECKJITTERINTERVAL)==0)&&(frameSync==true))	{
+					int bj=getBestJitterFromSamplesAhead();
+			    	changeJitter(bj);	
 				}
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
@@ -329,7 +314,7 @@ public class DMRDecode {
 				// If in debug mode show that sync has been lost
 				if (debug==true)	{
 					String l=getTimeStamp()+" Sync Lost";
-					l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
+					l=l+" : centre="+Integer.toString(centre);
 					l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
 					addLine(l);
 					fileWrite(l);
@@ -365,6 +350,7 @@ public class DMRDecode {
 	// No carrier or carrier lost so clear the variables
 	public void noCarrier ()	{
 		jitter=-1;
+		changeJitter=false;
 		lastsynctype=-1;
 		carrier=false;
 		max=MAXSTARTVALUE;
@@ -476,18 +462,22 @@ public class DMRDecode {
 	// Handle an incoming DMR Frame
 	void processFrame ()	{
 		String l;
-	    maxref=max;
-	    minref=min;
-	    if (firstframe==true)	{	
+		int bj;
+	
+		if (firstframe==true)	{	
+			// First frame since sync
+			// Get the jitter value
+	    	bj=getBestJitterFromSamplesAhead();
+	    	changeJitter(bj);
 	    	// If debug enabled record obtaining sync
 			if (debug==true)	{
 				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
 				else l=getTimeStamp()+" DMR Data Sync Acquired";
-				l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
+				l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(bj);
 				l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
 				addLine(l);
 				fileWrite(l);
-			}
+				}
 			return;
 	    }
 	    // Update the sync label
@@ -505,6 +495,7 @@ public class DMRDecode {
 		line=DMRvoice.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		if (debug==true)	{
+			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
@@ -514,6 +505,7 @@ public class DMRDecode {
 			continousBadFrameCount++;
 			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
+			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 		}
 		else	{
 			continousBadFrameCount=0;
@@ -537,9 +529,9 @@ public class DMRDecode {
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Data Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
+			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			int gval=DMRdata.getGolayValue();
 			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
-			if (debug==true) line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
@@ -560,6 +552,7 @@ public class DMRDecode {
 		line=DMRembedded.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		if (debug==true)	{
+			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
@@ -568,6 +561,7 @@ public class DMRDecode {
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Embedded Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
+			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
@@ -643,8 +637,8 @@ public class DMRDecode {
 		}
 	
 	
-	// Grab a symbol + max , min and jitter then write it all to the capture file
-	public void symbolDump (int symbol,int tmax,int tmin,int tjitter)	{
+	// Grab a symbol + max , min then write it all to the capture file
+	public void symbolDump (int symbol,int tmax,int tmin)	{
 		try	{
 			captureFile.write(",");
 			captureFile.write(Integer.toString(symbol));
@@ -653,8 +647,6 @@ public class DMRDecode {
 			captureFile.write(Integer.toString(tmax));
 			captureFile.write(",");
 			captureFile.write(Integer.toString(tmin));
-			captureFile.write(",");
-			captureFile.write(Integer.toString(tjitter));
 			// Record the frame sync state
 			captureFile.write(",");
 			if (frameSync==true) captureFile.write("1");
@@ -820,6 +812,7 @@ public class DMRDecode {
 		catch (Exception e)	{
 			JOptionPane.showMessageDialog(null,"Error closing the capture file","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 		}
+		// We aren't in capture mode any longer
 		captureMode=false;
 	}
 
@@ -835,6 +828,62 @@ public class DMRDecode {
 		return enableDisplayBar;
 	}
 	
+	// Add a sample to the samples ahead buffer
+	private void addToSamplesAheadBuffer (int sam)	{
+		samplesAheadBuffer[samplesAheadCounter]=sam;
+		samplesAheadCounter++;
+		if (samplesAheadCounter==SAMPLESAHEADSIZE) samplesAheadCounter=0;
+	}
+	
+	// Calculate the best possible jitter value from the samples ahead buffer
+	private int getBestJitterFromSamplesAhead()	{
+		int a,b,bestJitter=0;
+		long current,highest=-1;
+		// Run through each jitter possibility
+		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
+			current=0;
+			// Measure the power at each possibility
+			for(b=a;b<SAMPLESAHEADSIZE;b=b+SAMPLESPERSYMBOL)	{
+				current=current+Math.abs(samplesAheadBuffer[b]);
+			}
+			// Is this the highest so far ?
+			if (current>highest)	{
+				highest=current;
+				bestJitter=a;
+			}
+		}
+		return bestJitter;
+	}
+	
+	
+	// Get a sample either from the sound card or a capture file
+	private int getSample (boolean jitmode)	{
+		int sample;
+		if (audioSuck==false)	{ 
+			  // Loop until a sample is ready
+			  while (lineInThread.sampleReady()==false)	{
+				  // Yield to allow the processor to do other things
+				  Thread.yield();
+			  }
+			  // Get the sample from the sound card via the sound thread
+			  sample=lineInThread.returnSample();
+			  // If in capture mode record the sample in the capture file
+			  // but don't do this in jitter adjust mode
+			  if ((captureMode==true)&&(jitmode==false)) audioDump(sample);
+		  }
+		  else	{
+			  // Get the data from the suck file
+			  sample=getSuckData();
+		  }
+		return sample;
+	}
+	
+	// Change the jitter setting
+	private void changeJitter (int jitterVal)	{
+		if (jitter==jitterVal) return;
+		jitter=jitterVal;
+		changeJitter=true;
+	}
 	
 	
 }
