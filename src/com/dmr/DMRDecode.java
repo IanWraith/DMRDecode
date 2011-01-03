@@ -187,16 +187,16 @@ public class DMRDecode {
 		
 	}
 	
-	
 	// This code lifted straight from the DSD source code converted to Java 
 	// and tidied up removing non DMR code
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
-			  // Allow extra samples to be removed to allow for jitter
+			  // Allow extra samples to be added or removed to allow for jitter
 		      if ((i==0)&&(changeJitter==true))	{
 		    	 if ((jitter>0)&&(jitter<=SYMBOLCENTRE)) i--;
 		    	 else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i++;  
+		    	 // Mark the jitter action as complete
 		         changeJitter=false;
 		      }
 		      // Get the sample from whatever source
@@ -255,13 +255,11 @@ public class DMRDecode {
 					highVol=lineInThread.returnVolumeAverage();
 					window.updateVolumeBar(highVol);
 				}
-				
+				// If we have frame sync then check if the jitter needs checking
 				if (((t%CHECKJITTERINTERVAL)==0)&&(frameSync==true))	{
 					int bj=getBestJitterFromSamplesAhead();
 			    	changeJitter(bj);	
 				}
-				
-				
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
@@ -814,6 +812,7 @@ public class DMRDecode {
 		catch (Exception e)	{
 			JOptionPane.showMessageDialog(null,"Error closing the capture file","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 		}
+		// We aren't in capture mode any longer
 		captureMode=false;
 	}
 
@@ -843,7 +842,7 @@ public class DMRDecode {
 		// Run through each jitter possibility
 		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
 			current=0;
-			// Measure the power at each posibility
+			// Measure the power at each possibility
 			for(b=a;b<SAMPLESAHEADSIZE;b=b+SAMPLESPERSYMBOL)	{
 				current=current+Math.abs(samplesAheadBuffer[b]);
 			}
