@@ -412,6 +412,7 @@ public class DMRDecode {
 	// 2 if data
 	private int syncCompare(boolean sync)	{
 		int i,dataSync=0,voiceSync=0,diff,circPos;
+		int syncroBuf[]=new int[24];
 		// Allow 5 dibits to be incorrect when syncronised and set the offset
 		if (sync==true)	diff=5;
 		else diff=0;
@@ -420,11 +421,20 @@ public class DMRDecode {
 		for (i=0;i<24;i++)	{
 			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC[i]) voiceSync++;
 			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC[i]) dataSync++;
+			// Make a copy of the sync sequence
+			syncroBuf[i]=symbolBuffer[circPos];
+			// Increment the circular buffer counter
 			circPos++;
 			if (circPos==144) circPos=0;
 		}
-		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff) return 1;
-		else if ((DMR_DATA_SYNC.length-dataSync)<=diff) return 2;
+		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff)	{
+			if (furtherTestSync(syncroBuf)==false) return 0;
+			else return 1;
+		}
+		else if ((DMR_DATA_SYNC.length-dataSync)<=diff)	{
+			if (furtherTestSync(syncroBuf)==false) return 0;
+			else return 2;
+		}
 		else return 0;	
 	}
 	
@@ -885,5 +895,43 @@ public class DMRDecode {
 		changeJitter=true;
 	}
 	
+	private boolean furtherTestSync (int sbuf[])	{
+		int a,hiav=0,poscnt=0;
+		int loav=0,negcnt=0;
+		double hipos=-1,lopos=10000,posdif;
+		double hineg=-100000,loneg=10000,negdif;
+		for (a=0;a<24;a++)	{
+			// Positive symbols
+			if ((sbuf[a]>0)&&(sbuf[a]>hipos)) hipos=sbuf[a];
+			if ((sbuf[a]>0)&&(sbuf[a]<lopos)) lopos=sbuf[a];
+			if (sbuf[a]>0)	{
+				hiav=hiav+sbuf[a];
+				poscnt++;
+			}
+			// Negative symbols
+			if ((sbuf[a]<0)&&(sbuf[a]>hineg)) hineg=sbuf[a];
+			if ((sbuf[a]<0)&&(sbuf[a]<loneg)) loneg=sbuf[a];
+			if (sbuf[a]<0)	{
+				loav=loav+sbuf[a];
+				negcnt++;
+			}
+		}
+		posdif=(lopos/hipos)*100;
+		hiav=hiav/poscnt;
+		
+		negdif=(hineg/loneg)*100;
+		loav=loav/negcnt;
+		
+		if (firstframe==true)	{
+			frameCalcs(loav,hiav);
+			String l=getTimeStamp()+" High Average "+Integer.toString(hiav);
+			l=l+" Low Average "+Integer.toString(loav);
+			addLine(l);
+		}
+		
+		if (posdif<60.0) return false;
+		else if (negdif<60.0) return false;
+		else return true;
+	}
 	
 }
