@@ -92,8 +92,8 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int SYMBOLSAHEAD=25;
-	private static final int SAMPLESAHEADSIZE=SYMBOLSAHEAD*SAMPLESPERSYMBOL;
+	private static final int SYMBOLSAHEAD=10;
+	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
 	private int jitter=-1;
@@ -201,8 +201,7 @@ public class DMRDecode {
 		      }
 		      // Get the sample from whatever source
 			  sample=getSample(false);
-			  // Add this sample to the samples ahead buffer
-			  addToSamplesAheadBuffer(sample);
+	
 		      if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2)) {
 		    	  sum=sum+sample;
 		          count++;
@@ -428,12 +427,14 @@ public class DMRDecode {
 			if (circPos==144) circPos=0;
 		}
 		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff)	{
-			if (furtherTestSync(syncroBuf)==false) return 0;
-			else return 1;
+			//if (furtherTestSync(syncroBuf)==false) return 0;
+			//else return 1;
+			return 1;
 		}
 		else if ((DMR_DATA_SYNC.length-dataSync)<=diff)	{
-			if (furtherTestSync(syncroBuf)==false) return 0;
-			else return 2;
+			//if (furtherTestSync(syncroBuf)==false) return 0;
+			//else return 2;
+			return 2;
 		}
 		else return 0;	
 	}
@@ -845,16 +846,28 @@ public class DMRDecode {
 		if (samplesAheadCounter==SAMPLESAHEADSIZE) samplesAheadCounter=0;
 	}
 	
+	// Get the oldest sample from the samples ahead buffer
+	private int getOldestSample()	{
+		return samplesAheadBuffer[samplesAheadCounter];
+	}
+	
 	// Calculate the best possible jitter value from the samples ahead buffer
 	private int getBestJitterFromSamplesAhead()	{
-		int a,b,bestJitter=0;
+		int a,b,bestJitter=0,pos;
 		long current,highest=-1;
 		// Run through each jitter possibility
 		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
 			current=0;
+			
+			pos=samplesAheadCounter+a;
+			if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
+			
 			// Measure the power at each possibility
-			for(b=a;b<SAMPLESAHEADSIZE;b=b+SAMPLESPERSYMBOL)	{
-				current=current+Math.abs(samplesAheadBuffer[b]);
+			for(b=0;b<SAMPLESAHEADSIZE;b=b+SAMPLESPERSYMBOL)	{
+				current=current+Math.abs(samplesAheadBuffer[pos]);
+				
+				pos=pos+SAMPLESPERSYMBOL;
+				if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
 			}
 			// Is this the highest so far ?
 			if (current>highest)	{
@@ -885,7 +898,10 @@ public class DMRDecode {
 			  // Get the data from the suck file
 			  sample=getSuckData();
 		  }
-		return sample;
+		// Add this to the circular samples ahead buffer
+		addToSamplesAheadBuffer(sample);
+		// Pull the oldest sample from the circular samples ahead buffer
+		return getOldestSample();
 	}
 	
 	// Change the jitter setting
