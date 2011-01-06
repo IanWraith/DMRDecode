@@ -92,8 +92,8 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int SYMBOLSAHEAD=10;
-	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
+	private static final int SYMBOLSAHEAD=5;
+	private static final int SAMPLESAHEADSIZE=SYMBOLSAHEAD*SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
 	private int jitter=-1;
@@ -427,14 +427,14 @@ public class DMRDecode {
 			if (circPos==144) circPos=0;
 		}
 		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff)	{
-			//if (furtherTestSync(syncroBuf)==false) return 0;
-			//else return 1;
-			return 1;
+			if (furtherTestSync(syncroBuf)==false) return 0;
+			else return 1;
+			//return 1;
 		}
 		else if ((DMR_DATA_SYNC.length-dataSync)<=diff)	{
-			//if (furtherTestSync(syncroBuf)==false) return 0;
-			//else return 2;
-			return 2;
+			if (furtherTestSync(syncroBuf)==false) return 0;
+			else return 2;
+			//return 2;
 		}
 		else return 0;	
 	}
@@ -853,21 +853,21 @@ public class DMRDecode {
 	
 	// Calculate the best possible jitter value from the samples ahead buffer
 	private int getBestJitterFromSamplesAhead()	{
-		int a,b,bestJitter=0,pos;
+		int a,b,bestJitter=0,pos,startPos;
 		long current,highest=-1;
 		// Run through each jitter possibility
 		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
 			current=0;
-			
-			pos=samplesAheadCounter+a;
-			if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
-			
+			// Calculate a start position
+			startPos=samplesAheadCounter+a;
+			// Allow for the fact this is a circular buffer
+			if (startPos>=SAMPLESAHEADSIZE) startPos=startPos-SAMPLESAHEADSIZE;
 			// Measure the power at each possibility
 			for(b=0;b<SAMPLESAHEADSIZE;b=b+SAMPLESPERSYMBOL)	{
-				current=current+Math.abs(samplesAheadBuffer[pos]);
-				
-				pos=pos+SAMPLESPERSYMBOL;
+				// Convert this into a circular buffer position
+				pos=startPos+b;
 				if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
+				current=current+Math.abs(samplesAheadBuffer[pos]);
 			}
 			// Is this the highest so far ?
 			if (current>highest)	{
@@ -911,11 +911,11 @@ public class DMRDecode {
 		changeJitter=true;
 	}
 	
+	// Test the suspected sync sequence further to guard against false positives
 	private boolean furtherTestSync (int sbuf[])	{
-		int a,hiav=0,poscnt=0;
-		int loav=0,negcnt=0;
-		double hipos=-1,lopos=10000,posdif;
-		double hineg=-100000,loneg=10000,negdif;
+		int a,hiav=0,poscnt=0,loav=0,negcnt=0;
+		double hipos=-1,lopos=10000,posdif,hineg=-100000,loneg=10000,negdif;
+		// Run through all the sync sequence symbols
 		for (a=0;a<24;a++)	{
 			// Positive symbols
 			if ((sbuf[a]>0)&&(sbuf[a]>hipos)) hipos=sbuf[a];
@@ -932,19 +932,22 @@ public class DMRDecode {
 				negcnt++;
 			}
 		}
+		// Find the percentage difference between the highest and lowest positive values
 		posdif=(lopos/hipos)*100;
+		// Find the average positive value
 		hiav=hiav/poscnt;
-		
+		// Find the percentage difference between the highest and lowest negative values
 		negdif=(hineg/loneg)*100;
+		// Find the average negative value
 		loav=loav/negcnt;
-		
+		// Only run this for the first frame
 		if (firstframe==true)	{
-			frameCalcs(loav,hiav);
+			//frameCalcs(loav,hiav);
 			String l=getTimeStamp()+" High Average "+Integer.toString(hiav);
 			l=l+" Low Average "+Integer.toString(loav);
 			addLine(l);
 		}
-		
+		// If the difference between the positive and negative percentages is greater than 60% we have a problem
 		if (posdif<60.0) return false;
 		else if (negdif<60.0) return false;
 		else return true;
