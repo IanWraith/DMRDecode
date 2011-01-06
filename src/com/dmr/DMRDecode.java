@@ -47,8 +47,8 @@ public class DMRDecode {
 	private static boolean RUNNING=true;
 	private static final int SAMPLESPERSYMBOL=10;
 	private static final int SYMBOLCENTRE=4;
-	private static final int MAXSTARTVALUE=15000;
-	private static final int MINSTARTVALUE=-15000;
+	private static final int MAXSTARTVALUE=25000;
+	private static final int MINSTARTVALUE=-25000;
 	private int max=MAXSTARTVALUE;
 	private int min=MINSTARTVALUE;
 	private int centre=0;
@@ -92,7 +92,7 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int SYMBOLSAHEAD=25;
+	private static final int SYMBOLSAHEAD=15;
 	private static final int SAMPLESAHEADSIZE=SYMBOLSAHEAD*SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
