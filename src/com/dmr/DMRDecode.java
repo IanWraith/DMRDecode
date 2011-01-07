@@ -203,6 +203,9 @@ public class DMRDecode {
 			  sample=getSample(false);
 			  // Add this sample to the samples ahead buffer
 			  addToSamplesAheadBuffer(sample);
+			  // Now pull the oldest sample from the samples ahead buffer
+			  sample=samplesAheadBuffer[samplesAheadCounter];
+			  // Process it
 		      if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2)) {
 		    	  sum=sum+sample;
 		          count++;
