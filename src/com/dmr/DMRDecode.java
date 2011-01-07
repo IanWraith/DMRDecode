@@ -212,8 +212,6 @@ public class DMRDecode {
 		          }
 		    }
 		  symbol=(sum/count);
-		  // If in capture mode record the symbol value plus other info
-		  if (captureMode==true) symbolDump(symbol,max,min);
 		  symbolcnt++;		  
 		  return symbol;
 	  }
@@ -415,6 +413,7 @@ public class DMRDecode {
 	// 2 if data
 	private int syncCompare(boolean sync)	{
 		int i,dataSync=0,voiceSync=0,diff,circPos;
+		int syncroBuf[]=new int[24];
 		// Allow 5 dibits to be incorrect when syncronised and set the offset
 		if (sync==true)	diff=5;
 		else diff=0;
@@ -423,11 +422,19 @@ public class DMRDecode {
 		for (i=0;i<24;i++)	{
 			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC[i]) voiceSync++;
 			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC[i]) dataSync++;
+			// Make a copy of the sync sequence
+			syncroBuf[i]=symbolBuffer[circPos];
 			circPos++;
 			if (circPos==144) circPos=0;
 		}
-		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff) return 1;
-		else if ((DMR_DATA_SYNC.length-dataSync)<=diff) return 2;
+		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff) {
+			if (furtherTestSync(syncroBuf)==false) return 0;
+			return 1;
+		}
+		else if ((DMR_DATA_SYNC.length-dataSync)<=diff)	{
+			if (furtherTestSync(syncroBuf)==false) return 0;
+			else return 2;
+		}
 		else return 0;	
 	}
 	
@@ -635,28 +642,6 @@ public class DMRDecode {
 		captureCount++;
 		if (captureCount>48000)	{
 			closeCaptureFile();
-			captureMode=false;
-		}
-		}
-	
-	
-	// Grab a symbol + max , min then write it all to the capture file
-	public void symbolDump (int symbol,int tmax,int tmin)	{
-		try	{
-			captureFile.write(",");
-			captureFile.write(Integer.toString(symbol));
-			// Write the max , min and jitter to the file
-			captureFile.write(",");
-			captureFile.write(Integer.toString(tmax));
-			captureFile.write(",");
-			captureFile.write(Integer.toString(tmin));
-			// Record the frame sync state
-			captureFile.write(",");
-			if (frameSync==true) captureFile.write("1");
-			else captureFile.write("0");
-			}
-		catch (Exception e)	{
-			System.err.println("Error: " + e.getMessage());
 			captureMode=false;
 		}
 		}
@@ -892,6 +877,54 @@ public class DMRDecode {
 		if (jitter==jitterVal) return;
 		jitter=jitterVal;
 		changeJitter=true;
+	}
+	
+	// Code to prevent false positives on frame sync detection
+	private boolean furtherTestSync (int sbuf[])	{
+		int a,hiav=0,poscnt=0;
+		int loav=0,negcnt=0;
+		double hipos=-1,lopos=10000,posdif;
+		double hineg=-100000,loneg=10000,negdif;
+		
+		if (lastsynctype!=-1) return true;
+		
+		for (a=0;a<24;a++)	{
+			// Positive symbols
+			if ((sbuf[a]>0)&&(sbuf[a]>hipos)) hipos=sbuf[a];
+			if ((sbuf[a]>0)&&(sbuf[a]<lopos)) lopos=sbuf[a];
+			if (sbuf[a]>0)	{
+				hiav=hiav+sbuf[a];
+				poscnt++;
+			}
+			// Negative symbols
+			if ((sbuf[a]<0)&&(sbuf[a]>hineg)) hineg=sbuf[a];
+			if ((sbuf[a]<0)&&(sbuf[a]<loneg)) loneg=sbuf[a];
+			if (sbuf[a]<0)	{
+				loav=loav+sbuf[a];
+				negcnt++;
+			}
+		}
+		posdif=(lopos/hipos)*100;
+		hiav=hiav/poscnt;
+		
+		negdif=(hineg/loneg)*100;
+		loav=loav/negcnt;
+		
+		//if (posdif<60.0) return false;
+		//else if (negdif<60.0) return false;
+		//else return true;
+		
+			String l;
+			l=getTimeStamp()+" posdif="+Double.toString(posdif)+"% negdif="+Double.toString(negdif)+"%";
+			addLine(l);
+			fileWrite(l);
+			l=getTimeStamp()+" High Average "+Integer.toString(hiav);
+			l=l+" Low Average "+Integer.toString(loav);
+			addLine(l);
+			fileWrite(l);
+			
+		
+		return true;
 	}
 	
 	
