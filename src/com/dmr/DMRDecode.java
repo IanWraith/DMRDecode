@@ -92,13 +92,13 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int SYMBOLSAHEAD=15;
+	private static final int SYMBOLSAHEAD=10;
 	private static final int SAMPLESAHEADSIZE=SYMBOLSAHEAD*SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
 	private int jitter=-1;
 	private boolean changeJitter=false;
-	private static final int CHECKJITTERINTERVAL=2;
+	private static final int CHECKJITTERINTERVAL=5;
 	
 	
 	public static void main(String[] args) {
@@ -837,14 +837,20 @@ public class DMRDecode {
 	
 	// Calculate the best possible jitter value from the samples ahead buffer
 	private int getBestJitterFromSamplesAhead()	{
-		int a,b,bestJitter=0;
+		int a,b,bestJitter=0,startPos,pos;
 		long current,highest=-1;
 		// Run through each jitter possibility
 		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
 			current=0;
+			// Calculate the starting position for each posibility 
+			startPos=samplesAheadCounter+a;
+			// Check if the circular buffer pointer needs to go to zero
+			if (startPos>=SAMPLESAHEADSIZE) startPos=startPos-SAMPLESAHEADSIZE;
 			// Measure the power at each possibility
-			for(b=a;b<SAMPLESAHEADSIZE;b=b+SAMPLESPERSYMBOL)	{
-				current=current+Math.abs(samplesAheadBuffer[b]);
+			for(b=0;b<SAMPLESAHEADSIZE;b=b+SAMPLESPERSYMBOL)	{
+				pos=startPos+b;
+				if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
+				current=current+Math.abs(samplesAheadBuffer[pos]);
 			}
 			// Is this the highest so far ?
 			if (current>highest)	{
