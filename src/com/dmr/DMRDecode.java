@@ -47,8 +47,8 @@ public class DMRDecode {
 	private static boolean RUNNING=true;
 	private static final int SAMPLESPERSYMBOL=10;
 	private static final int SYMBOLCENTRE=4;
-	private static final int MAXSTARTVALUE=15000;
-	private static final int MINSTARTVALUE=-15000;
+	private static final int MAXSTARTVALUE=25000;
+	private static final int MINSTARTVALUE=-25000;
 	private int max=MAXSTARTVALUE;
 	private int min=MINSTARTVALUE;
 	private int centre=0;
@@ -98,7 +98,7 @@ public class DMRDecode {
 	private int samplesAheadCounter=0;
 	private int jitter=-1;
 	private boolean changeJitter=false;
-	private static final int CHECKJITTERINTERVAL=2;
+	private static final int CHECKJITTERINTERVAL=5;
 	
 	
 	public static void main(String[] args) {
@@ -202,14 +202,15 @@ public class DMRDecode {
 		      // Get the sample from whatever source
 			  sample=getSample(false);
 	
+			  // Now pull the oldest sample from the samples ahead buffer
+			  sample=samplesAheadBuffer[samplesAheadCounter];
+			  // Process it
 		      if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2)) {
 		    	  sum=sum+sample;
 		          count++;
 		          }
 		    }
 		  symbol=(sum/count);
-		  // If in capture mode record the symbol value plus other info
-		  if (captureMode==true) symbolDump(symbol,max,min);
 		  symbolcnt++;		  
 		  return symbol;
 	  }
@@ -426,14 +427,14 @@ public class DMRDecode {
 			circPos++;
 			if (circPos==144) circPos=0;
 		}
-		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff)	{
-			//if (furtherTestSync(syncroBuf)==false) return 0;
-			//else return 1;
+		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff) {
+			if (furtherTestSync(syncroBuf)==false) return 0;
 			return 1;
 		}
 		else if ((DMR_DATA_SYNC.length-dataSync)<=diff)	{
-			//if (furtherTestSync(syncroBuf)==false) return 0;
-			//else return 2;
+			if (furtherTestSync(syncroBuf)==false) return 0;
+			else return 2;
+		}
 			return 2;
 		}
 		else return 0;	
@@ -647,28 +648,6 @@ public class DMRDecode {
 		}
 		}
 	
-	
-	// Grab a symbol + max , min then write it all to the capture file
-	public void symbolDump (int symbol,int tmax,int tmin)	{
-		try	{
-			captureFile.write(",");
-			captureFile.write(Integer.toString(symbol));
-			// Write the max , min and jitter to the file
-			captureFile.write(",");
-			captureFile.write(Integer.toString(tmax));
-			captureFile.write(",");
-			captureFile.write(Integer.toString(tmin));
-			// Record the frame sync state
-			captureFile.write(",");
-			if (frameSync==true) captureFile.write("1");
-			else captureFile.write("0");
-			}
-		catch (Exception e)	{
-			System.err.println("Error: " + e.getMessage());
-			captureMode=false;
-		}
-		}
-	
 	// Write a line to the debug file
 	public void debugDump (String line)	{
 	    try	{
@@ -853,20 +832,20 @@ public class DMRDecode {
 	
 	// Calculate the best possible jitter value from the samples ahead buffer
 	private int getBestJitterFromSamplesAhead()	{
-		int a,b,bestJitter=0,pos;
+		int a,b,bestJitter=0,startPos,pos;
 		long current,highest=-1;
 		// Run through each jitter possibility
 		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
 			current=0;
-			
-			pos=samplesAheadCounter+a;
-			if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
-			
+			// Calculate the starting position for each posibility 
+			startPos=samplesAheadCounter+a;
+			// Check if the circular buffer pointer needs to go to zero
+			if (startPos>=SAMPLESAHEADSIZE) startPos=startPos-SAMPLESAHEADSIZE;
 			// Measure the power at each possibility
 			for(b=0;b<SAMPLESAHEADSIZE;b=b+SAMPLESPERSYMBOL)	{
+				pos=startPos+b;
+				if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
 				current=current+Math.abs(samplesAheadBuffer[pos]);
-				
-				pos=pos+SAMPLESPERSYMBOL;
 				if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
 			}
 			// Is this the highest so far ?
@@ -909,6 +888,54 @@ public class DMRDecode {
 		if (jitter==jitterVal) return;
 		jitter=jitterVal;
 		changeJitter=true;
+	}
+	
+	// Code to prevent false positives on frame sync detection
+	private boolean furtherTestSync (int sbuf[])	{
+		int a,hiav=0,poscnt=0;
+		int loav=0,negcnt=0;
+		double hipos=-1,lopos=10000,posdif;
+		double hineg=-100000,loneg=10000,negdif;
+		
+		if (lastsynctype!=-1) return true;
+		
+		for (a=0;a<24;a++)	{
+			// Positive symbols
+			if ((sbuf[a]>0)&&(sbuf[a]>hipos)) hipos=sbuf[a];
+			if ((sbuf[a]>0)&&(sbuf[a]<lopos)) lopos=sbuf[a];
+			if (sbuf[a]>0)	{
+				hiav=hiav+sbuf[a];
+				poscnt++;
+			}
+			// Negative symbols
+			if ((sbuf[a]<0)&&(sbuf[a]>hineg)) hineg=sbuf[a];
+			if ((sbuf[a]<0)&&(sbuf[a]<loneg)) loneg=sbuf[a];
+			if (sbuf[a]<0)	{
+				loav=loav+sbuf[a];
+				negcnt++;
+			}
+		}
+		posdif=(lopos/hipos)*100;
+		hiav=hiav/poscnt;
+		
+		negdif=(hineg/loneg)*100;
+		loav=loav/negcnt;
+		
+		//if (posdif<60.0) return false;
+		//else if (negdif<60.0) return false;
+		//else return true;
+		
+			String l;
+			l=getTimeStamp()+" posdif="+Double.toString(posdif)+"% negdif="+Double.toString(negdif)+"%";
+			addLine(l);
+			fileWrite(l);
+			l=getTimeStamp()+" High Average "+Integer.toString(hiav);
+			l=l+" Low Average "+Integer.toString(loav);
+			addLine(l);
+			fileWrite(l);
+			
+		
+		return true;
 	}
 	
 	private boolean furtherTestSync (int sbuf[])	{
