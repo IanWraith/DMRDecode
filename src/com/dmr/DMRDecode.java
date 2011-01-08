@@ -47,8 +47,8 @@ public class DMRDecode {
 	private static boolean RUNNING=true;
 	private static final int SAMPLESPERSYMBOL=10;
 	private static final int SYMBOLCENTRE=4;
-	private static final int MAXSTARTVALUE=25000;
-	private static final int MINSTARTVALUE=-25000;
+	private static final int MAXSTARTVALUE=15000;
+	private static final int MINSTARTVALUE=-15000;
 	private int max=MAXSTARTVALUE;
 	private int min=MINSTARTVALUE;
 	private int centre=0;
@@ -92,13 +92,14 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int SYMBOLSAHEAD=10;
+	private static final int CHECKJITTERINTERVAL=100;
+	private static final int SYMBOLSAHEAD=250;
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
 	private int jitter=-1;
 	private boolean changeJitter=false;
-	private static final int CHECKJITTERINTERVAL=5;
+	
 	
 	
 	public static void main(String[] args) {
@@ -256,7 +257,7 @@ public class DMRDecode {
 					window.updateVolumeBar(highVol);
 				}
 				// If we have frame sync then check if the jitter needs checking
-				if (((t%CHECKJITTERINTERVAL)==0)&&(frameSync==true))	{
+				if ((t%CHECKJITTERINTERVAL)==0)	{
 					int bj=getBestJitterFromSamplesAhead();
 			    	changeJitter(bj);	
 				}
@@ -412,7 +413,6 @@ public class DMRDecode {
 	// 2 if data
 	private int syncCompare(boolean sync)	{
 		int i,dataSync=0,voiceSync=0,diff,circPos;
-		int syncroBuf[]=new int[24];
 		// Allow 5 dibits to be incorrect when syncronised and set the offset
 		if (sync==true)	diff=5;
 		else diff=0;
@@ -421,18 +421,16 @@ public class DMRDecode {
 		for (i=0;i<24;i++)	{
 			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC[i]) voiceSync++;
 			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC[i]) dataSync++;
-			// Make a copy of the sync sequence
-			syncroBuf[i]=symbolBuffer[circPos];
 			// Increment the circular buffer counter
 			circPos++;
 			if (circPos==144) circPos=0;
 		}
 		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff) {
-			if (furtherTestSync(syncroBuf)==false) return 0;
+			if (furtherTestSync()==false) return 0;
 			return 1;
 		}
 		else if ((DMR_DATA_SYNC.length-dataSync)<=diff)	{
-			if (furtherTestSync(syncroBuf)==false) return 0;
+			if (furtherTestSync()==false) return 0;
 			else return 2;
 		}
 		else return 0;	
@@ -844,7 +842,6 @@ public class DMRDecode {
 				pos=startPos+b;
 				if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
 				current=current+Math.abs(samplesAheadBuffer[pos]);
-				if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
 			}
 			// Is this the highest so far ?
 			if (current>highest)	{
@@ -889,11 +886,9 @@ public class DMRDecode {
 	}
 	
 	// Code to prevent false positives on frame sync detection
-	private boolean furtherTestSync (int sbuf[])	{
-		int a,hiav=0,poscnt=0;
-		int loav=0,negcnt=0;
-		double hipos=-1,lopos=10000,posdif;
-		double hineg=-100000,loneg=10000,negdif;
+	private boolean furtherTestSync ()	{
+		int a,hipos=0,lopos=10000,hineg=-10000,loneg=0;
+		int sbuf[]=getSyncSymbols();
 		
 		if (lastsynctype!=-1) return true;
 		
@@ -901,34 +896,21 @@ public class DMRDecode {
 			// Positive symbols
 			if ((sbuf[a]>0)&&(sbuf[a]>hipos)) hipos=sbuf[a];
 			if ((sbuf[a]>0)&&(sbuf[a]<lopos)) lopos=sbuf[a];
-			if (sbuf[a]>0)	{
-				hiav=hiav+sbuf[a];
-				poscnt++;
-			}
 			// Negative symbols
 			if ((sbuf[a]<0)&&(sbuf[a]>hineg)) hineg=sbuf[a];
 			if ((sbuf[a]<0)&&(sbuf[a]<loneg)) loneg=sbuf[a];
-			if (sbuf[a]<0)	{
-				loav=loav+sbuf[a];
-				negcnt++;
-			}
 		}
-		posdif=(lopos/hipos)*100;
-		hiav=hiav/poscnt;
 		
-		negdif=(hineg/loneg)*100;
-		loav=loav/negcnt;
 		
 		//if (posdif<60.0) return false;
 		//else if (negdif<60.0) return false;
 		//else return true;
 		
 			String l;
-			l=getTimeStamp()+" posdif="+Double.toString(posdif)+"% negdif="+Double.toString(negdif)+"%";
-			addLine(l);
-			fileWrite(l);
-			l=getTimeStamp()+" High Average "+Integer.toString(hiav);
-			l=l+" Low Average "+Integer.toString(loav);
+			l=getTimeStamp()+" High Pos "+Integer.toString(hipos);
+			l=l+" Low Pos "+Integer.toString(lopos);
+			l=l+" +  High Neg "+Integer.toString(hineg);
+			l=l+" Low Neg "+Integer.toString(loneg);
 			addLine(l);
 			fileWrite(l);
 			
