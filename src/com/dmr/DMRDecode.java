@@ -92,14 +92,13 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int CHECKJITTERINTERVAL=100;
-	private static final int SYMBOLSAHEAD=250;
+	private static final int CHECKJITTERINTERVAL=3;
+	private static final int SYMBOLSAHEAD=10;
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
-	private int jitter=-1;
+	private int jitter=1;
 	private boolean changeJitter=false;
-	
 	
 	
 	public static void main(String[] args) {
@@ -258,7 +257,7 @@ public class DMRDecode {
 				}
 				// If we have frame sync then check if the jitter needs checking
 				if ((t%CHECKJITTERINTERVAL)==0)	{
-					int bj=getBestJitterFromSamplesAhead();
+					int bj=limitedBestJitter();
 			    	changeJitter(bj);	
 				}
 				// Check if a frame has a voice or data sync
@@ -350,7 +349,7 @@ public class DMRDecode {
 	
 	// No carrier or carrier lost so clear the variables
 	public void noCarrier ()	{
-		jitter=-1;
+		//jitter=-1;
 		changeJitter=false;
 		lastsynctype=-1;
 		carrier=false;
@@ -474,14 +473,11 @@ public class DMRDecode {
 	
 		if (firstframe==true)	{	
 			// First frame since sync
-			// Get the jitter value
-	    	bj=getBestJitterFromSamplesAhead();
-	    	changeJitter(bj);
 	    	// If debug enabled record obtaining sync
 			if (debug==true)	{
 				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
 				else l=getTimeStamp()+" DMR Data Sync Acquired";
-				l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(bj);
+				l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
 				l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
 				addLine(l);
 				fileWrite(l);
@@ -827,7 +823,7 @@ public class DMRDecode {
 	}
 	
 	// Calculate the best possible jitter value from the samples ahead buffer
-	private int getBestJitterFromSamplesAhead()	{
+	private int xxgetBestJitterFromSamplesAhead()	{
 		int a,b,bestJitter=0,startPos,pos;
 		long current,highest=-1;
 		// Run through each jitter possibility
@@ -850,6 +846,46 @@ public class DMRDecode {
 			}
 		}
 		return bestJitter;
+	}
+	
+	private int limitedBestJitter()	{
+		int bestJitter=0;
+		long energy,hienergy=0;
+		int jit[]=new int[3];
+		int a;
+		
+		jit[0]=jitter-1;
+		if (jit[0]==-1) jit[0]=9;
+		jit[1]=jitter;
+		jit[2]=jitter+1;
+		if (jit[2]==10) jit[2]=0;
+		
+		for (a=0;a<3;a++)	{
+			energy=energyFromSamplesAhead(jit[a]);
+			if (energy>hienergy)	{
+				bestJitter=jit[a];
+				hienergy=energy;
+			}
+		}
+		
+		return bestJitter;
+	}
+	
+	// Calculate the best possible jitter value from the samples ahead buffer
+	private long energyFromSamplesAhead (int a)	{
+		int b,startPos,pos;
+		long current=0;
+		// Calculate the starting position
+		startPos=samplesAheadCounter+a;
+		// Check if the circular buffer pointer needs to go to zero
+		if (startPos>=SAMPLESAHEADSIZE) startPos=startPos-SAMPLESAHEADSIZE;
+		// Measure the power at each possibility
+		for(b=0;b<SAMPLESAHEADSIZE;b=b+SAMPLESPERSYMBOL)	{
+			pos=startPos+b;
+			if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
+			current=current+Math.abs(samplesAheadBuffer[pos]);
+		}
+		return current;
 	}
 	
 	
