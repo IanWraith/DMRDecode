@@ -435,8 +435,6 @@ public class DMRDecode {
 			if (furtherTestSync(syncroBuf)==false) return 0;
 			else return 2;
 		}
-			return 2;
-		}
 		else return 0;	
 	}
 	
@@ -938,43 +936,5 @@ public class DMRDecode {
 		return true;
 	}
 	
-	private boolean furtherTestSync (int sbuf[])	{
-		int a,hiav=0,poscnt=0;
-		int loav=0,negcnt=0;
-		double hipos=-1,lopos=10000,posdif;
-		double hineg=-100000,loneg=10000,negdif;
-		for (a=0;a<24;a++)	{
-			// Positive symbols
-			if ((sbuf[a]>0)&&(sbuf[a]>hipos)) hipos=sbuf[a];
-			if ((sbuf[a]>0)&&(sbuf[a]<lopos)) lopos=sbuf[a];
-			if (sbuf[a]>0)	{
-				hiav=hiav+sbuf[a];
-				poscnt++;
-			}
-			// Negative symbols
-			if ((sbuf[a]<0)&&(sbuf[a]>hineg)) hineg=sbuf[a];
-			if ((sbuf[a]<0)&&(sbuf[a]<loneg)) loneg=sbuf[a];
-			if (sbuf[a]<0)	{
-				loav=loav+sbuf[a];
-				negcnt++;
-			}
-		}
-		posdif=(lopos/hipos)*100;
-		hiav=hiav/poscnt;
-		
-		negdif=(hineg/loneg)*100;
-		loav=loav/negcnt;
-		
-		if (firstframe==true)	{
-			frameCalcs(loav,hiav);
-			String l=getTimeStamp()+" High Average "+Integer.toString(hiav);
-			l=l+" Low Average "+Integer.toString(loav);
-			addLine(l);
-		}
-		
-		if (posdif<60.0) return false;
-		else if (negdif<60.0) return false;
-		else return true;
-	}
 	
 }
