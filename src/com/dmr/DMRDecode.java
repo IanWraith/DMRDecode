@@ -887,6 +887,17 @@ public class DMRDecode {
 		// Decide if we need to jitter up or down
 		if (jitterVal>jitter) jitterDown=true;
 		else if (jitterVal<jitter) jitterUp=true;
+		
+		if ((jitter==0)&&(jitterVal==9))	{
+			jitterUp=true;
+			jitterDown=false;
+		}
+		
+		if ((jitter==9)&&(jitterVal==0))	{
+			jitterUp=false;
+			jitterDown=true;
+		}
+		
 		// Set this as the jitter value
 		jitter=jitterVal;
 	}
