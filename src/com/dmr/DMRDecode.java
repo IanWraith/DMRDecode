@@ -98,8 +98,7 @@ public class DMRDecode {
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
 	private int jitter=1;
-	private boolean jitterDown=false;
-	private boolean jitterUp=false;
+	private int jitterAdjust=0;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -193,15 +192,12 @@ public class DMRDecode {
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
 			  // Allow extra samples to be added or removed to allow for jitter
-		      if (i==5)	{
-		    	 if (jitterDown==true) i--;
-		    	 else if (jitterUp==true) i++;  
-		    	 jitterDown=false;
-		    	 jitterUp=false;
+		      if ((i==5)&&(jitterAdjust!=0))	{
+		    	  i=i+jitterAdjust;
+		    	  jitterAdjust=0;
 		      }
 		      // Get the sample from whatever source
 			  sample=getSample(false);
-	
 			  // Now pull the oldest sample from the samples ahead buffer
 			  sample=samplesAheadBuffer[samplesAheadCounter];
 			  // Process it
@@ -885,19 +881,10 @@ public class DMRDecode {
 	private void changeJitter (int jitterVal)	{
 		if (jitter==jitterVal) return;
 		// Decide if we need to jitter up or down
-		if (jitterVal>jitter) jitterDown=true;
-		else if (jitterVal<jitter) jitterUp=true;
-		
-		if ((jitter==0)&&(jitterVal==9))	{
-			jitterUp=true;
-			jitterDown=false;
-		}
-		
-		if ((jitter==9)&&(jitterVal==0))	{
-			jitterUp=false;
-			jitterDown=true;
-		}
-		
+		if ((jitter==0)&&(jitterVal==9)) jitterAdjust=1;
+		else if ((jitter==9)&&(jitterVal==0)) jitterAdjust=-1;	
+		else if (jitterVal>jitter) jitterAdjust=-1;
+		else if (jitterVal<jitter) jitterAdjust=1;
 		// Set this as the jitter value
 		jitter=jitterVal;
 	}
