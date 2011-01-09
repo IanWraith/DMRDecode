@@ -92,8 +92,8 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int CHECKJITTERINTERVAL=75;
-	private static final int SYMBOLSAHEAD=50;
+	private static final int CHECKJITTERINTERVAL=5;
+	private static final int SYMBOLSAHEAD=5;
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
@@ -252,10 +252,7 @@ public class DMRDecode {
 					window.updateVolumeBar(highVol);
 				}
 				// If we have frame sync then check if the jitter needs checking
-				if ((t%CHECKJITTERINTERVAL)==0)	{
-					int bj=limitedBestJitter();
-			    	changeJitter(bj);	
-				}
+				if ((t%CHECKJITTERINTERVAL)==0)	changeJitter(limitedBestJitter());	
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
