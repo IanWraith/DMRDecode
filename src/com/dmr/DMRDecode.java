@@ -92,13 +92,15 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int CHECKJITTERINTERVAL=5;
-	private static final int SYMBOLSAHEAD=5;
+	private static final int CHECKJITTERINTERVAL=1000;
+	private static final int CHECKJITTERINTERVAL_NOSYNC=25;
+	private static final int SYMBOLSAHEAD=100;
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
 	private int jitter=1;
 	private int jitterAdjust=0;
+	private int runningSymbolCount=0;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -208,6 +210,8 @@ public class DMRDecode {
 		    }
 		  symbol=(sum/count);
 		  symbolcnt++;		  
+		  runningSymbolCount++;
+		  if (runningSymbolCount==Integer.MAX_VALUE) runningSymbolCount=0;
 		  return symbol;
 	  }
 	  
@@ -251,8 +255,9 @@ public class DMRDecode {
 					highVol=lineInThread.returnVolumeAverage();
 					window.updateVolumeBar(highVol);
 				}
-				// If we have frame sync then check if the jitter needs checking
-				if ((t%CHECKJITTERINTERVAL)==0)	changeJitter(limitedBestJitter());	
+				// Check the jitter setting
+				if ((frameSync==true)&&(runningSymbolCount%CHECKJITTERINTERVAL)==0) changeJitter(limitedBestJitter());
+				else if ((frameSync==false)&&(runningSymbolCount%CHECKJITTERINTERVAL_NOSYNC)==0) changeJitter(limitedBestJitter());	
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
