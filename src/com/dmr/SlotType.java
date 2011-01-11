@@ -1,7 +1,7 @@
 package com.dmr;
 
 public class SlotType {
-	private int golayValue;
+	private int golayValue,dataType;
 	private String line;
 	private boolean passErrorCheck;
 	
@@ -13,7 +13,7 @@ public class SlotType {
 	
 	// The main decode and display method
 	private boolean mainDecode (byte[] dibit_buf)	{
-		int a,r,colourCode,dataType;
+		int a,r,colourCode;
 		boolean dataSLOT[]=new boolean[20];
 		// Convert from dibits into boolean
 		// DATA SLOT is broken into 2 parts either side of the sync burst
@@ -220,5 +220,9 @@ public class SlotType {
 		return golayValue;
 	}
 	
+	// Return the data type
+	public int returnDataType ()	{
+		return dataType;
+	}
 	
 }
