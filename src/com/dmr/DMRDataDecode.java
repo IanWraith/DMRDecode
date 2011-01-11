@@ -1,9 +1,9 @@
 package com.dmr;
 
 public class DMRDataDecode {
-	private int golayValue=-1;
+	private int golayValue=-1,dataType=-1;
 	private String line[]=new String[10];
-	private boolean CACHres,SLOT_TYPEres;
+	private boolean CACHres,SLOT_TYPEres,MAINres;
 	
 	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
@@ -26,7 +26,20 @@ public class DMRDataDecode {
 			if (SLOT_TYPEres==false)	{
 				golayValue=slottype.getGolayValue();
 			}
+			else	{
+				// If no error then get the data type
+				dataType=slottype.returnDataType();
+			}
+			
 		}
+		// Main section decode
+		BPTC19696 bptc19696=new BPTC19696();
+		// CSBK
+		if (dataType==3)	{
+			MAINres=bptc19696.decode(dibit_buf);
+		}
+		
+		
 		theApp.frameCount++;
 		return line;
 	}
