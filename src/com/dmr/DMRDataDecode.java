@@ -3,7 +3,7 @@ package com.dmr;
 public class DMRDataDecode {
 	private int golayValue=-1,dataType=-1;
 	private String line[]=new String[10];
-	private boolean CACHres,SLOT_TYPEres,MAINres;
+	private boolean CACHres,SLOT_TYPEres,BPTCres;
 	
 	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
@@ -36,8 +36,9 @@ public class DMRDataDecode {
 		BPTC19696 bptc19696=new BPTC19696();
 		// CSBK
 		if (dataType==3)	{
-			MAINres=bptc19696.decode(dibit_buf);
+			BPTCres=bptc19696.decode(dibit_buf);
 		}
+		
 		
 		
 		theApp.frameCount++;
@@ -45,7 +46,7 @@ public class DMRDataDecode {
 	}
 
 	public boolean isError() {
-	  if ((SLOT_TYPEres==true)&&(CACHres==true)) return true;
+	  if ((SLOT_TYPEres==true)&&(CACHres==true)&&(BPTCres==true)) return true;
 	  else return false;
 	}
 	

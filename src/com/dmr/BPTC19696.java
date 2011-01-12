@@ -7,14 +7,17 @@ public class BPTC19696 {
 	
 	// The main decode function
 	public boolean decode (byte[] dibit_buf)	{
-		boolean testOK;
 		// Get the raw binary
 		extractBinary(dibit_buf);
 		// Deinterleave
 		deInterleave();
 		// Error check
-		testOK=errorCheck();
-		return testOK;
+		if (errorCheck()==true)	{
+			// Extract Data
+			extractData();
+			return true;
+		}
+		else return false;
 	}
 	
 	// Extract the binary from the dibit data
@@ -65,28 +68,33 @@ public class BPTC19696 {
 	// Deinterleave the raw data
 	private void deInterleave ()	{
 		int a,interleaveSequence,pos=0;
-		for (a=0;a<195;a++)	{
+		for (a=0;a<196;a++)	{
 			// Calculate the interleave sequence
 			interleaveSequence=(a*13)%196;
-			// Shuffle the data
-			deInterData[pos]=rawData[interleaveSequence];
-			// Data fills the array in columns
-			pos=pos+15;
-			if (pos>194) pos=pos-194;
+			// Ignore the first bit as this is R(3) which is not used
+			if (interleaveSequence>0)	{
+				// Shuffle the data
+				deInterData[pos]=rawData[interleaveSequence];
+				// Data fills the array in columns
+				pos=pos+15;
+				if (pos>194) pos=pos-194;
+			}
 		}
 	}
 	
 	// Check each row with a Hamming (15,11,3) code
 	// Return false if there is a problem
 	private boolean errorCheck ()	{
-		int a;
+		int a,r,offset;
 		boolean row[]=new boolean[15];
-		// First row
-		for (a=0;a<15;a++)	{
-			row[a]=deInterData[a];
+		// Run through each of the 9 rows containing data
+		for (r=0;r<9;r++)	{
+			offset=r*15;
+			for (a=0;a<15;a++)	{
+				row[a]=deInterData[a+offset];
+			}
+			if (hamming15113(row)==false) return false;
 		}
-		if (hamming15113(row)==false) return false;
-		
 	return true;
 	}
 	
@@ -99,11 +107,15 @@ public class BPTC19696 {
 		c[2]=d[2]^d[3]^d[4]^d[5]^d[7]^d[9]^d[10];
 		c[3]=d[0]^d[1]^d[2]^d[4]^d[6]^d[7]^d[10];
 		// Compare these with the actual bits
-		if (c[0]!=d[11]) return false;
-		else if (c[1]!=d[12]) return false;
-		else if (c[2]!=d[13]) return false;
-		else if (c[3]!=d[14]) return false;
-		else return true;
+		if ((c[0]==d[11])&&(c[1]&&d[12])&&(c[2]==d[13])&&(c[3]==d[14])) return true;
+		else return false;
+	}
+	
+	// Extract the 96 bits of payload
+	private void extractData()	{
+		
+		// TODO : Extract the 96 bits of payload data from the BPTC
+		
 	}
 
 }
