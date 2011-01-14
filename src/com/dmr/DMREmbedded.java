@@ -111,11 +111,21 @@ public class DMREmbedded {
 			// Is this a Data Frame with Embedded signalling
 			// See if its has a slot type field that passes its error check
 			SlotType slottype=new SlotType();
-			boolean SLOT_TYPEres;
+			boolean SLOT_TYPEres,BPTCres=false;
 			line[0]="<b>"+theApp.getTimeStamp()+" DMR Data Frame with Embedded Signalling </b>";
 			line[2]=slottype.decode(dibit_buf);
 			SLOT_TYPEres=slottype.isPassErrorCheck();
-			return SLOT_TYPEres;
+			// If the slot type is OK try to decode the rest
+			if (SLOT_TYPEres==true)	{
+				int dataType=slottype.returnDataType();
+				// CSBK
+				if (dataType==3)	{
+					BPTC19696 bptc19696=new BPTC19696();
+					BPTCres=bptc19696.decode(dibit_buf);
+				}
+			}
+			if ((SLOT_TYPEres==true)&&(BPTCres==true)) return true;
+			else return false;
 		}
 	}
 	
