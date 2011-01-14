@@ -459,9 +459,8 @@ public class DMRDecode {
 	
 	// Handle an incoming DMR Frame
 	void processFrame ()	{
-		String l;
-		
-		if (firstframe==true)	{	
+		if (firstframe==true)	{
+			String l;
 			// First frame since sync
 	    	// If debug enabled record obtaining sync
 			if (debug==true)	{

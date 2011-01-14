@@ -29,17 +29,16 @@ public class DMRDataDecode {
 			else	{
 				// If no error then get the data type
 				dataType=slottype.returnDataType();
+				// Main section decode
+				// CSBK
+				if (dataType==3)	{
+					BPTC19696 bptc19696=new BPTC19696();
+					BPTCres=bptc19696.decode(dibit_buf);
+				}
+
 			}
 			
 		}
-		// Main section decode
-		BPTC19696 bptc19696=new BPTC19696();
-		// CSBK
-		if (dataType==3)	{
-			BPTCres=bptc19696.decode(dibit_buf);
-		}
-		
-		
 		
 		theApp.frameCount++;
 		return line;

@@ -117,10 +117,10 @@ public class DMREmbedded {
 			SLOT_TYPEres=slottype.isPassErrorCheck();
 			// If the slot type is OK try to decode the rest
 			if (SLOT_TYPEres==true)	{
-				BPTC19696 bptc19696=new BPTC19696();
 				int dataType=slottype.returnDataType();
 				// CSBK
 				if (dataType==3)	{
+					BPTC19696 bptc19696=new BPTC19696();
 					BPTCres=bptc19696.decode(dibit_buf);
 				}
 			}

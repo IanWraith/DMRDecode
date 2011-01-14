@@ -1,5 +1,7 @@
 package com.dmr;
 
+import javax.swing.JOptionPane;
+
 public class BPTC19696 {
 	private boolean rawData[]=new boolean[196];
 	private boolean deInterData[]=new boolean[196];
@@ -82,6 +84,44 @@ public class BPTC19696 {
 		}
 	}
 	
+	private boolean testTheory ()	{
+		boolean row[]=new boolean[15];
+		// R2
+		row[0]=rawData[13];
+		// R1
+		row[1]=rawData[182];
+		// R0
+		row[2]=rawData[155];
+		// I95
+		row[3]=rawData[128];
+		// I94
+		row[4]=rawData[101];
+		// I93
+		row[5]=rawData[74];
+		// I92
+		row[6]=rawData[47];
+		// I91
+		row[7]=rawData[20];
+		// I90
+		row[8]=rawData[189];
+		// I89
+		row[9]=rawData[162];
+		// I88
+		row[10]=rawData[135];
+		// H_R1(3)
+		row[11]=rawData[108];
+		// H_R1(2)
+		row[12]=rawData[81];
+		// H_R1(1)
+		row[13]=rawData[54];
+		// H_R1(0)
+		row[14]=rawData[27];
+		
+		boolean tst=hamming15113(row);
+		
+		return tst;
+	}
+	
 	// Check each row with a Hamming (15,11,3) code
 	// Return false if there is a problem
 	private boolean errorCheck ()	{
@@ -107,7 +147,7 @@ public class BPTC19696 {
 		c[2]=d[2]^d[3]^d[4]^d[5]^d[7]^d[9]^d[10];
 		c[3]=d[0]^d[1]^d[2]^d[4]^d[6]^d[7]^d[10];
 		// Compare these with the actual bits
-		if ((c[0]==d[11])&&(c[1]&&d[12])&&(c[2]==d[13])&&(c[3]==d[14])) return true;
+		if ((c[0]==d[11])&&(c[1]==d[12])&&(c[2]==d[13])&&(c[3]==d[14])) return true;
 		else return false;
 	}
 	
