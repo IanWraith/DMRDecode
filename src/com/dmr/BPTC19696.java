@@ -84,7 +84,7 @@ public class BPTC19696 {
 		}
 	}
 	
-	private boolean testTheory ()	{
+	private boolean testHorizontalTheory ()	{
 		boolean row[]=new boolean[15];
 		// R2
 		row[0]=rawData[13];
@@ -122,6 +122,29 @@ public class BPTC19696 {
 		return tst;
 	}
 	
+	private boolean testVerticalTheory ()	{
+		boolean col[]=new boolean[13];
+		col[0]=rawData[];
+		col[1]=rawData[];
+		col[2]=rawData[];
+		col[3]=rawData[];
+		col[4]=rawData[];
+		col[5]=rawData[];
+		col[6]=rawData[];
+		col[7]=rawData[];
+		col[8]=rawData[];
+		col[9]=rawData[];
+		col[10]=rawData[];
+		col[11]=rawData[];
+		col[12]=rawData[];
+		col[13]=rawData[];
+		
+		boolean tst=hamming1393(col);
+		
+		return tst;
+		
+	}
+	
 	// Check each row with a Hamming (15,11,3) code
 	// Return false if there is a problem
 	private boolean errorCheck ()	{
@@ -148,6 +171,19 @@ public class BPTC19696 {
 		c[3]=d[0]^d[1]^d[2]^d[4]^d[6]^d[7]^d[10];
 		// Compare these with the actual bits
 		if ((c[0]==d[11])&&(c[1]==d[12])&&(c[2]==d[13])&&(c[3]==d[14])) return true;
+		else return false;
+	}
+	
+	// Hamming (13,9,3) check a boolean data array
+	private boolean hamming1393 (boolean d[])	{
+		boolean c[]=new boolean[4];
+		// Calculate the checksum this column should have
+		c[0]=d[0]^d[1]^d[3]^d[5]^d[6];
+		c[1]=d[0]^d[1]^d[2]^d[4]^d[6]^d[7];
+		c[2]=d[0]^d[1]^d[3]^d[3]^d[5]^d[7]^d[8];
+		c[3]=d[0]^d[2]^d[4]^d[5]^d[8];
+		// Compare these with the actual bits
+		if ((c[0]==d[9])&&(c[1]==d[10])&&(c[2]==d[11])&&(c[3]==d[12])) return true;
 		else return false;
 	}
 	
