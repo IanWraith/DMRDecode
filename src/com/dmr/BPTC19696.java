@@ -124,20 +124,19 @@ public class BPTC19696 {
 	
 	private boolean testVerticalTheory ()	{
 		boolean col[]=new boolean[13];
-		col[0]=rawData[];
-		col[1]=rawData[];
-		col[2]=rawData[];
-		col[3]=rawData[];
-		col[4]=rawData[];
-		col[5]=rawData[];
-		col[6]=rawData[];
-		col[7]=rawData[];
-		col[8]=rawData[];
-		col[9]=rawData[];
-		col[10]=rawData[];
-		col[11]=rawData[];
-		col[12]=rawData[];
-		col[13]=rawData[];
+		col[0]=rawData[13];
+		col[1]=rawData[26];
+		col[2]=rawData[39];
+		col[3]=rawData[52];
+		col[4]=rawData[65];
+		col[5]=rawData[78];
+		col[6]=rawData[91];
+		col[7]=rawData[104];
+		col[8]=rawData[117];
+		col[9]=rawData[130];
+		col[10]=rawData[143];
+		col[11]=rawData[156];
+		col[12]=rawData[169];
 		
 		boolean tst=hamming1393(col);
 		
@@ -148,17 +147,29 @@ public class BPTC19696 {
 	// Check each row with a Hamming (15,11,3) code
 	// Return false if there is a problem
 	private boolean errorCheck ()	{
-		int a,r,offset;
+		int a,r,c,pos,rowCount=0,colCount=0;
 		boolean row[]=new boolean[15];
+		boolean col[]=new boolean[13];
 		// Run through each of the 9 rows containing data
 		for (r=0;r<9;r++)	{
-			offset=r*15;
 			for (a=0;a<15;a++)	{
-				row[a]=deInterData[a+offset];
+				pos=(r*15)+a;
+				row[a]=deInterData[pos];
 			}
-			if (hamming15113(row)==false) return false;
+			if (hamming15113(row)==true) rowCount++;
 		}
-	return true;
+		
+		// Run through each of the 15 columns
+		for (c=0;c<15;c++)	{
+			for (a=0;a<13;a++){
+				pos=(c*13)+a;
+				col[a]=deInterData[pos];
+			}
+			if (hamming1393(col)==true) colCount++;
+		}
+		
+	if ((rowCount==9)&&(colCount==15)) return true;
+	else return false;
 	}
 	
 	// Hamming (15,11,3) check a boolean data array
@@ -180,7 +191,7 @@ public class BPTC19696 {
 		// Calculate the checksum this column should have
 		c[0]=d[0]^d[1]^d[3]^d[5]^d[6];
 		c[1]=d[0]^d[1]^d[2]^d[4]^d[6]^d[7];
-		c[2]=d[0]^d[1]^d[3]^d[3]^d[5]^d[7]^d[8];
+		c[2]=d[0]^d[1]^d[2]^d[3]^d[5]^d[7]^d[8];
 		c[3]=d[0]^d[2]^d[4]^d[5]^d[8];
 		// Compare these with the actual bits
 		if ((c[0]==d[9])&&(c[1]==d[10])&&(c[2]==d[11])&&(c[3]==d[12])) return true;
