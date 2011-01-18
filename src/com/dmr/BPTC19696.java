@@ -11,6 +11,9 @@ public class BPTC19696 {
 		extractBinary(dibit_buf);
 		// Deinterleave
 		deInterleave();
+		
+		recordData();
+		
 		// Error check
 		if (errorCheck()==true)	{
 			// Extract Data
@@ -138,5 +141,55 @@ public class BPTC19696 {
 		// TODO : Extract the 96 bits of payload data from the BPTC
 		
 	}
+	
+	private void recordData()	{
+		int a,pos=1;
+		String l="";
+	
+		for (a=1;a<196;a++)	{
+			if (deInterData[pos]==false) l=l+"0";
+			else l=l+"1";
+			pos=pos+13;
+			if (pos>195)	{
+				l=l+"\n";
+				pos=pos-194;
+			}	
+		}
+		l=l+"\nRaw\n";
+		for (a=0;a<196;a++)	{
+			if (rawData[a]==false) l=l+"0";
+			else l=l+"1";
+		}
+		l=l+"\nDeinterleaved\n";
+		for (a=0;a<196;a++)	{
+			if (deInterData[a]==false) l=l+"0";
+			else l=l+"1";
+		}
+		String r=binaryDisp(1);
+		r=r+binaryDisp(14);
+		r=r+binaryDisp(27);
+		r=r+binaryDisp(40);
+		r=r+binaryDisp(53);
+		r=r+binaryDisp(66);
+		r=r+binaryDisp(79);
+		r=r+binaryDisp(92);
+		r=r+binaryDisp(105);
+		r=r+binaryDisp(118);
+		r=r+binaryDisp(131);
+		r=r+binaryDisp(144);
+		r=r+binaryDisp(157);
+		r=r+binaryDisp(170);
+		r=r+binaryDisp(183);
+		
+		
+		r=r+" ";
+		
+	}
+	
+	private String binaryDisp(int t)	{
+		if (deInterData[t]==false) return "0";
+		else return "1";
+	}
+	
 
 }
