@@ -1,7 +1,5 @@
 package com.dmr;
 
-import javax.swing.JOptionPane;
-
 public class BPTC19696 {
 	private boolean rawData[]=new boolean[196];
 	private boolean deInterData[]=new boolean[196];
@@ -69,79 +67,14 @@ public class BPTC19696 {
 	
 	// Deinterleave the raw data
 	private void deInterleave ()	{
-		int a,interleaveSequence,pos=0;
+		int a,interleaveSequence;
+		// The first bit is R(3) which is not used so can be ignored
 		for (a=0;a<196;a++)	{
 			// Calculate the interleave sequence
 			interleaveSequence=(a*13)%196;
-			// Ignore the first bit as this is R(3) which is not used
-			if (interleaveSequence>0)	{
-				// Shuffle the data
-				deInterData[pos]=rawData[interleaveSequence];
-				// Data fills the array in columns
-				pos=pos+15;
-				if (pos>194) pos=pos-194;
-			}
+			// Shuffle the data
+			deInterData[a]=rawData[interleaveSequence];
 		}
-	}
-	
-	private boolean testHorizontalTheory ()	{
-		boolean row[]=new boolean[15];
-		// R2
-		row[0]=rawData[13];
-		// R1
-		row[1]=rawData[182];
-		// R0
-		row[2]=rawData[155];
-		// I95
-		row[3]=rawData[128];
-		// I94
-		row[4]=rawData[101];
-		// I93
-		row[5]=rawData[74];
-		// I92
-		row[6]=rawData[47];
-		// I91
-		row[7]=rawData[20];
-		// I90
-		row[8]=rawData[189];
-		// I89
-		row[9]=rawData[162];
-		// I88
-		row[10]=rawData[135];
-		// H_R1(3)
-		row[11]=rawData[108];
-		// H_R1(2)
-		row[12]=rawData[81];
-		// H_R1(1)
-		row[13]=rawData[54];
-		// H_R1(0)
-		row[14]=rawData[27];
-		
-		boolean tst=hamming15113(row);
-		
-		return tst;
-	}
-	
-	private boolean testVerticalTheory ()	{
-		boolean col[]=new boolean[13];
-		col[0]=rawData[13];
-		col[1]=rawData[26];
-		col[2]=rawData[39];
-		col[3]=rawData[52];
-		col[4]=rawData[65];
-		col[5]=rawData[78];
-		col[6]=rawData[91];
-		col[7]=rawData[104];
-		col[8]=rawData[117];
-		col[9]=rawData[130];
-		col[10]=rawData[143];
-		col[11]=rawData[156];
-		col[12]=rawData[169];
-		
-		boolean tst=hamming1393(col);
-		
-		return tst;
-		
 	}
 	
 	// Check each row with a Hamming (15,11,3) code
@@ -152,18 +85,19 @@ public class BPTC19696 {
 		boolean col[]=new boolean[13];
 		// Run through each of the 9 rows containing data
 		for (r=0;r<9;r++)	{
+			pos=r+1;
 			for (a=0;a<15;a++)	{
-				pos=(r*15)+a;
 				row[a]=deInterData[pos];
+				pos=pos+13;
 			}
 			if (hamming15113(row)==true) rowCount++;
 		}
-		
 		// Run through each of the 15 columns
+		pos=1;
 		for (c=0;c<15;c++)	{
 			for (a=0;a<13;a++){
-				pos=(c*13)+a;
 				col[a]=deInterData[pos];
+				pos++;
 			}
 			if (hamming1393(col)==true) colCount++;
 		}
