@@ -123,6 +123,11 @@ public class DMREmbedded {
 					BPTC19696 bptc19696=new BPTC19696();
 					BPTCres=bptc19696.decode(dibit_buf);
 				}
+				// Idle
+				if (dataType==9)	{
+					BPTC19696 bptc19696=new BPTC19696();
+					BPTCres=bptc19696.decode(dibit_buf);
+				}
 			}
 			if ((SLOT_TYPEres==true)&&(BPTCres==true)) return true;
 			else return false;
