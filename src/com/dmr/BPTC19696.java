@@ -74,7 +74,7 @@ public class BPTC19696 {
 		// The first bit is R(3) which is not used so can be ignored
 		for (a=0;a<196;a++)	{
 			// Calculate the interleave sequence
-			interleaveSequence=(a*13)%196;
+			interleaveSequence=(a*181)%196;
 			// Shuffle the data
 			deInterData[a]=rawData[interleaveSequence];
 		}
