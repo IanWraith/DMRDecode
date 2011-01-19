@@ -11,9 +11,6 @@ public class BPTC19696 {
 		extractBinary(dibit_buf);
 		// Deinterleave
 		deInterleave();
-		
-		recordData();
-		
 		// Error check
 		if (errorCheck()==true)	{
 			// Extract Data
@@ -83,30 +80,29 @@ public class BPTC19696 {
 	// Check each row with a Hamming (15,11,3) code
 	// Return false if there is a problem
 	private boolean errorCheck ()	{
-		int a,r,c,pos,rowCount=0,colCount=0;
+		int a,r,c,pos;
 		boolean row[]=new boolean[15];
 		boolean col[]=new boolean[13];
 		// Run through each of the 9 rows containing data
 		for (r=0;r<9;r++)	{
-			pos=r+1;
+			pos=(r*15)+1;
 			for (a=0;a<15;a++)	{
 				row[a]=deInterData[pos];
-				pos=pos+13;
-			}
-			if (hamming15113(row)==true) rowCount++;
-		}
-		// Run through each of the 15 columns
-		pos=1;
-		for (c=0;c<15;c++)	{
-			for (a=0;a<13;a++){
-				col[a]=deInterData[pos];
 				pos++;
 			}
-			if (hamming1393(col)==true) colCount++;
+			if (hamming15113(row)==false) return false;
+		}
+		// Run through each of the 15 columns
+		for (c=0;c<15;c++)	{
+			pos=c+1;
+			for (a=0;a<13;a++){
+				col[a]=deInterData[pos];
+				pos=pos+15;
+			}
+			if (hamming1393(col)==false) return false;
 		}
 		
-	if ((rowCount==9)&&(colCount==15)) return true;
-	else return false;
+	return true;
 	}
 	
 	// Hamming (15,11,3) check a boolean data array
@@ -137,59 +133,48 @@ public class BPTC19696 {
 	
 	// Extract the 96 bits of payload
 	private void extractData()	{
-		
-		// TODO : Extract the 96 bits of payload data from the BPTC
-		
+		int a,pos=0;
+		for (a=4;a<=11;a++)	{
+			outData[pos]=deInterData[a];
+			pos++;
+		}
+		for (a=16;a<=26;a++)	{
+			outData[pos]=deInterData[a];
+			pos++;
+		}
+		for (a=31;a<=41;a++)	{
+			outData[pos]=deInterData[a];
+			pos++;
+		}
+		for (a=46;a<=56;a++)	{
+			outData[pos]=deInterData[a];
+			pos++;
+		}
+		for (a=61;a<=71;a++)	{
+			outData[pos]=deInterData[a];
+			pos++;
+		}
+		for (a=76;a<=86;a++)	{
+			outData[pos]=deInterData[a];
+			pos++;
+		}
+		for (a=91;a<=101;a++)	{
+			outData[pos]=deInterData[a];
+			pos++;
+		}
+		for (a=106;a<=116;a++)	{
+			outData[pos]=deInterData[a];
+			pos++;
+		}
+		for (a=121;a<=131;a++)	{
+			outData[pos]=deInterData[a];
+			pos++;
+		}
 	}
 	
-	private void recordData()	{
-		int a,pos=1;
-		String l="";
-	
-		for (a=1;a<196;a++)	{
-			if (deInterData[pos]==false) l=l+"0";
-			else l=l+"1";
-			pos=pos+13;
-			if (pos>195)	{
-				l=l+"\n";
-				pos=pos-194;
-			}	
-		}
-		l=l+"\nRaw\n";
-		for (a=0;a<196;a++)	{
-			if (rawData[a]==false) l=l+"0";
-			else l=l+"1";
-		}
-		l=l+"\nDeinterleaved\n";
-		for (a=0;a<196;a++)	{
-			if (deInterData[a]==false) l=l+"0";
-			else l=l+"1";
-		}
-		String r=binaryDisp(1);
-		r=r+binaryDisp(14);
-		r=r+binaryDisp(27);
-		r=r+binaryDisp(40);
-		r=r+binaryDisp(53);
-		r=r+binaryDisp(66);
-		r=r+binaryDisp(79);
-		r=r+binaryDisp(92);
-		r=r+binaryDisp(105);
-		r=r+binaryDisp(118);
-		r=r+binaryDisp(131);
-		r=r+binaryDisp(144);
-		r=r+binaryDisp(157);
-		r=r+binaryDisp(170);
-		r=r+binaryDisp(183);
-		
-		
-		r=r+" ";
-		
+	// Pass the data output on
+	public boolean[] dataOut()	{
+		return outData;
 	}
 	
-	private String binaryDisp(int t)	{
-		if (deInterData[t]==false) return "0";
-		else return "1";
-	}
-	
-
 }
