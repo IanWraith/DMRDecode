@@ -25,5 +25,14 @@ public class crcTest extends TestCase {
 		returnCRC=crctest.getCrc8Value();
 		assertEquals(152,returnCRC);
 	}
+	
+	// Test the CSBK CCITT CRC code
+	public void testcrcCSBK ()	{
+		crc crctest=new crc();
+		boolean testCSBK[]={true,false,true,true,true,true,true,false,false,false,false,true,false,false,false,false,true,true,true,false,false,false,true,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,true,false,false,true,true,false,true,true,false,true,true,false,false,true};
+	    boolean ok=crctest.crcCSBK(testCSBK);
+	    assertEquals(true,ok);	
+	}
+	
 
 }

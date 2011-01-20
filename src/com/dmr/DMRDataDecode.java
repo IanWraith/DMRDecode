@@ -33,7 +33,26 @@ public class DMRDataDecode {
 				// CSBK
 				if (dataType==3)	{
 					BPTC19696 bptc19696=new BPTC19696();
-					BPTCres=bptc19696.decode(dibit_buf);
+					if (bptc19696.decode(dibit_buf)==true)	{
+						crc tCRC=new crc();
+						boolean bits[]=bptc19696.dataOut();
+						
+						int cc;
+						line[3]="CSBK ";
+						for (cc=0;cc<96;cc++)	{
+							if (bits[cc]==false) line[3]=line[3]+"0";
+							else line[3]=line[3]+"1";
+						}
+						
+						
+						// Does the CSBK pass its CRC test ?
+						if (tCRC.crcCSBK(bits)==true)	{
+							
+							int a=1;
+							a++;
+							
+						}
+					}
 				}
 				// Idle
 				if (dataType==9)	{

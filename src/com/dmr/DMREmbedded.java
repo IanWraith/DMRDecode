@@ -121,7 +121,16 @@ public class DMREmbedded {
 				// CSBK
 				if (dataType==3)	{
 					BPTC19696 bptc19696=new BPTC19696();
-					BPTCres=bptc19696.decode(dibit_buf);
+					if (bptc19696.decode(dibit_buf)==true)	{
+						crc tCRC=new crc();
+						boolean bits[]=bptc19696.dataOut();
+						// Does the CSBK pass its CRC test ?
+						if (tCRC.crcCSBK(bits)==true)	{
+							
+							
+							
+						}
+					}
 				}
 				// Idle
 				if (dataType==9)	{
