@@ -207,17 +207,17 @@ public class ShortLC {
 			dline="Nul_Msg";
 		}
 		else if (slco==1)	{
-			int addr1,addr2;
+			int addr1,addr2,inf;
 			dline="Act_Updt - ";
 			// Slot 1
-			if (db[4]==true) {
-				dline=dline+"Slot 1 Active with ";
-				if (db[5]==true) dline=dline+" Emergency";
-				if (db[6]==false) dline=dline+" Data";
-				else dline=dline+" Voice";
-				if (db[7]==false) dline=dline+" Group Call";
-				else dline=dline+" Call";
-				// Hashed Address
+			if (db[4]==true) inf=8;
+			else inf=0;
+			if (db[5]==true) inf=inf+4;
+			if (db[6]==true) inf=inf+2;
+			if (db[7]==true) inf++;
+			dline=dline+decodeAct_Updt(inf,1);
+			// Hashed Address
+			if (inf!=0)	{
 				if (db[12]==true) addr1=128;
 				else addr1=0;
 				if (db[13]==true) addr1=addr1+64;
@@ -229,15 +229,15 @@ public class ShortLC {
 				if (db[19]==true) addr1++;
 				dline=dline+" Hashed Addr "+Integer.toString(addr1);
 			}
-			else dline=dline+"Slot 1 Not Active";
+			dline=dline+" : ";
 			// Slot 2
-			if (db[8]==true) {
-				dline=dline+" & Slot 2 Active with ";
-				if (db[9]==true) dline=dline+" Emergency";
-				if (db[10]==false) dline=dline+" Data";
-				else dline=dline+" Voice";
-				if (db[11]==false) dline=dline+" Group Call";
-				else dline=dline+" Call";
+			if (db[8]==true) inf=8;
+			else inf=0;
+			if (db[9]==true) inf=inf+4;
+			if (db[10]==true) inf=inf+2;
+			if (db[11]==true) inf++;
+			dline=dline+decodeAct_Updt(inf,2);
+			if (inf!=0)	{
 				// Hashed Address
 				if (db[20]==true) addr2=128;
 				else addr2=0;
@@ -250,7 +250,6 @@ public class ShortLC {
 				if (db[27]==true) addr2++;
 				dline=dline+" Hashed Addr "+Integer.toString(addr2);
 			}
-			else dline=dline+" & Slot 2 Not Active";
 		}
 		else	{
 			dline="Unknown SLCO="+Integer.toString(slco)+" ";
@@ -261,6 +260,21 @@ public class ShortLC {
 		}
 		
 		return dline;
+	}
+	
+	// Decode a 4 bit section of an Act_Updt
+	private String decodeAct_Updt (int inf,int channel)	{
+		String l="Reserved";
+		if (inf==0) l="No activity on BS time slot "+Integer.toString(channel);
+		if (inf==2) l="Group CSBK activity on BS time slot "+Integer.toString(channel);
+		if (inf==3) l="Individual CSBK activity on BS time slot "+Integer.toString(channel);
+		if (inf==8) l="Group voice activity on BS time slot "+Integer.toString(channel);
+		if (inf==9) l="Individual voice activity on BS time slot "+Integer.toString(channel);
+		if (inf==10) l="Individual data activity on BS time slot "+Integer.toString(channel);
+		if (inf==11) l="Group data activity on BS time slot "+Integer.toString(channel);
+		if (inf==12) l="Emergency group activity on BS time slot "+Integer.toString(channel);
+		if (inf==13) l="Emergency individual voice activity on BS time slot "+Integer.toString(channel);
+		return l;
 	}
 	
 }
