@@ -28,10 +28,34 @@ public class crcTest extends TestCase {
 	
 	// Test the CSBK CCITT CRC code
 	public void testcrcCSBK ()	{
+		boolean ok1,ok2,ok3;
 		crc crctest=new crc();
-		boolean testCSBK[]={true,false,true,true,true,true,true,false,false,false,false,true,false,false,false,false,true,true,true,false,false,false,true,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,true,false,false,true,true,false,true,true,false,true,true,false,false,true};
-	    boolean ok=crctest.crcCSBK(testCSBK);
-	    assertEquals(true,ok);	
+		boolean testCSBK1[]={true,false,true,true,true,true,true,false,false,false,false,true,false,false,false,false,true,true,true,false,false,false,true,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,true,false,false,true,true,false,true,true,false,true,true,false,false,true};
+		boolean testCSBK2[]={true,false,true,true,true,true,true,false,false,false,false,true,false,false,false,false,true,true,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,true,true,true,false,true,true,true,false,false,false,false,true,true};
+		boolean testCSBK3[]={true,false,true,true,true,true,true,false,false,false,false,true,false,false,false,false,true,true,false,false,false,false,true,true,false,false,false,true,false,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,false,true,true,true,false,false,false,false,false};
+		ok1=crctest.crcCSBK(testCSBK1);
+		ok2=crctest.crcCSBK(testCSBK2);
+		ok3=crctest.crcCSBK(testCSBK3);
+	    assertEquals(true,ok1);	
+	    assertEquals(true,ok2);
+	    assertEquals(true,ok3);	
+	    
+	    
+	}
+	
+	// Test the Data Header CCITT CRC code
+	public void testcrcDataHeader ()	{
+		boolean ok1,ok2,ok3;
+		crc crctest=new crc();
+		boolean testDH1[]={false,false,false,true,true,true,true,true,false,false,false,true,false,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,true,false,false,true,false,false,false,true,false,false,false,false,false,false,false,false,false,false,true,false,false,false,true,true,true,false,false,false,false,false,false,false,false,false,true,true,true,false,false,true,false,false,false,false,false,true,true,true,true,true,false,false,false,true,false,true,true,false,false,false,false,false,false,false,false};
+		boolean testDH2[]={false,false,false,false,false,false,false,true,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,true,false,false,false,false,false,false,false,false,true,true,true,true,true,false,true,false,true,true,true,true,true,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,true,true,true,true,true,false,true,false,false,true,false,true,true,true,false,true,false,false};
+		boolean testDH3[]={false,true,false,false,false,false,false,true,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,true,false,false,false,false,false,false,false,false,true,true,true,true,true,false,true,false,true,true,true,true,true,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,true,true,true,true,true,false,true,false,false,true,false,true,true,true,false,true,false,false};
+		ok1=crctest.crcDataHeader(testDH1);
+		ok2=crctest.crcDataHeader(testDH2);
+		ok3=crctest.crcDataHeader(testDH3);
+	    assertEquals(true,ok1);	
+	    assertEquals(true,ok2);
+	    assertEquals(false,ok3);	
 	}
 	
 

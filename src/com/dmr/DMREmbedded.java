@@ -126,8 +126,13 @@ public class DMREmbedded {
 						boolean bits[]=bptc19696.dataOut();
 						// Does the CSBK pass its CRC test ?
 						if (tCRC.crcCSBK(bits)==true)	{
-							
-							
+							int co;
+							BPTCres=true;
+							line[3]="CSBK : ";
+							for (co=0;co<96;co++)	{
+								if (bits[co]==false) line[3]=line[3]+"0";
+								else line[3]=line[3]+"1";
+							}
 							
 						}
 					}

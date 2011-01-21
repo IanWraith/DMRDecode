@@ -44,10 +44,28 @@ public class crc {
 				if (in[a+b]==true) val=val+(int)Math.pow(2.0,(7.0-b));
 			}
 			// Allow for the CSBK CRC mask
-			//if (a>=80) val=val^0xA5;
+			if (a>=80) val=val^0xA5;
 			ccitt_crc16(val);	
 		}
-		if (crc16Value==0) return true;
+		if (crc16Value==0x1D0F) return true;
+		else return false;
+	}
+	
+	// Data Header CRC check
+	public boolean crcDataHeader (boolean in[])	{
+		int a,b,val;
+		crc16Value=0;
+		// Run through all 96 bits
+		for (a=0;a<96;a=a+8)	{
+			val=0;
+			for (b=0;b<8;b++)	{
+				if (in[a+b]==true) val=val+(int)Math.pow(2.0,(7.0-b));
+			}
+			// Allow for the Data Header CRC mask
+			if (a>=80) val=val^0xCC;
+			ccitt_crc16(val);	
+		}
+		if (crc16Value==0x1D0F) return true;
 		else return false;
 	}
 	
