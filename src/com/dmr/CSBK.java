@@ -61,7 +61,7 @@ public class CSBK {
 	// Handle unknown CSBK types
 	private void unknownCSBK (int csbko,int fid,boolean bits[])	{
 		int a;
-		display[0]="<b>Unknown CSBK : CSBKO="+Integer.toString(csbko)+"+ FID="+Integer.toString(fid)+"</b>";
+		display[0]="<b>Unknown CSBK : CSBKO="+Integer.toString(csbko)+" + FID="+Integer.toString(fid)+"</b>";
 		// Display the binary
 		display[1]="<b>";
 		for (a=16;a<80;a++)	{
