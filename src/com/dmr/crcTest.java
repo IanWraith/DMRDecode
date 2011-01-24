@@ -58,5 +58,14 @@ public class crcTest extends TestCase {
 	    assertEquals(false,ok3);	
 	}
 	
+	// Test the Reed-Solomon (12,9) code
+	public void testRS129 ()	{
+		boolean ok1;
+		crc crctest=new crc();
+		boolean testHeaderRS[]={false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,true,true,true,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,true,false,true,false,true,false,true,false,true,false,false,false,false,false,true,true,false,false,true,false,false,true,true,true,false,true,false};
+		ok1=crctest.RS129(testHeaderRS);
+		assertEquals(true,ok1);	
+	}
+	
 
 }

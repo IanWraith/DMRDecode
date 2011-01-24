@@ -69,4 +69,22 @@ public class crc {
 		else return false;
 	}
 	
+	// Reed-Solomon (12,9) check
+	public boolean RS129 (boolean in[])	{
+		int a,b,d,byteCount=0;
+		int inBytes[]=new int[12];
+		// Convert from binary to an array of integers
+		for (a=0;a<96;a=a+8)	{
+			inBytes[byteCount]=0;
+			for (b=0;b<8;b++)	{
+				d=(int)Math.pow(2.0,((8-b)-1));
+				if (in[a+b]==true) inBytes[byteCount]=inBytes[byteCount]+d;
+			}
+			byteCount++;
+		}
+		
+		
+		return false;
+	}
+	
 }
