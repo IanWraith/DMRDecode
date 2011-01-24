@@ -32,19 +32,19 @@ public class CSBK {
 		// CSBK Types
 		// 56 - BS_Dwn_Act
 		if (csbko==56)	{
-			
+			bs_dwn_act(bits);
 		}
 		// 04 - UU_V_Reg
 		else if (csbko==4)	{
-			
+			uu_v_reg(bits);
 		}
 		// 05 - UU_Ans_Rsp
 		else if (csbko==5)	{
-			
+			uu_ans_rep(bits);
 		}
 		// 38 - NACK_Rsp
 		else if (csbko==38)	{
-			
+			nack_rsp(bits);
 		}
 		// 61 - Pre_CSBK
 		else if (csbko==61)	{
@@ -111,5 +111,30 @@ public class CSBK {
 		}
 		return addr;
 	}
+	
+	// BS Outbound Activation CSBK
+	private void bs_dwn_act (boolean bits[])	{
+		// TODO : Full decoding of bs_dwn_act
+		display[0]="<b>BS Outbound Activation</b>";
+	}
+	
+	// Unit to Unit Voice Service Request CSBK
+	private void uu_v_reg (boolean bits[])	{
+		// TODO : Full decoding of UU_V_Req
+		display[0]="<b>Unit to Unit Voice Service Request</b>";
+	}
+	
+	// Unit to Unit Service Answer Response CSBK
+	private void uu_ans_rep (boolean bits[])	{
+		// TODO : Full decoding of UU_Ans_Rsp
+		display[0]="<b>Unit to Unit Service Answer Response</b>";
+	}
+	
+	// Negative Acknowledge Response CSBK
+	private void nack_rsp (boolean bits[])	{
+		// TODO : Full decoding of NACK_Rsp
+		display[0]="<b>Negative Acknowledge Response</b>";
+	}
+
 
 }
