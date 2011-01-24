@@ -63,11 +63,12 @@ public class CSBK {
 		int a;
 		display[0]="<b>Unknown CSBK : CSBKO="+Integer.toString(csbko)+"+ FID="+Integer.toString(fid)+"</b>";
 		// Display the binary
-		display[1]="";
+		display[1]="<b>";
 		for (a=16;a<80;a++)	{
 			if (bits[a]==true) display[1]=display[1]+"1";
 			else display[1]=display[1]+"0";
 		}
+		display[1]=display[1]+"</b>";
 	}
 	
 	// Handle a Preamble CSBK
