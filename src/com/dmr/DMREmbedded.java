@@ -18,7 +18,7 @@ public class DMREmbedded {
 			resEMB=EMBdecode(dibit_buf);
 			// If short LC data is available then display it
 			if (cachdecode.getShortLC()==true)	{
-				line[2]=cachdecode.getShortLCline();
+				line[7]=cachdecode.getShortLCline();
 				cachdecode.clearShortLC();
 			}
 		}

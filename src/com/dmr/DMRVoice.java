@@ -15,7 +15,7 @@ public class DMRVoice {
 			line[1]=cline;
 			// If short LC data is available then display it
 			if (cachdecode.getShortLC()==true)	{
-				line[2]=cachdecode.getShortLCline();
+				line[7]=cachdecode.getShortLCline();
 				cachdecode.clearShortLC();
 			}
 		}

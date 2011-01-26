@@ -20,7 +20,7 @@ public class DMRDataDecode {
 			SLOT_TYPEres=slottype.isPassErrorCheck();
 			// If short LC data is available then display it
 			if (cachdecode.getShortLC()==true)	{
-				line[3]=cachdecode.getShortLCline();
+				line[7]=cachdecode.getShortLCline();
 				cachdecode.clearShortLC();
 			}
 			if (SLOT_TYPEres==false)	{
