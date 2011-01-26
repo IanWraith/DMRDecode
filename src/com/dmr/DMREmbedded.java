@@ -101,10 +101,18 @@ public class DMREmbedded {
 			// PI
 			if (pi==true) line[2]=line[2]+" : PI=1";
 			// LCSS
-			if (lcss==0) line[2]=line[2]+" : First fragment of CBSK ";
+			if (lcss==0) line[2]=line[2]+" : Single fragment LC ";
 			else if (lcss==1) line[2]=line[2]+" : First fragment of LC ";
-			else if (lcss==2) line[2]=line[2]+" : Last fragment of LC or CSBK ";
-			else if (lcss==3) line[2]=line[2]+" : Continuation fragment of LC or CSBK ";
+			else if (lcss==2) line[2]=line[2]+" : Last fragment of LC";
+			else if (lcss==3) line[2]=line[2]+" : Continuation fragment of LC";
+			// Add this to the embedded data class
+			theApp.embedded_lc.addData(dibit_buf,lcss);
+			// Is embedded data ready
+			if (theApp.embedded_lc.getDataReady()==true)	{
+				String elines[]=theApp.embedded_lc.getLines();
+				line[3]=elines[0];
+			}
+			// Return all done
 			return true;
 		}
 		else	{

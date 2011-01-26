@@ -85,6 +85,7 @@ public class DMRDecode {
 	public int frameCount=0;
 	public int badFrameCount=0;
 	public ShortLC short_lc=new ShortLC();
+	public EmbeddedLC embedded_lc=new EmbeddedLC();
 	public int embeddedFrameCount=0;
 	private int symbolBufferCounter=0;
 	private int errorFreeFrameCount=0;
