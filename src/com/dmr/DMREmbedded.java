@@ -110,7 +110,8 @@ public class DMREmbedded {
 			// Is embedded data ready
 			if (theApp.embedded_lc.getDataReady()==true)	{
 				String elines[]=theApp.embedded_lc.getLines();
-				line[3]=elines[0];
+				// Display the embedded LC along with a timestamp
+				line[3]="<b>"+theApp.getTimeStamp()+" "+elines[0]+"</b>";
 			}
 			// Return all done
 			return true;

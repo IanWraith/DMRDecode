@@ -81,7 +81,7 @@ public class EmbeddedLC {
 		boolean isnull=true;
 		String tline="";
 		int a;
-		lines[0]="<b>Embedded Single Block LC : ";
+		lines[0]="Embedded Single Block LC : ";
 		// Check if this message is all 0's as if it is then it is a null
 		for (a=0;a<32;a++)	{
 			if (data[a]==true)	{
@@ -99,7 +99,6 @@ public class EmbeddedLC {
 		else	{
 			lines[0]=lines[0]+tline;
 		}
-		lines[0]=lines[0]+"</b>";
 		dataReady=true;
 	}
 	
