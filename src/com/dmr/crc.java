@@ -87,4 +87,22 @@ public class crc {
 		return false;
 	}
 	
+	// CRC 5 check
+	public boolean crcFiveBit (boolean in[],int tcrc)	{
+		int a,b=0,oct=0,total=0;
+		// Convert the boolean array into an array of ints
+		for (a=0;a<72;a++)	{
+			if (in[a]==true) oct=oct+(int)Math.pow(2.0,(int)b);
+			b++;
+			if (b==8)	{
+				b=0;
+				total=total+oct;
+				oct=0;
+			}
+		}
+		total=total%31;
+		if (total==tcrc) return true;
+		else return false;
+	}
+	
 }
