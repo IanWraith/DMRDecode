@@ -51,12 +51,12 @@ public class DMRDataDecode {
 					if (bptc19696.decode(dibit_buf)==true)	{
 						BPTCres=true;
 						boolean bits[]=bptc19696.dataOut();
-							int cc;
-							line[3]="Terminator with LC : ";
-							for (cc=0;cc<96;cc++)	{
-								if (bits[cc]==false) line[3]=line[3]+"0";
-								else line[3]=line[3]+"1";
-							}
+						FullLinkControl flc=new FullLinkControl();
+						String clines[]=new String[3];
+						clines=flc.decode(bits);
+						line[3]=clines[0];
+						line[4]=clines[1];
+						line[5]=clines[2];
 						}
 				}
 				
