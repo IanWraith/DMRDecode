@@ -60,6 +60,7 @@ public class EmbeddedLC {
 			for (a=0;a<32;a++)	{
 				rawLC[a+96]=rawdata[a];
 			}
+			// Process the complete data block
 			processMultiBlockEmbeddedLC();
 		}
 		// Is this a single block embedded LC
@@ -67,10 +68,11 @@ public class EmbeddedLC {
 	}
 	
 	// Unpack and error check a embedded LC
-	private void processMultiBlockEmbeddedLC()	{
+	private boolean processMultiBlockEmbeddedLC()	{
 		int a,b=0,crc;
 		boolean data[]=new boolean[128];
 		boolean row[]=new boolean[16];
+		lines[0]="Embedded Multi Block LC : ";
 		// The data is unpacked downwards in columns
 		for (a=0;a<128;a++)	{
 			data[b]=rawLC[a];
@@ -82,7 +84,7 @@ public class EmbeddedLC {
 			for (b=0;b<16;b++)	{
 				row[b]=data[a+b];
 			}
-			if (hamming16114(row)==false) return;	
+			if (hamming16114(row)==false) return false;
 		}
 		// We have passed the Hamming check so extract the actual payload
 		b=0;
@@ -123,8 +125,15 @@ public class EmbeddedLC {
 		if (data[106]==true) crc++;
 		// Now CRC check this
 		crc tCRC=new crc();
-		if (tCRC.crcFiveBit(lcData,crc)==false) return;
+		if (tCRC.crcFiveBit(lcData,crc)==false) return false;
 		
+		for (a=0;a<72;a++)	{
+			if (lcData[a]==false) lines[0]=lines[0]+"0";
+			else lines[0]=lines[0]+"1";
+		}
+
+		dataReady=true;
+		return true;
 	}
 	
 	// A Hamming (16,11,4) Check
