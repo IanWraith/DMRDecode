@@ -127,6 +127,34 @@ public class DMREmbedded {
 			// If the slot type is OK try to decode the rest
 			if (SLOT_TYPEres==true)	{
 				int dataType=slottype.returnDataType();
+				// Voice LC Header
+				if (dataType==0)	{
+					BPTC19696 bptc19696=new BPTC19696();
+					if (bptc19696.decode(dibit_buf)==true)	{
+						BPTCres=true;
+						boolean bits[]=bptc19696.dataOut();
+						FullLinkControl flc=new FullLinkControl();
+						String clines[]=new String[3];
+						clines=flc.decode(bits);
+						line[3]=clines[0];
+						line[4]=clines[1];
+						line[5]=clines[2];
+						}
+				}
+				// Terminator with LC
+				if (dataType==2)	{
+					BPTC19696 bptc19696=new BPTC19696();
+					if (bptc19696.decode(dibit_buf)==true)	{
+						BPTCres=true;
+						boolean bits[]=bptc19696.dataOut();
+						FullLinkControl flc=new FullLinkControl();
+						String clines[]=new String[3];
+						clines=flc.decode(bits);
+						line[3]=clines[0];
+						line[4]=clines[1];
+						line[5]=clines[2];
+						}
+				}		
 				// CSBK
 				if (dataType==3)	{
 					BPTC19696 bptc19696=new BPTC19696();
