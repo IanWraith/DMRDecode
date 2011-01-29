@@ -31,7 +31,7 @@ public class DMRDataDecode {
 				dataType=slottype.returnDataType();
 				// Main section decode
 				// Voice LC Header
-				if (dataType==0)	{
+				if (dataType==1)	{
 					BPTC19696 bptc19696=new BPTC19696();
 					if (bptc19696.decode(dibit_buf)==true)	{
 						BPTCres=true;
