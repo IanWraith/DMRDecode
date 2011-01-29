@@ -71,7 +71,7 @@ public class DecodeCACH {
 		if (at==true) line=line+" AT=1";
 		if (channel==false) line=line+" Ch 1";
 		else line=line+" Ch 2";
-		if (lcss==0) line=line+" First fragment of CBSK ";
+		if (lcss==0) line=line+" First fragment of CSBK ";
 		else if (lcss==1) line=line+" First fragment of LC ";
 		else if (lcss==2) line=line+" Last fragment of LC ";
 		else if (lcss==3) line=line+" Continuation fragment of LC ";
