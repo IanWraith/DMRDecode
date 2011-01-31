@@ -257,8 +257,8 @@ public class DMRDecode {
 					window.updateVolumeBar(highVol);
 				}
 				// Check the jitter setting
-				if ((frameSync==true)&&(runningSymbolCount%CHECKJITTERINTERVAL)==0) changeJitter(limitedBestJitter());
-				else if ((frameSync==false)&&(runningSymbolCount%CHECKJITTERINTERVAL_NOSYNC)==0) changeJitter(limitedBestJitter());	
+				if ((frameSync==true)&&(runningSymbolCount>CHECKJITTERINTERVAL)) changeJitter(limitedBestJitter());
+				else if ((frameSync==false)&&(runningSymbolCount>CHECKJITTERINTERVAL_NOSYNC)) changeJitter(limitedBestJitter());	
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
@@ -881,14 +881,17 @@ public class DMRDecode {
 	
 	// Change the jitter setting
 	private void changeJitter (int jitterVal)	{
-		if (jitter==jitterVal) return;
+		// Clear the running symbol counter
+		runningSymbolCount=0;
+		// If no change needed just return
+		if (jitter==jitterVal)	return;
 		// Decide if we need to jitter up or down
 		if ((jitter==0)&&(jitterVal==9)) jitterAdjust=1;
 		else if ((jitter==9)&&(jitterVal==0)) jitterAdjust=-1;	
 		else if (jitterVal>jitter) jitterAdjust=-1;
 		else if (jitterVal<jitter) jitterAdjust=1;
 		// Set this as the jitter value
-		jitter=jitterVal;
+		jitter=jitterVal;	
 	}
 	
 
