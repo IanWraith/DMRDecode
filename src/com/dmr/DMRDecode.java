@@ -409,7 +409,7 @@ public class DMRDecode {
 	// 1 if voice
 	// 2 if data
 	private int syncCompare(boolean sync)	{
-		int i,dataSync=0,voiceSync=0,diff,circPos;
+		int i,dataSync=0,voiceSync=0,diff,circPos,smin,smax;
 		// Allow 5 dibits to be incorrect when syncronised and set the offset
 		if (sync==true)	diff=5;
 		else diff=0;
