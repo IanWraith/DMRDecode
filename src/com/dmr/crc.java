@@ -70,6 +70,7 @@ public class crc {
 	}
 	
 	// Reed-Solomon (12,9) check
+	// TODO : Get the Reed Solomon (12,9) check routine working
 	public boolean RS129 (boolean in[])	{
 		int a,b,d,byteCount=0;
 		int inBytes[]=new int[12];

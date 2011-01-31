@@ -133,6 +133,7 @@ public class DMREmbedded {
 					if (bptc19696.decode(dibit_buf)==true)	{
 						BPTCres=true;
 						boolean bits[]=bptc19696.dataOut();
+						// TODO : Ensure the Voice LC Headers in Embedded Data Frames pass the Reed Solomon (12,9) error check 
 						FullLinkControl flc=new FullLinkControl();
 						String clines[]=new String[3];
 						clines=flc.decode(bits);
@@ -147,6 +148,7 @@ public class DMREmbedded {
 					if (bptc19696.decode(dibit_buf)==true)	{
 						BPTCres=true;
 						boolean bits[]=bptc19696.dataOut();
+						// TODO : Ensure the Terminator LCs in Embedded Data Frames pass the Reed Solomon (12,9) error check 
 						FullLinkControl flc=new FullLinkControl();
 						String clines[]=new String[3];
 						clines=flc.decode(bits);
