@@ -5,16 +5,12 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.TargetDataLine;
 import javax.swing.JOptionPane;
+import java.io.DataOutputStream;
+import java.io.PipedOutputStream;
 
 public class AudioInThread extends Thread {
 	private boolean run;
 	private boolean audioReady;
-	private int writePos;
-	private int readPos;
-	private int lastWritePos;
-	// A 256 K Byte buffer seems to do the job
-	private static int BUFFERSIZE=256*1024;
-	private int audioBuffer[]=new int[BUFFERSIZE];
 	private TargetDataLine Line;
 	private AudioFormat format;
 	private boolean gettingAudio;
@@ -23,6 +19,8 @@ public class AudioInThread extends Thread {
 	private int volumeBufferCounter=0;
 	private static int ISIZE=16;
 	private byte buffer[]=new byte[ISIZE+1];
+	private PipedOutputStream ps=new PipedOutputStream();
+	private DataOutputStream outPipe=new DataOutputStream(ps);
 	
 	// Filter details ..
 	// filtertype	 =	 Raised Cosine
@@ -61,13 +59,11 @@ public class AudioInThread extends Thread {
 	    -0.0577853377, -0.0569528373, -0.0498333862, -0.0379433607,
 	    -0.0231737159, -0.0075385898, +0.0070661879, +0.0190682959,
 	    +0.0273676736};
+	
 
     public AudioInThread (DMRDecode theApp) {
     	run=false;
     	audioReady=false;
-    	writePos=0;
-    	readPos=0;
-    	lastWritePos=-1;
     	gettingAudio=false;
     	setPriority(Thread.MIN_PRIORITY);
         start();
@@ -121,39 +117,23 @@ public class AudioInThread extends Thread {
 			  	}
 		// Get the required number of samples
 		for (a=0;a<ISIZE;a=a+2)	{
-		sample=(buffer[a]<<8)+buffer[a+1];
-		// Add this sample to the circular volume buffer
-		addToVolumeBuffer(sample);
-		// Put this through a root raised filter
-		// then put the filtered sample in the buffer
-		audioBuffer[writePos]=rootRaisedFilter(sample);
-		// Increment the write buffer pos
-		writePos++;
-		// If the write buffer pointer has reached maximum then reset it to zero
-		if (writePos==BUFFERSIZE) writePos=0;
+			sample=(buffer[a]<<8)+buffer[a+1];
+			// Add this sample to the circular volume buffer
+			addToVolumeBuffer(sample);
+			try		{
+				// Put this through a root raised filter
+				// and then put the result into the output pipe
+				outPipe.writeInt(rootRaisedFilter(sample));
+				}
+				catch (Exception e)	{
+					String err=e.getMessage();
+					JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+				}
 		}
 		// The the main thread we have stopped fetching audio
 		gettingAudio=false;	
     }
     
-    // Return the next integer from the sound buffer
-    // then increment the read buffer counter
-    public int returnSample ()	{
-    	if (run==false) return -1;
-    	// If the writePos hasn't changed since the last time then there is nothing to return
-    	if (writePos==lastWritePos)	{
-    		String err="AudioInThread returnSample() has caught up with itself !";
-    		JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
-    		System.exit(0);
-    	}
-    	int sample=audioBuffer[readPos];
-    	lastWritePos=writePos;
-    	// Increment the read buffer counter
-    	readPos++;
-    	// If the read buffer pointer has reached maximum then reset it to zero
-    	if (readPos==BUFFERSIZE) readPos=0;
-    	return sample;
-    }
     
     // Called when the main program wants to start receiving audio
     public void startAudio ()	{
@@ -192,11 +172,6 @@ public class AudioInThread extends Thread {
     	return (int)sum;
     }
 
-    // Return true only if there are samples waiting
-    public boolean sampleReady ()	{
-    	if (writePos==lastWritePos) return false;
-    	 else return true;
-    }
     
     // Add this sample to the circular volume buffer
     private void addToVolumeBuffer (int tsample)	{
@@ -215,4 +190,10 @@ public class AudioInThread extends Thread {
     	volumeAverage=(int)va/VOLUMEBUFFERSIZE;	
     	return volumeAverage;
     }
+    
+    // Return the PipedOutputSteam object so it can be connected to
+    public PipedOutputStream getPipedWriter() {
+        return ps;
+      }
+    
 }

@@ -35,6 +35,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.JEditorPane;
 import java.text.DateFormat;
 import java.util.Date;
+import java.io.DataInputStream;
+import java.io.PipedInputStream;
 
 public class DMRDecode {
 	private DisplayModel display_model;
@@ -102,18 +104,39 @@ public class DMRDecode {
 	private int jitter=1;
 	private int jitterAdjust=0;
 	private int runningSymbolCount=0;
+	private DataInputStream inPipeData;
+	private PipedInputStream inPipe;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
 		// If sucking in test data then open the file
-		if (theApp.audioSuck==true) theApp.prepareAudioSuck("aor3000_audiodump.csv");
-		 else theApp.lineInThread.startAudio();
+		if (theApp.audioSuck==true)	{
+			theApp.prepareAudioSuck("aor3000_audiodump.csv");
+		}
+		else 	{
+			// Are getting data from the soundcard via a thread instead
+			try		{
+				// Start the audio thread
+				theApp.lineInThread.startAudio();
+				// Connected a piped input stream to the piped output stream in the thread
+				theApp.inPipe=new PipedInputStream(theApp.lineInThread.getPipedWriter());
+				// Now connect a data input stream to the piped input stream
+				theApp.inPipeData=new DataInputStream(theApp.inPipe);
+			}
+			catch (Exception e)	{
+				JOptionPane.showMessageDialog(null,"Error in main()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+				System.exit(0);
+			}
+		}
+		
 		// The main routine
 		while (RUNNING)	{
 			if ((theApp.lineInThread.getAudioReady()==true)&&(theApp.pReady==true)) theApp.decode();
 		}
-
+		
+		
+			
 		}
 	
 	// Setup the window //
@@ -856,15 +879,15 @@ public class DMRDecode {
 	
 	// Get a sample either from the sound card or a capture file
 	private int getSample (boolean jitmode)	{
-		int sample;
+		int sample=0;
 		if (audioSuck==false)	{ 
-			  // Loop until a sample is ready
-			  while (lineInThread.sampleReady()==false)	{
-				  // Yield to allow the processor to do other things
-				  Thread.yield();
-			  }
 			  // Get the sample from the sound card via the sound thread
-			  sample=lineInThread.returnSample();
+			  try	{
+				  sample=inPipeData.readInt();
+			  }
+			  catch (Exception e)	{
+				  JOptionPane.showMessageDialog(null,"Error in getSample()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+			  }
 			  // If in capture mode record the sample in the capture file
 			  // but don't do this in jitter adjust mode
 			  if ((captureMode==true)&&(jitmode==false)) audioDump(sample);
