@@ -293,6 +293,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		statusBar.setSyncLabel(sync);
 	}
 	
+	// Update the locked label
+	public void updateLockedLabel (boolean lock)	{
+		statusBar.setLockedLabel(lock);
+	}
+	
 	// Pass a symbol to the display bar symbol buffer
 	public void displaySymbol (int tsymb)	{
 		displayBar.addToBuffer(tsymb);

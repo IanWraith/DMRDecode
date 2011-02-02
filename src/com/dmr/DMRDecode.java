@@ -400,6 +400,8 @@ public class DMRDecode {
 		window.updateSyncLabel(false);
 		// Stop the display bar
 		window.stopDisplayBar();
+		// Update the locked label
+		window.updateLockedLabel(bestValuesSet);
 	  	}
 	
 	// Given a symbol return a dibit
@@ -526,7 +528,7 @@ public class DMRDecode {
 	    	bestCentre=centre;
 	    	bestJitter=jitter;
 	    	bestValuesSet=true;
-	    	addLine("<b>SETTING BEST VALULES !!!</b>");
+	    	window.updateLockedLabel(bestValuesSet);
 	    }
 	    
 	}

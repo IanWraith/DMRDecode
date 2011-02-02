@@ -8,6 +8,7 @@ public class JStatusBar extends JPanel {
 	public static final long serialVersionUID = 1;
 	private JLabel logMode=new JLabel();
 	private JLabel syncLabel=new JLabel();
+	private JLabel lockedLabel=new JLabel();
 	private JProgressBar volumeBar=new JProgressBar(0,100);
 	private Border loweredbevel=BorderFactory.createLoweredBevelBorder();
 	
@@ -18,12 +19,17 @@ public class JStatusBar extends JPanel {
 		syncLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		syncLabel.setBorder(loweredbevel);
 		syncLabel.updateUI();
+		lockedLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		lockedLabel.setBorder(loweredbevel);
+		lockedLabel.updateUI();
+		
 		// Give the volume progress bar a border //
 		volumeBar.setBorder(loweredbevel);
 		// Ensure the elements of the status bar are displayed from the left
 		this.setLayout(new FlowLayout(FlowLayout.LEFT));
 		this.add(volumeBar,BorderLayout.CENTER);
 		this.add(syncLabel,BorderLayout.CENTER);
+		this.add(lockedLabel,BorderLayout.CENTER);
 		this.add(logMode,BorderLayout.CENTER);
 	}
 	
@@ -42,6 +48,19 @@ public class JStatusBar extends JPanel {
 		else	{
 			syncLabel.setText("NO SYNC");
 			syncLabel.setForeground(Color.RED);
+		}
+	}
+	
+	// Sets the locked indicator label
+	public void setLockedLabel (boolean lock)	{
+		// Have lock ?
+		if (lock==true)	{
+			lockedLabel.setText("LOCKED");
+			lockedLabel.setForeground(Color.GREEN);
+		}
+		else	{
+			lockedLabel.setText("UNLOCKED");
+			lockedLabel.setForeground(Color.RED);
 		}
 	}
 	
