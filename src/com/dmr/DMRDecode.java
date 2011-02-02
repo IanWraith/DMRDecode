@@ -95,7 +95,7 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int CHECKJITTERINTERVAL=1000;
+	private static final int CHECKJITTERINTERVAL=10;
 	private static final int CHECKJITTERINTERVAL_NOSYNC=25;
 	private static final int SYMBOLSAHEAD=100;
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
@@ -106,6 +106,13 @@ public class DMRDecode {
 	private int runningSymbolCount=0;
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
+	
+	private static final int SETBESTCENTRE=15;
+	private int bestMax=MAXSTARTVALUE;
+	private int bestMin=MINSTARTVALUE;
+	private int bestCentre=0;
+	private int bestJitter=0;
+	private boolean bestValuesSet=false;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -193,6 +200,15 @@ public class DMRDecode {
 	
 	// Calculate the waveform centre and mid points
 	public void calcMids()	{
+		
+			if (bestValuesSet==true)	{
+				centre=bestCentre;
+				max=bestMax;
+				min=bestMin;
+				jitter=bestJitter;
+			}
+		
+		
 			centre=(max+min)/2;
 			umid=(int)((float)(max-centre)*(float)0.625)+centre;
 		    lmid=(int)((float)(min-centre)*(float)0.625)+centre;		
@@ -281,7 +297,7 @@ public class DMRDecode {
 				}
 				// Check the jitter setting
 				if ((frameSync==true)&&(runningSymbolCount>CHECKJITTERINTERVAL)) changeJitter(limitedBestJitter());
-				else if ((frameSync==false)&&(runningSymbolCount>CHECKJITTERINTERVAL_NOSYNC)) changeJitter(limitedBestJitter());	
+				else if ((frameSync==false)&&(runningSymbolCount>CHECKJITTERINTERVAL_NOSYNC)&&(bestValuesSet==false)) changeJitter(limitedBestJitter());	
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
@@ -374,9 +390,9 @@ public class DMRDecode {
 		//jitter=-1;
 		lastsynctype=-1;
 		carrier=false;
-		max=MAXSTARTVALUE;
-		min=MINSTARTVALUE;
-		centre=0;
+		max=bestMax;
+		min=bestMin;
+		centre=bestCentre;
 		firstframe=false;
 		errorFreeFrameCount=0;
 		continousBadFrameCount=0;
@@ -389,7 +405,7 @@ public class DMRDecode {
 	// Given a symbol return a dibit
 	int symboltoDibit (int symbol)	{
 		// With Sync
-		if (frameSync==true)	{
+		if ((frameSync==true)||(bestValuesSet==true))	{
 			if (inverted==false)	{
 				// Normal
 				if (symbol>centre) {
@@ -415,12 +431,12 @@ public class DMRDecode {
 				// No Sync
 				// Normal
 				if (inverted==false)	{
-					if (symbol>0) return 1;
+					if (symbol>bestCentre) return 1;
 					else return 3;
 				}
 				// Inverted
 				else	{
-					if (symbol>0) return 3;
+					if (symbol>bestCentre) return 3;
 					else return 1;
 				}
 			}
@@ -432,7 +448,7 @@ public class DMRDecode {
 	// 1 if voice
 	// 2 if data
 	private int syncCompare(boolean sync)	{
-		int i,dataSync=0,voiceSync=0,diff,circPos,smin,smax;
+		int i,dataSync=0,voiceSync=0,diff,circPos;
 		// Allow 5 dibits to be incorrect when syncronised and set the offset
 		if (sync==true)	diff=5;
 		else diff=0;
@@ -503,6 +519,16 @@ public class DMRDecode {
 	    if ((synctype==12)&&(viewVoiceFrames==true)) processDMRvoice ();
 	    else if ((synctype==10)&&(viewDataFrames==true)) processDMRdata ();
 	    else if ((synctype==13)&&(viewEmbeddedFrames==true)) processEmbedded ();
+	    
+	    if ((errorFreeFrameCount>=SETBESTCENTRE)&&(bestValuesSet==false))	{
+	    	bestMin=min;
+	    	bestMax=max;
+	    	bestCentre=centre;
+	    	bestJitter=jitter;
+	    	bestValuesSet=true;
+	    	addLine("<b>SETTING BEST VALULES !!!</b>");
+	    }
+	    
 	}
 
 	// Handle a DMR Voice Frame
