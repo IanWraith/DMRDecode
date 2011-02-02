@@ -95,7 +95,7 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int CHECKJITTERINTERVAL=10;
+	private static final int CHECKJITTERINTERVAL=1440;
 	private static final int CHECKJITTERINTERVAL_NOSYNC=25;
 	private static final int SYMBOLSAHEAD=100;
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
@@ -106,7 +106,6 @@ public class DMRDecode {
 	private int runningSymbolCount=0;
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
-	
 	private static final int SETBESTCENTRE=15;
 	private int bestMax=MAXSTARTVALUE;
 	private int bestMin=MINSTARTVALUE;
@@ -301,7 +300,7 @@ public class DMRDecode {
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
-				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
+				if (((frameSync==true)&&(lastsynctype==-1))||(frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
 					// Identify the frame sync type which returns
 					// 0 if unknown
 					// 1 if voice
