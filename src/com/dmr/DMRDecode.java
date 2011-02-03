@@ -106,6 +106,7 @@ public class DMRDecode {
 	private int runningSymbolCount=0;
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
+	private static final double JITTERCHANGERPERCENTAGE=20.0;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -839,7 +840,7 @@ public class DMRDecode {
 	// Find the best jitter point by looking at the energy levels at 3 waveform sample points
 	private int limitedBestJitter()	{
 		int bestJitter=0,a;
-		long energy,hienergy=0;
+		long energy=0,hienergy=0,jitterEnergy=0;
 		int jit[]=new int[3];
 		// Calculate the jitter points
 		jit[0]=jitter-1;
@@ -850,10 +851,18 @@ public class DMRDecode {
 		// Look which of these has the highest energy level
 		for (a=0;a<3;a++)	{
 			energy=energyFromSamplesAhead(jit[a]);
+			if (a==1) jitterEnergy=energy;
 			if (energy>hienergy)	{
 				bestJitter=jit[a];
 				hienergy=energy;
 			}
+		}
+		// If we have frame sync and the jitter has changed then ensure the
+		// energy level is at least JITTERCHANGERPERCENTAGE higher for the
+		// Change to take place
+		if (bestJitter!=jitter)	{
+			double per=100.0-(((double)jitterEnergy/(double)energy)*100.0);
+			if ((frameSync==true)&&(per<JITTERCHANGERPERCENTAGE)) bestJitter=jitter;
 		}
 		// Return the best one
 		return bestJitter;
