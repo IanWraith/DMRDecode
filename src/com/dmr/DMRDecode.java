@@ -95,7 +95,7 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int CHECKJITTERINTERVAL=1000;
+	private static final int CHECKJITTERINTERVAL=14400;
 	private static final int CHECKJITTERINTERVAL_NOSYNC=25;
 	private static final int SYMBOLSAHEAD=100;
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
@@ -106,7 +106,7 @@ public class DMRDecode {
 	private int runningSymbolCount=0;
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
-	private static final double JITTERCHANGERPERCENTAGE=20.0;
+	private static final double JITTERCHANGERPERCENTAGE=15.0;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -286,7 +286,7 @@ public class DMRDecode {
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
-				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
+				if (((frameSync==true)&&(lastsynctype==-1))||(frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
 					// Identify the frame sync type which returns
 					// 0 if unknown
 					// 1 if voice
@@ -485,10 +485,11 @@ public class DMRDecode {
 	// Handle an incoming DMR Frame
 	void processFrame ()	{
 		if (firstframe==true)	{
-			String l;
 			// First frame since sync
+			jitter=fullBestJitter();
 	    	// If debug enabled record obtaining sync
 			if (debug==true)	{
+				String l;
 				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
 				else l=getTimeStamp()+" DMR Data Sync Acquired";
 				l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
@@ -836,6 +837,19 @@ public class DMRDecode {
 		return samplesAheadBuffer[samplesAheadCounter];
 	}
 	
+	// Search the full range of jitter possibilities for the best jitter setting
+	private int fullBestJitter()	{
+		int a,bestJitter=0;
+		long energy=0,hienergy=0;
+		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
+			energy=energyFromSamplesAhead(a);
+			if (energy>hienergy)	{
+				bestJitter=a;
+				hienergy=energy;
+			}
+		}
+		return bestJitter;
+	}
 
 	// Find the best jitter point by looking at the energy levels at 3 waveform sample points
 	private int limitedBestJitter()	{
