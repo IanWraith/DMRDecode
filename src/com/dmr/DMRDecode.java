@@ -524,7 +524,6 @@ public class DMRDecode {
 			continousBadFrameCount++;
 			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
-			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 		}
 		else	{
 			continousBadFrameCount=0;
@@ -548,9 +547,6 @@ public class DMRDecode {
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Data Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
-			line[0]=line[0]+" jitter="+Integer.toString(jitter);
-			int gval=DMRdata.getGolayValue();
-			if (gval!=-1) line[0]=line[0]+" ("+Integer.toString(gval)+")";
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
@@ -580,7 +576,6 @@ public class DMRDecode {
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Embedded Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
-			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;

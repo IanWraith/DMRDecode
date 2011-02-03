@@ -1,7 +1,7 @@
 package com.dmr;
 
 public class DMRDataDecode {
-	private int golayValue=-1,dataType=-1;
+	private int dataType=-1;
 	private String line[]=new String[10];
 	private boolean CACHres,SLOT_TYPEres,BPTCres;
 	
@@ -23,10 +23,7 @@ public class DMRDataDecode {
 				line[7]=cachdecode.getShortLCline();
 				cachdecode.clearShortLC();
 			}
-			if (SLOT_TYPEres==false)	{
-				golayValue=slottype.getGolayValue();
-			}
-			else	{
+			if (SLOT_TYPEres==true)	{
 				// If no error then get the data type
 				dataType=slottype.returnDataType();
 				// Main section decode
@@ -115,10 +112,6 @@ public class DMRDataDecode {
 	public boolean isError() {
 	  if ((SLOT_TYPEres==true)&&(CACHres==true)&&(BPTCres==true)) return true;
 	  else return false;
-	}
-	
-	public int getGolayValue()	{
-		return golayValue;
 	}
 	
 }

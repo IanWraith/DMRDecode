@@ -13,9 +13,10 @@ public class DecodeCACH {
 	
 	public String decode (DMRDecode TtheApp,byte[] dibit_buf)	{
 		theApp=TtheApp;
-		line="CACH : TACT ";
+		line="<i>CACH : TACT ";
 		// CACH decode
 		passErrorCheck=mainDecode(dibit_buf);
+		line=line+"</i>";
 		return line;
 	}
 	
