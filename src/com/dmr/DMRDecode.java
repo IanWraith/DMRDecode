@@ -43,7 +43,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 17";
+	public String program_version="DMR Decoder V0.00 Build 18";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
