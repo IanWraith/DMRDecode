@@ -175,7 +175,27 @@ public class DMREmbedded {
 						}
 					}
 				}
-				
+				// Data Header
+				if (dataType==6)	{
+					BPTC19696 bptc19696=new BPTC19696();
+					if (bptc19696.decode(dibit_buf)==true)	{
+						crc tCRC=new crc();
+						boolean bits[]=bptc19696.dataOut();
+						// Does the Data Header pass its CRC test ?
+						if (tCRC.crcDataHeader(bits)==true)	{
+							BPTCres=true;
+							line[3]="Data Header : ";
+							for (cc=0;cc<96;cc++)	{
+								if (bits[cc]==false) line[3]=line[3]+"0";
+								else line[3]=line[3]+"1";
+							}
+						}	
+					}
+				}
+				// Rate ½ Data Continuation
+				if (dataType==7) BPTCres=true;
+				// Rate ¾ Data Continuation
+				if (dataType==8) BPTCres=true;
 				// Idle
 				// Don't waste time BPTC testing Idle data
 				if (dataType==9) BPTCres=true;

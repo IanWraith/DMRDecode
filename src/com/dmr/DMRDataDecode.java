@@ -86,6 +86,7 @@ public class DMRDataDecode {
 						boolean bits[]=bptc19696.dataOut();
 						// Does the Data Header pass its CRC test ?
 						if (tCRC.crcDataHeader(bits)==true)	{
+							// TODO : Decode Data Headers
 							int cc;
 							BPTCres=true;
 							line[3]="Data Header : ";
@@ -97,6 +98,12 @@ public class DMRDataDecode {
 					}
 				}
 				
+				// TODO : Decode Rate ½ Data Continuation frames
+				// Rate ½ Data Continuation
+				if (dataType==7) BPTCres=true;
+				// TODO : Decode Rate ¾ Data Continuation frames
+				// Rate ¾ Data Continuation
+				if (dataType==8) BPTCres=true;
 				// Idle
 				// Don't waste time BPTC testing Idle data
 				if (dataType==9) BPTCres=true;
