@@ -481,6 +481,10 @@ public class DMRDecode {
 		if (firstframe==true)	{
 			// First frame since sync
 			jitter=fullBestJitter();
+			
+			String ll="Set,"+Integer.toString(min)+","+Integer.toString(max);
+			debugDump(ll);
+			
 	    	// If debug enabled record obtaining sync
 			if (debug==true)	{
 				String l;
@@ -544,11 +548,32 @@ public class DMRDecode {
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
+			
+			int lbuf2[]=getSyncSymbols();
+			int lmin=1,lmax=-1,a;
+			for (a=0;a<24;a++)	{
+				if (lbuf2[a]<lmin) lmin=lbuf2[a];
+				if (lbuf2[a]>lmax) lmax=lbuf2[a];
+			}
+			String l="Bad,"+Integer.toString(lmin)+","+Integer.toString(lmax);
+			debugDump(l);
+			
 		}
 		else	{
 			// Record that there has been an error free frame
 			errorFreeFrameCount++;
 			continousBadFrameCount=0;
+			
+			int lbuf2[]=getSyncSymbols();
+			int lmin=1,lmax=-1,a;
+			for (a=0;a<24;a++)	{
+				if (lbuf2[a]<lmin) lmin=lbuf2[a];
+				if (lbuf2[a]>lmax) lmax=lbuf2[a];
+			}
+			String l="Good,"+Integer.toString(lmin)+","+Integer.toString(lmax);
+			debugDump(l);
+			
+			
 		}
 		// Display the info
 		displayLines(line);
