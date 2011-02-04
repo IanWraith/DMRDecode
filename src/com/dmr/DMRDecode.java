@@ -96,7 +96,7 @@ public class DMRDecode {
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
 	private static final int CHECKJITTERINTERVAL=14400;
-	private static final int CHECKJITTERINTERVAL_NOSYNC=25;
+	private static final int CHECKJITTERINTERVAL_NOSYNC=500;
 	private static final int SYMBOLSAHEAD=100;
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
@@ -250,10 +250,9 @@ public class DMRDecode {
 			// Get a symbol from the soundcard
 			symbol=getSymbol(frameSync);
 			// Store this in the rotating symbol buffer
-			// Only needed if we don't have frame sync
-			// If we do have sync pass the data to the display bar
-			if (frameSync==false) addToSymbolBuffer(symbol);
-			else window.displaySymbol(symbol);
+			addToSymbolBuffer(symbol);
+			// If needed pass the data to the display bar
+			if (enableDisplayBar==true) window.displaySymbol(symbol);
 			// Set the dibit state
 			dibit=symboltoDibit(symbol);
 			// Add the dibit to the circular dibit buffer
@@ -279,11 +278,11 @@ public class DMRDecode {
 				}
 				// Check the jitter setting
 				if ((frameSync==true)&&(runningSymbolCount>CHECKJITTERINTERVAL)) changeJitter(limitedBestJitter());
-				else if ((frameSync==false)&&(runningSymbolCount>CHECKJITTERINTERVAL_NOSYNC)) changeJitter(limitedBestJitter());	
+				else if ((frameSync==false)&&(runningSymbolCount>CHECKJITTERINTERVAL_NOSYNC)) changeJitter(fullBestJitter());	
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
-				if (((frameSync==true)&&(lastsynctype==-1))||(frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
+				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
 					// Identify the frame sync type which returns
 					// 0 if unknown
 					// 1 if voice
@@ -380,8 +379,6 @@ public class DMRDecode {
 		continousBadFrameCount=0;
 		// Update the sync label
 		window.updateSyncLabel(false);
-		// Stop the display bar
-		window.stopDisplayBar();
 	  	}
 	
 	// Given a symbol return a dibit
