@@ -25,6 +25,10 @@ the symbol values clustered around 4 points) but then it looses sync for an unkn
 Update 2 : Still working on milestone 5 have made some progress but not enough for a new build yet.
 I really want to solve this problem once and for all.
 
-Ian Wraith (7th January 2011)
+Update 3 : I am still working on milestone 5 sadly although some progress has been made I'm still not happy with it.
+Other improvements have been made to keep users happy though. The program now decodes Voice Header and Terminator LCs 
+so you can see radio and group identities. It also decodes and displays CSBKs.
+
+Ian Wraith (4th February 2011)
 
 
