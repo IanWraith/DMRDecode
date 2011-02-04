@@ -86,14 +86,13 @@ public class DMRDataDecode {
 						boolean bits[]=bptc19696.dataOut();
 						// Does the Data Header pass its CRC test ?
 						if (tCRC.crcDataHeader(bits)==true)	{
-							// TODO : Decode Data Headers
-							int cc;
+							String clines[]=new String[3];
 							BPTCres=true;
-							line[3]="Data Header : ";
-							for (cc=0;cc<96;cc++)	{
-								if (bits[cc]==false) line[3]=line[3]+"0";
-								else line[3]=line[3]+"1";
-							}
+							DMRData data=new DMRData();
+							clines=data.decodeHeader(bits);
+							line[3]=clines[0];
+							line[4]=clines[1];
+							line[5]=clines[2];
 						}	
 					}
 				}
