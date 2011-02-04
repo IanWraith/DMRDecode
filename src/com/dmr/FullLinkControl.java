@@ -42,6 +42,7 @@ public class FullLinkControl {
 		// PDU types 
 		if (flco==0) group_v_ch_usr(bits);
 		else if (flco==3) uu_v_ch_usr(bits);
+		else if (flco==48) td_lc(bits);
 		else unknown_flc(flco,fid,bits);
 		return display;
 	}
@@ -66,6 +67,17 @@ public class FullLinkControl {
 		int source=retAddress(bits,48);
 		display[1]="<b>Target Address : "+Integer.toString(target);
 		display[1]=display[1]+" Source Address : "+Integer.toString(source)+"</b>";
+	}
+	
+	// Terminator Data Link Control PDU
+	void td_lc (boolean bits[])	{
+		display[0]="<b>Terminator Data Link Control PDU</b>";
+		// Destination LLID
+		int dllid=retAddress(bits,16);
+		// Source LLID
+		int sllid=retAddress(bits,40);
+		display[1]="<b>Destination Logical Link ID : "+Integer.toString(dllid);
+		display[1]=display[1]+" Source Logical Link ID : "+Integer.toString(sllid)+"</b>";
 	}
 	
 	// Handle unknown Full Link Control types
