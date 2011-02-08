@@ -50,23 +50,27 @@ public class FullLinkControl {
 	// Group Voice Channer User LC
 	void group_v_ch_usr (boolean bits[])	{
 		display[0]="<b>Group Voice Channel User LC</b>";
+		// Service Options
+		display[1]=decodeServiceOptions(bits,16);
 		// Group address
 		int group=retAddress(bits,24);
 		// Source address
 		int source=retAddress(bits,48);
-		display[1]="<b>Group Address : "+Integer.toString(group);
-		display[1]=display[1]+" Source Address : "+Integer.toString(source)+"</b>";
+		display[2]="<b>Group Address : "+Integer.toString(group);
+		display[2]=display[2]+" Source Address : "+Integer.toString(source)+"</b>";
 	}
 	
 	// Unit to Unit Voice Channel User LC
 	void uu_v_ch_usr (boolean bits[])	{
 		display[0]="<b>Unit to Unit Voice Channel User LC</b>";
+		// Service Options
+		display[1]=decodeServiceOptions(bits,16);
 		// Target address
 		int target=retAddress(bits,24);
 		// Source address
 		int source=retAddress(bits,48);
-		display[1]="<b>Target Address : "+Integer.toString(target);
-		display[1]=display[1]+" Source Address : "+Integer.toString(source)+"</b>";
+		display[2]="<b>Target Address : "+Integer.toString(target);
+		display[2]=display[2]+" Source Address : "+Integer.toString(source)+"</b>";
 	}
 	
 	// Terminator Data Link Control PDU
@@ -101,5 +105,29 @@ public class FullLinkControl {
 			if (bits[a+offset]==true) addr=addr+c;
 		}
 		return addr;
+	}
+	
+	// Decode and display Service Options
+	private String decodeServiceOptions (boolean bits[],int offset)	{
+		int priority;
+		String so="<b>Service Options : ";
+		// Emergency
+		if (bits[offset]==false) so=so+"Non-emergency";
+		else so=so+"Emergency";
+		// Privacy
+		if (bits[offset+1]==true) so=so+"/Privacy Enabled";
+		// +2 and +3 are reserved bits
+		// +4 is Broadcast
+		if (bits[offset+4]==true) so=so+"/Broadcast";
+		// +5 is OVCM
+		if (bits[offset+5]==true) so=so+"/OVCM Call";
+		// 6 and 7 are priority
+		if (bits[offset+6]==true) priority=2;
+		else priority=0;
+		if (bits[offset+7]==true) priority++;
+		if (priority==0) so=so+"/No priority";
+		else so=so+"/Priority "+Integer.toString(priority);
+        so=so+"</b>";
+		return so;
 	}
 }
