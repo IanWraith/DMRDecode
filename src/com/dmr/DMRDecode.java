@@ -43,7 +43,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 20";
+	public String program_version="DMR Decoder V0.00 Build 21";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -97,7 +97,7 @@ public class DMRDecode {
 	private boolean enableDisplayBar=false;
 	private static final int CHECKJITTERINTERVAL=14400;
 	private static final int CHECKJITTERINTERVAL_NOSYNC=500;
-	private static final int SYMBOLSAHEAD=100;
+	private static final int SYMBOLSAHEAD=144;
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;

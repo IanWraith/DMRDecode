@@ -104,8 +104,11 @@ public class DMRDataDecode {
 				// Rate ¾ Data Continuation
 				if (dataType==8) BPTCres=true;
 				// Idle
-				// Don't waste time BPTC testing Idle data
-				if (dataType==9) BPTCres=true;
+				// Error check this to detect problems with the data stream
+				if (dataType==9)	{
+					BPTC19696 bptc19696=new BPTC19696();
+					BPTCres=bptc19696.decode(dibit_buf);
+				}
 				
 			}
 			
