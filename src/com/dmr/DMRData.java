@@ -39,32 +39,32 @@ public class DMRData {
 		int sllid=retAddress(bits,40);
 		display[1]="<b>Destination Logical Link ID : "+Integer.toString(dllid);
 		display[1]=display[1]+" Source Logical Link ID : "+Integer.toString(sllid)+"</b>";
-		// Bit 41 is 0
+		// Bit 64 is 0
 		// Blocks to follow
-		if (bits[42]==true) blocks=64;
+		if (bits[65]==true) blocks=64;
 		else blocks=0;
-		if (bits[43]==true) blocks=blocks+32;
-		if (bits[44]==true) blocks=blocks+16;
-		if (bits[45]==true) blocks=blocks+8;
-		if (bits[46]==true) blocks=blocks+4;
-		if (bits[47]==true) blocks=blocks+2;
-		if (bits[48]==true) blocks++;
+		if (bits[66]==true) blocks=blocks+32;
+		if (bits[67]==true) blocks=blocks+16;
+		if (bits[68]==true) blocks=blocks+8;
+		if (bits[69]==true) blocks=blocks+4;
+		if (bits[70]==true) blocks=blocks+2;
+		if (bits[71]==true) blocks++;
 		// Class
-		if (bits[49]==true) dclass=2;
+		if (bits[72]==true) dclass=2;
 		else dclass=0;
-		if (bits[50]==true) dclass++;
+		if (bits[73]==true) dclass++;
 		// Type
-		if (bits[51]==true) type=4;
+		if (bits[74]==true) type=4;
 		else type=0;
-		if (bits[52]==true) type=type+2;
-		if (bits[53]==true) type++;
+		if (bits[75]==true) type=type+2;
+		if (bits[76]==true) type++;
 		// Status
-		if (bits[54]==true) status=4;
+		if (bits[77]==true) status=4;
 		else status=0;
-		if (bits[55]==true) status=status+2;
-		if (bits[56]==true) status++;
+		if (bits[78]==true) status=status+2;
+		if (bits[79]==true) status++;
 		// Display this
-		display[2]="<b>"+Integer.toString(blocks)+" blocks follow : "+Integer.toString(dclass)+" T="+Integer.toString(type)+" S="+Integer.toString(status)+"</b>";
+		display[2]="<b>"+Integer.toString(blocks)+" blocks follow : C="+Integer.toString(dclass)+" T="+Integer.toString(type)+" S="+Integer.toString(status)+"</b>";
 	}
 	
 	// Unconfirmed Data
