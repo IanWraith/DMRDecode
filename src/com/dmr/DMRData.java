@@ -64,7 +64,15 @@ public class DMRData {
 		if (bits[78]==true) status=status+2;
 		if (bits[79]==true) status++;
 		// Display this
-		display[2]="<b>"+Integer.toString(blocks)+" blocks follow : C="+Integer.toString(dclass)+" T="+Integer.toString(type)+" S="+Integer.toString(status)+"</b>";
+		display[2]="<b>"+Integer.toString(blocks)+" blocks follow : ";
+		if ((dclass==0)&&(type==1)) display[2]=display[2]+"ACK";
+		else if ((dclass==1)&&(type==0)) display[2]=display[2]+"NACK (Illegal Format)";
+		else if ((dclass==1)&&(type==1)) display[2]=display[2]+"NACK (CRC Failed)";
+		else if ((dclass==1)&&(type==2)) display[2]=display[2]+"NACK (Memory Full)";
+		else if ((dclass==1)&&(type==4)) display[2]=display[2]+"NACK (Undeliverable)";
+		else if ((dclass==2)&&(type==0)) display[2]=display[2]+"SACK";
+		else display[2]=display[2]+" Unknown C="+Integer.toString(dclass)+" T="+Integer.toString(type)+" S="+Integer.toString(status);
+		display[2]=display[2]+"</b>";
 	}
 	
 	// Unconfirmed Data
@@ -107,6 +115,8 @@ public class DMRData {
 		}
 		return addr;
 	}
+	
+	
 	
 
 }
