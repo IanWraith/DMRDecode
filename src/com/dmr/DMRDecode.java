@@ -100,7 +100,6 @@ public class DMRDecode {
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
 	private int jitter=1;
-	private int jitterAdjust=0;
 	private int runningSymbolCount=0;
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
@@ -212,11 +211,7 @@ public class DMRDecode {
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
-			  // Allow extra samples to be added or removed to allow for jitter
-		      if ((i==5)&&(jitterAdjust!=0))	{
-		    	  i=i+jitterAdjust;
-		    	  jitterAdjust=0;
-		      }
+			  
 		      // Get the sample from whatever source
 			  sample=getSample(false);
 			  // Process it
@@ -841,20 +836,7 @@ public class DMRDecode {
 		return getOldestSample();
 	}
 	
-	// Change the jitter setting
-	private void changeJitter (int jitterVal)	{
-		// Clear the running symbol counter
-		runningSymbolCount=0;
-		// If no change needed just return
-		if (jitter==jitterVal)	return;
-		// Decide if we need to jitter up or down
-		if ((jitter==0)&&(jitterVal==9)) jitterAdjust=1;
-		else if ((jitter==9)&&(jitterVal==0)) jitterAdjust=-1;	
-		else if (jitterVal>jitter) jitterAdjust=-1;
-		else if (jitterVal<jitter) jitterAdjust=1;
-		// Set this as the jitter value
-		jitter=jitterVal;	
-	}
+
 	
 
 }
