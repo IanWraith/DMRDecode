@@ -95,8 +95,6 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int CHECKJITTERINTERVAL=14400;
-	private static final int CHECKJITTERINTERVAL_NOSYNC=500;
 	private static final int SYMBOLSAHEAD=144;
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
@@ -106,7 +104,6 @@ public class DMRDecode {
 	private int runningSymbolCount=0;
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
-	private static final double JITTERCHANGERPERCENTAGE=15.0;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -274,9 +271,6 @@ public class DMRDecode {
 					highVol=lineInThread.returnVolumeAverage();
 					window.updateVolumeBar(highVol);
 				}
-				// Check the jitter setting
-				if ((frameSync==true)&&(runningSymbolCount>CHECKJITTERINTERVAL)) changeJitter(limitedBestJitter());
-				else if ((frameSync==false)&&(runningSymbolCount>CHECKJITTERINTERVAL_NOSYNC)) changeJitter(fullBestJitter());	
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
@@ -477,8 +471,6 @@ public class DMRDecode {
 	// Handle an incoming DMR Frame
 	void processFrame ()	{
 		if (firstframe==true)	{
-			// First frame since sync
-			jitter=fullBestJitter();
 	    	// If debug enabled record obtaining sync
 			if (debug==true)	{
 				String l;
@@ -823,69 +815,6 @@ public class DMRDecode {
 	private int getOldestSample()	{
 		return samplesAheadBuffer[samplesAheadCounter];
 	}
-	
-	// Search the full range of jitter possibilities for the best jitter setting
-	private int fullBestJitter()	{
-		int a,bestJitter=0;
-		long energy=0,hienergy=0;
-		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
-			energy=energyFromSamplesAhead(a);
-			if (energy>hienergy)	{
-				bestJitter=a;
-				hienergy=energy;
-			}
-		}
-		return bestJitter;
-	}
-
-	// Find the best jitter point by looking at the energy levels at 3 waveform sample points
-	private int limitedBestJitter()	{
-		int bestJitter=0,a;
-		long energy=0,hienergy=0,jitterEnergy=0;
-		int jit[]=new int[3];
-		// Calculate the jitter points
-		jit[0]=jitter-1;
-		if (jit[0]==-1) jit[0]=9;
-		jit[1]=jitter;
-		jit[2]=jitter+1;
-		if (jit[2]==10) jit[2]=0;
-		// Look which of these has the highest energy level
-		for (a=0;a<3;a++)	{
-			energy=energyFromSamplesAhead(jit[a]);
-			if (a==1) jitterEnergy=energy;
-			if (energy>hienergy)	{
-				bestJitter=jit[a];
-				hienergy=energy;
-			}
-		}
-		// If we have frame sync and the jitter has changed then ensure the
-		// energy level is at least JITTERCHANGERPERCENTAGE higher for the
-		// Change to take place
-		if (bestJitter!=jitter)	{
-			double per=100.0-(((double)jitterEnergy/(double)energy)*100.0);
-			if ((frameSync==true)&&(per<JITTERCHANGERPERCENTAGE)) bestJitter=jitter;
-		}
-		// Return the best one
-		return bestJitter;
-	}
-	
-	// Calculate the best possible jitter value from the samples ahead buffer
-	private long energyFromSamplesAhead (int a)	{
-		int b,startPos,pos;
-		long current=0;
-		// Calculate the starting position
-		startPos=samplesAheadCounter+a;
-		// Check if the circular buffer pointer needs to go to zero
-		if (startPos>=SAMPLESAHEADSIZE) startPos=startPos-SAMPLESAHEADSIZE;
-		// Measure the power at each possibility
-		for(b=0;b<SAMPLESAHEADSIZE;b=b+SAMPLESPERSYMBOL)	{
-			pos=startPos+b;
-			if (pos>=SAMPLESAHEADSIZE) pos=pos-SAMPLESAHEADSIZE;
-			current=current+Math.abs(samplesAheadBuffer[pos]);
-		}
-		return current;
-	}
-	
 	
 	// Get a sample either from the sound card or a capture file
 	private int getSample (boolean jitmode)	{
