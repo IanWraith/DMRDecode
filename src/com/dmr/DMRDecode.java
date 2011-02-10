@@ -222,8 +222,6 @@ public class DMRDecode {
 		      }
 		      // Get the sample from whatever source
 			  sample=getSample(false);
-			  // Now pull the oldest sample from the samples ahead buffer
-			  sample=samplesAheadBuffer[samplesAheadCounter];
 			  // Process it
 		      if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2)) {
 		    	  sum=sum+sample;
@@ -507,11 +505,6 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line=DMRvoice.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
-		if (debug==true)	{
-			line[0]=line[0]+" jitter="+Integer.toString(jitter);
-			line[8]=returnDibitBufferPercentages();
-			line[9]=displayDibitBuffer();
-		}
 		frameCount++;
 		if (DMRvoice.isError()==false)	{
 			badFrameCount++;
@@ -522,6 +515,11 @@ public class DMRDecode {
 		else	{
 			continousBadFrameCount=0;
 		}
+		if (debug==true)	{
+			line[0]=line[0]+" jitter="+Integer.toString(jitter);
+			line[8]=returnDibitBufferPercentages();
+			line[9]=displayDibitBuffer();
+		}
 		displayLines(line);
 	}
 	
@@ -531,11 +529,6 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line=DMRdata.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();		
-		if (debug==true)	{
-			line[0]=line[0]+" jitter="+Integer.toString(jitter);
-			line[8]=returnDibitBufferPercentages();
-			line[9]=displayDibitBuffer();
-		}
 		frameCount++;
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
@@ -550,6 +543,11 @@ public class DMRDecode {
 			errorFreeFrameCount++;
 			continousBadFrameCount=0;
 		}
+		if (debug==true)	{
+			line[0]=line[0]+" jitter="+Integer.toString(jitter);
+			line[8]=returnDibitBufferPercentages();
+			line[9]=displayDibitBuffer();
+		}
 		// Display the info
 		displayLines(line);
 	}
@@ -560,11 +558,6 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line=DMRembedded.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
-		if (debug==true)	{
-			line[0]=line[0]+" jitter="+Integer.toString(jitter);
-			line[8]=returnDibitBufferPercentages();
-			line[9]=displayDibitBuffer();
-		}
 		frameCount++;
 		if (DMRembedded.isError()==false)	{
 			badFrameCount++;
@@ -578,6 +571,11 @@ public class DMRDecode {
 			// Set last sync type to 14 to show this was a good embedded frame
 			lastsynctype=14;
 			continousBadFrameCount=0;
+		}
+		if (debug==true)	{
+			line[0]=line[0]+" jitter="+Integer.toString(jitter);
+			line[8]=returnDibitBufferPercentages();
+			line[9]=displayDibitBuffer();
 		}
 		// Display the info
 		displayLines(line);
