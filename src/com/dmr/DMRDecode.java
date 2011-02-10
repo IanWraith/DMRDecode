@@ -104,6 +104,7 @@ public class DMRDecode {
 	private PipedInputStream inPipe;
 	private int maxref=12000;
 	private int minref=-12000;
+	private int lastSample=0;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -213,7 +214,7 @@ public class DMRDecode {
 			  
 			  if ((i==0)&&(frameSync==false))	{
 				  // Fall back or catch up
-				  if ((jitter>=0)&&(jitter<SYMBOLCENTRE))i++;          
+				  if ((jitter>=0)&&(jitter<=SYMBOLCENTRE))i++;          
 	              else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i--;  
 				  jitter=-1;
 				  }
@@ -222,21 +223,26 @@ public class DMRDecode {
 		      // Get the sample from whatever source
 			  sample=getSample(false);		
 			  
-			  if (sample>centre)	{
-				  if (sample>(int)((float)maxref*(float)1.25))
-					  if (jitter==-1) jitter=i;
+			  if (sample>max) max=sample;
+			  else if (sample<min) min=sample;
+			  
+			  
+			  if (sample<centre)	{
+				  if (sample>(int)((float)minref*(float)1.25))	{
+					  if ((jitter==-1)&&(lastSample>centre)) jitter=i;
+				  }
+				  
 			  }
-			  else if (sample<(int)((float)minref*(float)1.25))	{
-				  if (jitter==-1) jitter=i;
-			  }
-			  
-			  
-			  
+		
 			  // Process it
-		      if ((i==SYMBOLCENTRE)||(i==SYMBOLCENTRE+1)) {
+			  //if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2)) {
+			  if (i==SYMBOLCENTRE) {
 		    	  sum=sum+sample;
 		          count++;
 		          }
+		      
+		      lastSample=0;
+		      
 		    }
 		  symbol=(sum/count);
 		  symbolcnt++;		  
