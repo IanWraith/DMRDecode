@@ -371,7 +371,7 @@ public class DMRDecode {
 	
 	// No carrier or carrier lost so clear the variables
 	public void noCarrier ()	{
-		//jitter=-1;
+		jitter=-1;
 		lastsynctype=-1;
 		carrier=false;
 		max=MAXSTARTVALUE;
@@ -489,8 +489,7 @@ public class DMRDecode {
 				String l;
 				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
 				else l=getTimeStamp()+" DMR Data Sync Acquired";
-				l=l+" : centre="+Integer.toString(centre)+" jitter="+Integer.toString(jitter);
-				l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
+				l=l+" : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
 				addLine(l);
 				fileWrite(l);
 				}
