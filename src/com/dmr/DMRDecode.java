@@ -99,10 +99,11 @@ public class DMRDecode {
 	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
-	private int jitter=1;
-	private int runningSymbolCount=0;
+	private int jitter=-1;
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
+	private int maxref=12000;
+	private int minref=-12000;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -177,7 +178,6 @@ public class DMRDecode {
 	public void decode()	{
 		  noCarrier();
 		  synctype=getFrameSync();
-		  calcMids();
 	      while (synctype!=-1)	{
 	          processFrame();
 	          synctype=getFrameSync(); 
@@ -185,15 +185,7 @@ public class DMRDecode {
 	        }  
 	  }
 	
-	// Calculate the waveform centre and mid points
-	public void calcMids()	{
-			centre=(max+min)/2;
-			umid=(int)((float)(max-centre)*(float)0.625)+centre;
-		    lmid=(int)((float)(min-centre)*(float)0.625)+centre;		
-		    // Pass these settings to the display bar
-		    window.displayBarParams(max,min,umid,lmid);
-	}
-	
+
 	// A function containing the calculations required when a frame is detected
 	private void frameCalcs (int lmin,int lmax)	{
 		// The code required below appears to depend on the soundcard
@@ -203,7 +195,13 @@ public class DMRDecode {
 		// Acer PC Code 
 		max=lmax;
 		min=lmin;
-		
+		maxref=(int)((float)max*(float)0.8);
+		minref=(int)((float)min*(float)0.8);
+		centre=(max+min)/2;
+		umid=(int)((float)(max-centre)*(float)0.625)+centre;
+	    lmid=(int)((float)(min-centre)*(float)0.625)+centre;		
+	    // Pass these settings to the display bar
+	    window.displayBarParams(max,min,umid,lmid);
 	}
 	
 	// This code lifted straight from the DSD source code converted to Java 
@@ -212,18 +210,36 @@ public class DMRDecode {
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
 			  
+			  
+			  if ((i==0)&&(frameSync==false))	{
+				  // Fall back or catch up
+				  if ((jitter>=0)&&(jitter<SYMBOLCENTRE))i++;          
+	              else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i--;  
+				  jitter=-1;
+				  }
+				  
+			  
 		      // Get the sample from whatever source
-			  sample=getSample(false);
+			  sample=getSample(false);		
+			  
+			  if (sample>centre)	{
+				  if (sample>(int)((float)maxref*(float)1.25))
+					  if (jitter==-1) jitter=i;
+			  }
+			  else if (sample<(int)((float)minref*(float)1.25))	{
+				  if (jitter==-1) jitter=i;
+			  }
+			  
+			  
+			  
 			  // Process it
-		      if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2)) {
+		      if ((i==SYMBOLCENTRE)||(i==SYMBOLCENTRE+1)) {
 		    	  sum=sum+sample;
 		          count++;
 		          }
 		    }
 		  symbol=(sum/count);
 		  symbolcnt++;		  
-		  runningSymbolCount++;
-		  if (runningSymbolCount==Integer.MAX_VALUE) runningSymbolCount=0;
 		  return symbol;
 	  }
 	  
@@ -360,6 +376,8 @@ public class DMRDecode {
 		carrier=false;
 		max=MAXSTARTVALUE;
 		min=MINSTARTVALUE;
+		maxref=12000;
+		minref=-12000;
 		centre=0;
 		firstframe=false;
 		errorFreeFrameCount=0;
