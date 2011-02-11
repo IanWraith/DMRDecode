@@ -43,7 +43,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder V0.00 Build 21";
+	public String program_version="DMR Decoder (Build 21)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -196,8 +196,8 @@ public class DMRDecode {
 		// Acer PC Code 
 		max=lmax;
 		min=lmin;
-		maxref=(int)((float)max*(float)0.8);
-		minref=(int)((float)min*(float)0.8);
+		maxref=(int)((float)max*(float)1.25);
+		minref=(int)((float)min*(float)1.25);
 		centre=(max+min)/2;
 		umid=(int)((float)(max-centre)*(float)0.625)+centre;
 	    lmid=(int)((float)(min-centre)*(float)0.625)+centre;		
@@ -210,44 +210,36 @@ public class DMRDecode {
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
-			  
-			  
 			  if ((i==0)&&(frameSync==false))	{
 				  // Fall back or catch up
-				  if ((jitter>0)&&(jitter<=SYMBOLCENTRE))i--;          
+				  if ((jitter>0)&&(jitter<=SYMBOLCENTRE)) i--;          
 	              else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i++;  
 				  jitter=-1;
 				  }
-				  
-			  
 		      // Get the sample from whatever source
 			  sample=getSample(false);		
-			  
-			  if (frameSync==true)	{
+			  if(frameSync==true)	{
 				  if (sample>max) max=sample;
 				  else if (sample<min) min=sample;
 			  }
-			  
+			  // Jitter adjust code
 			  if (sample>centre)	{
-				  if (sample<(int)((float)maxref*(float)1.25))	{
+				  if (sample<maxref)	{
 					  if ((jitter==-1)&&(lastSample<centre)) jitter=i;
 				  }
 			  }
 			  else	{
-				  if (sample>(int)((float)minref*(float)1.25))	{
+				  if (sample>minref)	{
 					  if ((jitter==-1)&&(lastSample>centre)) jitter=i;
 				  }
 			  }
-		
-			  // Process it
+			  // Average the symbol from 3 samples
 			  if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2))	{
-					  sum=sum+sample;
+			  		  sum=sum+sample;
 					  count++;
 				  }
-			  
-		      
+		      // Make copy of this sample
 		      lastSample=sample;
-		      
 		    }
 		  symbol=(sum/count);
 		  symbolcnt++;		  
