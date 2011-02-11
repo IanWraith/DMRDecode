@@ -210,35 +210,32 @@ public class DMRDecode {
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
+			  // Fall back or catch up
 			  if ((i==0)&&(frameSync==false))	{
-				  // Fall back or catch up
 				  if ((jitter>0)&&(jitter<=SYMBOLCENTRE)) i--;          
 	              else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i++;  
 				  jitter=-1;
 				  }
 		      // Get the sample from whatever source
 			  sample=getSample(false);		
+			  // Hard limit the arriving sample
 			  if(frameSync==true)	{
 				  if (sample>max) max=sample;
 				  else if (sample<min) min=sample;
 			  }
 			  // Jitter adjust code
 			  if (sample>centre)	{
-				  if (sample<maxref)	{
-					  if ((jitter==-1)&&(lastSample<centre)) jitter=i;
-				  }
+					  if ((sample<maxref)&&(jitter==-1)&&(lastSample<centre)) jitter=i;
 			  }
 			  else	{
-				  if (sample>minref)	{
-					  if ((jitter==-1)&&(lastSample>centre)) jitter=i;
-				  }
+					  if ((sample>minref)&&(jitter==-1)&&(lastSample>centre)) jitter=i;
 			  }
 			  // Average the symbol from 3 samples
 			  if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2))	{
 			  		  sum=sum+sample;
 					  count++;
 				  }
-		      // Make copy of this sample
+		      // Make copy of this sample for later comparison
 		      lastSample=sample;
 		    }
 		  symbol=(sum/count);
