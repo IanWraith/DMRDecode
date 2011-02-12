@@ -209,6 +209,7 @@ public class DMRDecode {
 	// and tidied up removing non DMR code
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
+		  String dl;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
 			  // Fall back or catch up
 			  if ((i==0)&&(frameSync==false))	{
@@ -225,10 +226,28 @@ public class DMRDecode {
 			  }
 			  // Jitter adjust code
 			  if (sample>centre)	{
-					  if ((sample<maxref)&&(jitter==-1)&&(lastSample<centre)) jitter=i;
+					  if (lastSample<centre)	{
+						  
+						  if ((frameSync==true)&&(errorFreeFrameCount>0))	{
+							  dl=getTimeStamp()+",R ZC,"+Integer.toString(i);
+							  dl=dl+","+Integer.toString(centre)+","+Integer.toString(lastSample)+","+Integer.toString(sample)+","+Integer.toString(symbolcnt);
+							  debugDump(dl);
+						  }
+						  
+						  if (jitter==-1) jitter=i;
+					  }
 			  }
 			  else	{
-					  if ((sample>minref)&&(jitter==-1)&&(lastSample>centre)) jitter=i;
+					  if (lastSample>centre)	{
+						  
+						  if ((frameSync==true)&&(errorFreeFrameCount>0))	{
+							  dl=getTimeStamp()+",F ZC,"+Integer.toString(i);
+							  dl=dl+","+Integer.toString(centre)+","+Integer.toString(lastSample)+","+Integer.toString(sample)+","+Integer.toString(symbolcnt);
+							  debugDump(dl);
+						  }
+						  
+						  if (jitter==-1) jitter=i;
+					  }
 			  }
 			  // Average the symbol from 3 samples
 			  if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2))	{
@@ -507,6 +526,9 @@ public class DMRDecode {
 	void processDMRvoice ()	{	
 		DMRVoice DMRvoice=new DMRVoice();
 		String line[]=new String[10];
+		
+		String dl=getTimeStamp();
+		
 		line=DMRvoice.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		frameCount++;
@@ -515,15 +537,23 @@ public class DMRDecode {
 			continousBadFrameCount++;
 			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
+			
+			dl=dl+",Bad Voice";
+			
 		}
 		else	{
 			continousBadFrameCount=0;
+			
+			dl=dl+",Good Voice";
 		}
 		if (debug==true)	{
 			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
+		
+		debugDump(dl);
+		
 		displayLines(line);
 	}
 	
@@ -533,6 +563,9 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line=DMRdata.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();		
+		
+		String dl=getTimeStamp();
+		
 		frameCount++;
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
@@ -541,17 +574,25 @@ public class DMRDecode {
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
+			
+			dl=dl+",Bad Data";
+			
 		}
 		else	{
 			// Record that there has been an error free frame
 			errorFreeFrameCount++;
 			continousBadFrameCount=0;
+			
+			dl=dl+",Good Data";
 		}
 		if (debug==true)	{
 			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
+		
+		debugDump(dl);
+		
 		// Display the info
 		displayLines(line);
 	}
@@ -560,6 +601,9 @@ public class DMRDecode {
 	void processEmbedded ()	{
 		DMREmbedded DMRembedded=new DMREmbedded();
 		String line[]=new String[10];
+		
+		String dl=getTimeStamp();
+		
 		line=DMRembedded.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		frameCount++;
@@ -570,17 +614,26 @@ public class DMRDecode {
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
+			
+			dl=dl+",Bad Embedded";
+			
 		}
 		else	{
 			// Set last sync type to 14 to show this was a good embedded frame
 			lastsynctype=14;
 			continousBadFrameCount=0;
+			
+			dl=dl+",Good Embedded";
+			
 		}
 		if (debug==true)	{
 			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
+		
+		debugDump(dl);
+		
 		// Display the info
 		displayLines(line);
 	}
