@@ -209,8 +209,11 @@ public class DMRDecode {
 	// and tidied up removing non DMR code
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
-		  String dl;
+		  String dl,ex;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
+			  
+			  ex=",";
+			  
 			  // Fall back or catch up
 			  if ((i==0)&&(frameSync==false))	{
 				  if ((jitter>0)&&(jitter<=SYMBOLCENTRE)) i--;          
@@ -218,7 +221,10 @@ public class DMRDecode {
 				  jitter=-1;
 				  }
 		      // Get the sample from whatever source
-			  sample=getSample(false);		
+			  sample=getSample(false);	
+			  
+			  dl=Integer.toString(sample);
+			  
 			  // Hard limit the arriving sample
 			  if(frameSync==true)	{
 				  if (sample>max) max=sample;
@@ -229,9 +235,7 @@ public class DMRDecode {
 					  if (lastSample<centre)	{
 						  
 						  if ((frameSync==true)&&(errorFreeFrameCount>0))	{
-							  dl=getTimeStamp()+",R ZC,"+Integer.toString(i);
-							  dl=dl+","+Integer.toString(centre)+","+Integer.toString(lastSample)+","+Integer.toString(sample)+","+Integer.toString(symbolcnt);
-							  debugDump(dl);
+							  ex=",1";
 						  }
 						  
 						  if (jitter==-1) jitter=i;
@@ -241,21 +245,30 @@ public class DMRDecode {
 					  if (lastSample>centre)	{
 						  
 						  if ((frameSync==true)&&(errorFreeFrameCount>0))	{
-							  dl=getTimeStamp()+",F ZC,"+Integer.toString(i);
-							  dl=dl+","+Integer.toString(centre)+","+Integer.toString(lastSample)+","+Integer.toString(sample)+","+Integer.toString(symbolcnt);
-							  debugDump(dl);
+							  ex=",1";
 						  }
 						  
 						  if (jitter==-1) jitter=i;
 					  }
 			  }
+			  
+			  dl=dl+ex;
+			  
 			  // Average the symbol from 3 samples
 			  if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2))	{
+				  
+				  	  dl=dl+",1";
+				  
 			  		  sum=sum+sample;
 					  count++;
 				  }
+			  
+			  
 		      // Make copy of this sample for later comparison
 		      lastSample=sample;
+		      
+		      if ((frameSync==true)&&(errorFreeFrameCount>0)) debugDump(dl);
+		      
 		    }
 		  symbol=(sum/count);
 		  symbolcnt++;		  
