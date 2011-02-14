@@ -533,9 +533,6 @@ public class DMRDecode {
 	void processDMRvoice ()	{	
 		DMRVoice DMRvoice=new DMRVoice();
 		String line[]=new String[10];
-		
-		String dl=getTimeStamp();
-		
 		line=DMRvoice.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		frameCount++;
@@ -544,23 +541,15 @@ public class DMRDecode {
 			continousBadFrameCount++;
 			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
 			line[0]=line[0]+dispSymbolsSinceLastFrame();	
-			
-			dl=dl+",Bad Voice";
-			
 		}
 		else	{
 			continousBadFrameCount=0;
-			
-			dl=dl+",Good Voice";
 		}
 		if (debug==true)	{
 			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
-		
-		debugDump(dl);
-		
 		displayLines(line);
 	}
 	
@@ -570,9 +559,6 @@ public class DMRDecode {
 		String line[]=new String[10];
 		line=DMRdata.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();		
-		
-		String dl=getTimeStamp();
-		
 		frameCount++;
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
@@ -581,25 +567,16 @@ public class DMRDecode {
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
-			
-			dl=dl+",Bad Data";
-			
 		}
 		else	{
 			// Record that there has been an error free frame
 			errorFreeFrameCount++;
-			continousBadFrameCount=0;
-			
-			dl=dl+",Good Data";
 		}
 		if (debug==true)	{
 			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
-		
-		debugDump(dl);
-		
 		// Display the info
 		displayLines(line);
 	}
@@ -608,9 +585,6 @@ public class DMRDecode {
 	void processEmbedded ()	{
 		DMREmbedded DMRembedded=new DMREmbedded();
 		String line[]=new String[10];
-		
-		String dl=getTimeStamp();
-		
 		line=DMRembedded.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		frameCount++;
@@ -621,26 +595,17 @@ public class DMRDecode {
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
-			
-			dl=dl+",Bad Embedded";
-			
 		}
 		else	{
 			// Set last sync type to 14 to show this was a good embedded frame
 			lastsynctype=14;
 			continousBadFrameCount=0;
-			
-			dl=dl+",Good Embedded";
-			
 		}
 		if (debug==true)	{
 			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
-		
-		debugDump(dl);
-		
 		// Display the info
 		displayLines(line);
 	}
