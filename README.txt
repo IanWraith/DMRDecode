@@ -16,19 +16,10 @@ Milestone 3.5 (!) - To decode the SLOT TYPE PDU (Reached 4th November 2010)
 
 Milestone 4 - To decode the Short LCs that make up the CACH payload. (Reached 25th November 2010)
 
-Milestone 5 - To work out why and then fix the problem that is causing single bit errors in frames.
+Milestone 5 - To work out why and then fix the problem that is causing single bit errors in frames. (Reached 14th February 2011)
 
-Update 1 : I have just added a display bar in build 13 which shows symbol values in a graphical form.
-With this I see the program sometimes achieves a good sync with the DMR data stream (you see all
-the symbol values clustered around 4 points) but then it looses sync for an unknown reason.
+Milestone 6 - ??? Need to think about this. Any suggestions ?
 
-Update 2 : Still working on milestone 5 have made some progress but not enough for a new build yet.
-I really want to solve this problem once and for all.
-
-Update 3 : I am still working on milestone 5 sadly although some progress has been made I'm still not happy with it.
-Other improvements have been made to keep users happy though. The program now decodes Voice Header and Terminator LCs 
-so you can see radio and group identities. It also decodes and displays CSBKs.
-
-Ian Wraith (4th February 2011)
+Ian Wraith (14th February 2011)
 
 
