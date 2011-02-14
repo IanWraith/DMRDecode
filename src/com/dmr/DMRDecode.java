@@ -102,9 +102,10 @@ public class DMRDecode {
 	private int jitter=-1;
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
-	private int maxref=12000;
-	private int minref=-12000;
 	private int lastSample=0;
+	private static final int JITTERCOUNTERSIZE=30;
+	private int jitterCounter=0;
+	private int jitterBuffer[]=new int[JITTERCOUNTERSIZE];
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -196,8 +197,6 @@ public class DMRDecode {
 		// Acer PC Code 
 		max=lmax;
 		min=lmin;
-		maxref=(int)((float)max*(float)1.25);
-		minref=(int)((float)min*(float)1.25);
 		centre=(max+min)/2;
 		umid=(int)((float)(max-centre)*(float)0.625)+centre;
 	    lmid=(int)((float)(min-centre)*(float)0.625)+centre;		
@@ -209,72 +208,69 @@ public class DMRDecode {
 	// and tidied up removing non DMR code
 	public int getSymbol(boolean have_sync)	{
 		  int sample,i,sum=0,symbol,count=0;
-		  String dl,ex;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
-			  
-			  ex=",";
-			  
 			  // Fall back or catch up
-			  if ((i==0)&&(frameSync==false))	{
+			  if ((i==0)&&(jitter>0))	{
 				  if ((jitter>0)&&(jitter<=SYMBOLCENTRE)) i--;          
-	              else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i++;  
+				  else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i++;
 				  jitter=-1;
 				  }
 		      // Get the sample from whatever source
 			  sample=getSample(false);	
-			  
-			  dl=Integer.toString(sample);
-			  
-			  // Hard limit the arriving sample
-			  if(frameSync==true)	{
-				  if (sample>max) max=sample;
-				  else if (sample<min) min=sample;
-			  }
 			  // Jitter adjust code
 			  if (sample>centre)	{
 					  if (lastSample<centre)	{
-						  
-						  if ((frameSync==true)&&(errorFreeFrameCount>0))	{
-							  ex=",1";
-						  }
-						  
-						  if (jitter==-1) jitter=i;
+						  if (frameSync==false) jitter=i;
+						  else processJitter(i);
 					  }
 			  }
 			  else	{
 					  if (lastSample>centre)	{
-						  
-						  if ((frameSync==true)&&(errorFreeFrameCount>0))	{
-							  ex=",1";
-						  }
-						  
-						  if (jitter==-1) jitter=i;
+						  if (frameSync==false) jitter=i;
+						  else processJitter(i);
 					  }
 			  }
-			  
-			  dl=dl+ex;
-			  
-			  // Average the symbol from 3 samples
-			  if ((i>=SYMBOLCENTRE-1)&&(i<=SYMBOLCENTRE+2))	{
-				  
-				  	  dl=dl+",1";
-				  
+			  // Get the symbol from the centre 
+			  if (i==SYMBOLCENTRE)	{
 			  		  sum=sum+sample;
 					  count++;
 				  }
-			  
-			  
 		      // Make copy of this sample for later comparison
 		      lastSample=sample;
-		      
-		      if ((frameSync==true)&&(errorFreeFrameCount>0)) debugDump(dl);
-		      
 		    }
 		  symbol=(sum/count);
 		  symbolcnt++;		  
 		  return symbol;
 	  }
+	
+	// Add the calculated jitter value to the jitter circular buffer
+	private void processJitter (int jit)	{
+		jitterBuffer[jitterCounter]=jit;
+		jitterCounter++;
+		if (jitterCounter==JITTERCOUNTERSIZE)	{
+			jitterCounter=0;
+			// Set the jitter to the mode value of the jitter buffer
+			jitter=calcJitterMode();			
+		}
+	}
 	  
+	// Calculate which jitter value occurs the most (the mode) and return it 
+	private int calcJitterMode()	{
+		int a,b,high=0,highMode=0;
+		int modes[]=new int[SAMPLESPERSYMBOL];
+		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
+			modes[a]=0;
+			for (b=0;b<JITTERCOUNTERSIZE;b++)	{
+				if (jitterBuffer[b]==a) modes[a]++;
+			}
+			if (modes[a]>highMode)	{
+				high=a;
+				highMode=modes[a];
+			}
+		}
+		return high;
+	}
+	
 
 	// Grab 144 dibits then check if they have a sync pattern and if they do then process 
 	// them accordingly
@@ -408,8 +404,6 @@ public class DMRDecode {
 		carrier=false;
 		max=MAXSTARTVALUE;
 		min=MINSTARTVALUE;
-		maxref=12000;
-		minref=-12000;
 		centre=0;
 		firstframe=false;
 		errorFreeFrameCount=0;
