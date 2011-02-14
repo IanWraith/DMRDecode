@@ -103,7 +103,8 @@ public class DMRDecode {
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
 	private int lastSample=0;
-	private static final int JITTERCOUNTERSIZE=30;
+	private static final int JITTERFRAMEADJUST=5;
+	private static final int JITTERCOUNTERSIZE=(JITTERFRAMEADJUST*144);
 	private int jitterCounter=0;
 	private int jitterBuffer[]=new int[JITTERCOUNTERSIZE];
 	
@@ -230,7 +231,7 @@ public class DMRDecode {
 						  else processJitter(i);
 					  }
 			  }
-			  // Get the symbol from the centre 
+			  // Sample the symbol from its centre 
 			  if (i==SYMBOLCENTRE)	{
 			  		  sum=sum+sample;
 					  count++;
@@ -257,15 +258,15 @@ public class DMRDecode {
 	// Calculate which jitter value occurs the most (the mode) and return it 
 	private int calcJitterMode()	{
 		int a,b,high=0,highMode=0;
-		int modes[]=new int[SAMPLESPERSYMBOL];
+		int tmode;
 		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
-			modes[a]=0;
+			tmode=0;
 			for (b=0;b<JITTERCOUNTERSIZE;b++)	{
-				if (jitterBuffer[b]==a) modes[a]++;
+				if (jitterBuffer[b]==a) tmode++;
 			}
-			if (modes[a]>highMode)	{
+			if (tmode>highMode)	{
 				high=a;
-				highMode=modes[a];
+				highMode=tmode;
 			}
 		}
 		return high;
