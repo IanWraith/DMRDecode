@@ -241,6 +241,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		// Open the file
 		try {
 			theApp.file=new FileWriter(tfile);
+			// Clear all logged info
+			theApp.usersLogged.clearAll();
 			// Write the program version as the first line of the log
 			String fline="<HTML>"+theApp.program_version+"<br>\r\n";
 			theApp.file.write(fline);
@@ -255,9 +257,29 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	
 	// Close the log file
 	public void closeLogFile()	{
-		theApp.saveToFile=false;
+		 int a,count;
+		 String line;
+		 theApp.saveToFile=false;
 		 statusBar.setLoggingStatus("Not Logging");
 		 try	{
+			 // Display users
+			 count=theApp.usersLogged.returnUserCounter();
+			 // No users
+			 if (count==0)	{
+				 theApp.file.write("<br><br><b>No users were logged");
+			 }
+			 else	{
+				 line="<br><br><b>The folowing "+Integer.toString(count)+" users were logged ..</b>";
+				 theApp.file.write(line);
+				 // Sort the users
+				 theApp.usersLogged.sortByIdent();
+				 // Run through each user
+				 for (a=0;a<count;a++)	{
+					 line="<br>"+theApp.usersLogged.returnInfo(a);
+					 theApp.file.write(line);
+				 }
+			 }
+			 // Close the file
 			 theApp.file.write("</HTML>");
 			 theApp.file.flush();
 			 theApp.file.close();

@@ -5,7 +5,7 @@ public class CSBK {
 	private String display[]=new String[3];
 	
 	// The main decode method
-	public String[] decode (boolean bits[]) 	{
+	public String[] decode (DMRDecode theApp,boolean bits[]) 	{
 		int csbko,fid;
 		// LB
 		lb=bits[0];
@@ -48,7 +48,7 @@ public class CSBK {
 		}
 		// 61 - Pre_CSBK
 		else if (csbko==61)	{
-			preCSBK(bits);
+			preCSBK(theApp,bits);
 		}
 		else	{
 			unknownCSBK(csbko,fid,bits);
@@ -71,7 +71,8 @@ public class CSBK {
 	}
 	
 	// Handle a Preamble CSBK
-	private void preCSBK (boolean bits[])	{
+	private void preCSBK (DMRDecode theApp,boolean bits[])	{
+		int index;
 		// 0 if CSBK , 1 if Data
 		boolean dc=bits[16];
 		// 0 if target is individual and 1 if group
@@ -99,6 +100,15 @@ public class CSBK {
 		display[1]="<b>Target Address : "+Integer.toString(target);
 		if (gi==true) display[1]=display[1]+" (Group)";
 		display[1]=display[1]+" Source Address : "+Integer.toString(source)+"</b>";
+		// Target
+		theApp.usersLogged.addUser(target);
+		index=theApp.usersLogged.findUserIndex(target);
+		if (index!=-1) theApp.usersLogged.setAsDataUser(index);
+		// Source
+		theApp.usersLogged.addUser(source);
+		index=theApp.usersLogged.findUserIndex(source);
+		if (index!=-1) theApp.usersLogged.setAsDataUser(index);
+		
 	}
 	
 	// Return a 24 bit address 

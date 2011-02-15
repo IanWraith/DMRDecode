@@ -70,7 +70,7 @@ public class DMRDataDecode {
 							CSBK csbk=new CSBK();
 							String clines[]=new String[3];
 							BPTCres=true;
-							clines=csbk.decode(bits);
+							clines=csbk.decode(theApp,bits);
 							line[3]=clines[0];
 							line[4]=clines[1];
 							line[5]=clines[2];

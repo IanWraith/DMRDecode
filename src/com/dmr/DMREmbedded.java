@@ -136,7 +136,7 @@ public class DMREmbedded {
 						// TODO : Ensure the Voice LC Headers in Embedded Data Frames pass the Reed Solomon (12,9) error check 
 						FullLinkControl flc=new FullLinkControl();
 						String clines[]=new String[3];
-						clines=flc.decode(bits);
+						clines=flc.decode(theApp,bits);
 						line[3]=clines[0];
 						line[4]=clines[1];
 						line[5]=clines[2];
@@ -151,7 +151,7 @@ public class DMREmbedded {
 						// TODO : Ensure the Terminator LCs in Embedded Data Frames pass the Reed Solomon (12,9) error check 
 						FullLinkControl flc=new FullLinkControl();
 						String clines[]=new String[3];
-						clines=flc.decode(bits);
+						clines=flc.decode(theApp,bits);
 						line[3]=clines[0];
 						line[4]=clines[1];
 						line[5]=clines[2];
@@ -168,7 +168,7 @@ public class DMREmbedded {
 							CSBK csbk=new CSBK();
 							String clines[]=new String[3];
 							BPTCres=true;
-							clines=csbk.decode(bits);
+							clines=csbk.decode(theApp,bits);
 							line[3]=clines[0];
 							line[4]=clines[1];
 							line[5]=clines[2];							

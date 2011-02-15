@@ -49,6 +49,7 @@ public class FullLinkControl {
 	
 	// Group Voice Channer User LC
 	void group_v_ch_usr (DMRDecode theApp,boolean bits[])	{
+		int index;
 		display[0]="<b>Group Voice Channel User LC</b>";
 		// Service Options
 		display[1]=decodeServiceOptions(bits,16);
@@ -61,15 +62,19 @@ public class FullLinkControl {
 		// Log these users
 		// Group
 		if (theApp.usersLogged.addUser(group)==true)	{
-			int index=theApp.usersLogged.findUserIndex(group);
-			theApp.usersLogged.setAsGroup(index);
+			index=theApp.usersLogged.findUserIndex(group);
+			if (index!=-1) theApp.usersLogged.setAsGroup(index);
 		}
 		// Source
 		theApp.usersLogged.addUser(source);
+		index=theApp.usersLogged.findUserIndex(source);
+		if (index!=-1) theApp.usersLogged.setAsGroupUser(index);
+		
 	}
 	
 	// Unit to Unit Voice Channel User LC
 	void uu_v_ch_usr (DMRDecode theApp,boolean bits[])	{
+		int index;
 		display[0]="<b>Unit to Unit Voice Channel User LC</b>";
 		// Service Options
 		display[1]=decodeServiceOptions(bits,16);
@@ -82,8 +87,12 @@ public class FullLinkControl {
 		// Log these users
 		// Target
 		theApp.usersLogged.addUser(target);	
+		index=theApp.usersLogged.findUserIndex(target);
+		if (index!=-1) theApp.usersLogged.setAsUnitUser(index);
 		// Source
 		theApp.usersLogged.addUser(source);
+		index=theApp.usersLogged.findUserIndex(source);
+		if (index!=-1) theApp.usersLogged.setAsUnitUser(index);
 	}
 	
 	// Terminator Data Link Control PDU
