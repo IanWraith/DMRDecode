@@ -269,7 +269,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 				 theApp.file.write("<br><br><b>No users were logged");
 			 }
 			 else	{
-				 line="<br><br><b>The folowing "+Integer.toString(count)+" users were logged ..</b>";
+				 line="<br><br><b>The following "+Integer.toString(count)+" users were logged ..</b>";
 				 theApp.file.write(line);
 				 // Sort the users
 				 theApp.usersLogged.sortByIdent();
