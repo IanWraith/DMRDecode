@@ -220,14 +220,20 @@ public class DMRDecode {
 		      // Get the sample from whatever source
 			  sample=getSample(false);	
 			  // Jitter adjust code
+			  // Is this sample greater than the centre ?
 			  if (sample>centre)	{
+				  	  // Was the last sample less than the centre ?
 					  if (lastSample<centre)	{
+						  // Yes we have a zero crossing
 						  if (frameSync==false) jitter=i;
 						  else processJitter(i);
 					  }
 			  }
 			  else	{
+				  	  // If this sample is less than the centre then
+				      // was the last sample greater than the centre
 					  if (lastSample>centre)	{
+						  // Yes we have a zero crossing
 						  if (frameSync==false) jitter=i;
 						  else processJitter(i);
 					  }
@@ -258,8 +264,7 @@ public class DMRDecode {
 	  
 	// Calculate which jitter value occurs the most (the mode) and return it 
 	private int calcJitterMode()	{
-		int a,b,high=0,highMode=0;
-		int tmode;
+		int a,b,high=0,highMode=0,tmode;
 		for (a=0;a<SAMPLESPERSYMBOL;a++)	{
 			tmode=0;
 			for (b=0;b<JITTERCOUNTERSIZE;b++)	{
@@ -516,8 +521,7 @@ public class DMRDecode {
 			if (debug==true)	{
 				String l;
 				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
-				else l=getTimeStamp()+" DMR Data Sync Acquired";
-				l=l+" : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
+				else l=getTimeStamp()+" DMR Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
 				addLine(l);
 				fileWrite(l);
 				}
@@ -548,7 +552,6 @@ public class DMRDecode {
 			continousBadFrameCount=0;
 		}
 		if (debug==true)	{
-			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
@@ -575,7 +578,6 @@ public class DMRDecode {
 			errorFreeFrameCount++;
 		}
 		if (debug==true)	{
-			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
@@ -604,7 +606,6 @@ public class DMRDecode {
 			continousBadFrameCount=0;
 		}
 		if (debug==true)	{
-			line[0]=line[0]+" jitter="+Integer.toString(jitter);
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
