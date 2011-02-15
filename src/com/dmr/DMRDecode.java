@@ -107,6 +107,7 @@ public class DMRDecode {
 	private static final int JITTERCOUNTERSIZE=(JITTERFRAMEADJUST*144);
 	private int jitterCounter=0;
 	private int jitterBuffer[]=new int[JITTERCOUNTERSIZE];
+	private int syncHighLowlBuf[]=new int[24];
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -298,12 +299,12 @@ public class DMRDecode {
 				// and also find the new minimum and maximum
 				if (frameSync==false)	{
 					// Get the frames 24 sync symbols
-					int lbuf2[]=getSyncSymbols();
+					syncHighLowlBuf=getSyncSymbols();
 					lmin=1;
 					lmax=-1;
 					for (a=0;a<24;a++)	{
-						if (lbuf2[a]<lmin) lmin=lbuf2[a];
-						if (lbuf2[a]>lmax) lmax=lbuf2[a];
+						if (syncHighLowlBuf[a]<lmin) lmin=syncHighLowlBuf[a];
+						if (syncHighLowlBuf[a]>lmax) lmax=syncHighLowlBuf[a];
 					}
 				}
 				// Update the volume bar every 25 frames
