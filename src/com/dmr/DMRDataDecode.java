@@ -36,7 +36,7 @@ public class DMRDataDecode {
 						// TODO : Ensure the Voice LC Headers in Data Frames pass the Reed Solomon (12,9) error check 
 						FullLinkControl flc=new FullLinkControl();
 						String clines[]=new String[3];
-						clines=flc.decode(bits);
+						clines=flc.decode(theApp,bits);
 						line[3]=clines[0];
 						line[4]=clines[1];
 						line[5]=clines[2];
@@ -52,7 +52,7 @@ public class DMRDataDecode {
 						// TODO : Ensure the Terminator LCs in Data Frames pass the Reed Solomon (12,9) error check 
 						FullLinkControl flc=new FullLinkControl();
 						String clines[]=new String[3];
-						clines=flc.decode(bits);
+						clines=flc.decode(theApp,bits);
 						line[3]=clines[0];
 						line[4]=clines[1];
 						line[5]=clines[2];

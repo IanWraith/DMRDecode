@@ -108,6 +108,7 @@ public class DMRDecode {
 	private int jitterCounter=0;
 	private int jitterBuffer[]=new int[JITTERCOUNTERSIZE];
 	private int syncHighLowlBuf[]=new int[24];
+	public UsersLogged usersLogged=new UsersLogged();
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();

@@ -5,7 +5,7 @@ public class FullLinkControl {
 	private String display[]=new String[3];
 	
 	// The main decode method
-	public String[] decode (boolean bits[]) 	{
+	public String[] decode (DMRDecode theApp,boolean bits[]) 	{
 		int flco,fid,service;
 		// PF
 		pf=bits[0];
@@ -40,15 +40,15 @@ public class FullLinkControl {
 		if (bits[22]==true) service=service+2;
 		if (bits[23]==true) service++;
 		// PDU types 
-		if (flco==0) group_v_ch_usr(bits);
-		else if (flco==3) uu_v_ch_usr(bits);
-		else if (flco==48) td_lc(bits);
+		if (flco==0) group_v_ch_usr(theApp,bits);
+		else if (flco==3) uu_v_ch_usr(theApp,bits);
+		else if (flco==48) td_lc(theApp,bits);
 		else unknown_flc(flco,fid,bits);
 		return display;
 	}
 	
 	// Group Voice Channer User LC
-	void group_v_ch_usr (boolean bits[])	{
+	void group_v_ch_usr (DMRDecode theApp,boolean bits[])	{
 		display[0]="<b>Group Voice Channel User LC</b>";
 		// Service Options
 		display[1]=decodeServiceOptions(bits,16);
@@ -58,10 +58,18 @@ public class FullLinkControl {
 		int source=retAddress(bits,48);
 		display[2]="<b>Group Address : "+Integer.toString(group);
 		display[2]=display[2]+" Source Address : "+Integer.toString(source)+"</b>";
+		// Log these users
+		// Group
+		if (theApp.usersLogged.addUser(group)==true)	{
+			int index=theApp.usersLogged.findUserIndex(group);
+			theApp.usersLogged.setAsGroup(index);
+		}
+		// Source
+		theApp.usersLogged.addUser(source);
 	}
 	
 	// Unit to Unit Voice Channel User LC
-	void uu_v_ch_usr (boolean bits[])	{
+	void uu_v_ch_usr (DMRDecode theApp,boolean bits[])	{
 		display[0]="<b>Unit to Unit Voice Channel User LC</b>";
 		// Service Options
 		display[1]=decodeServiceOptions(bits,16);
@@ -71,10 +79,16 @@ public class FullLinkControl {
 		int source=retAddress(bits,48);
 		display[2]="<b>Target Address : "+Integer.toString(target);
 		display[2]=display[2]+" Source Address : "+Integer.toString(source)+"</b>";
+		// Log these users
+		// Target
+		theApp.usersLogged.addUser(target);	
+		// Source
+		theApp.usersLogged.addUser(source);
 	}
 	
 	// Terminator Data Link Control PDU
-	void td_lc (boolean bits[])	{
+	void td_lc (DMRDecode theApp,boolean bits[])	{
+		int index;
 		display[0]="<b>Terminator Data Link Control PDU</b>";
 		// Destination LLID
 		int dllid=retAddress(bits,16);
@@ -82,6 +96,15 @@ public class FullLinkControl {
 		int sllid=retAddress(bits,40);
 		display[1]="<b>Destination Logical Link ID : "+Integer.toString(dllid);
 		display[1]=display[1]+" Source Logical Link ID : "+Integer.toString(sllid)+"</b>";
+		// Log these users
+		// Destination
+		theApp.usersLogged.addUser(dllid);
+		index=theApp.usersLogged.findUserIndex(dllid);
+		if (index!=-1) theApp.usersLogged.setAsDataUser(index);
+		// Source
+		theApp.usersLogged.addUser(sllid);
+		index=theApp.usersLogged.findUserIndex(sllid);
+		if (index!=-1) theApp.usersLogged.setAsDataUser(index);
 	}
 	
 	// Handle unknown Full Link Control types
