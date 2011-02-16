@@ -111,17 +111,17 @@ public class UsersLogged {
 		if (group[index]==true) l=l+" GROUP";
 		if (dataUser[index]==true)	{
 			items++;
-			l=l+" Data";
+			l=l+" Data ";
 		}
 		if (groupCallUser[index]==true)	{
 			if (items>0) l=l+"+";
-			else items++;
-			l=l+" Group Calls";
+			items++;
+			l=l+" Group Calls ";
 		}
 		if (unitCallUser[index]==true)	{
 			if (items>0) l=l+"+";
-			else items++;
-			l=l+" Unit Calls";
+			items++;
+			l=l+" Unit to Unit Calls ";
 		}
 		if (items==1) l=l+" only";
 		// All done
