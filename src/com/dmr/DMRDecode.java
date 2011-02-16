@@ -103,7 +103,7 @@ public class DMRDecode {
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
 	private int lastSample=0;
-	private static final int JITTERFRAMEADJUST=5;
+	private static final int JITTERFRAMEADJUST=1;
 	private static final int JITTERCOUNTERSIZE=(JITTERFRAMEADJUST*144);
 	private int jitterCounter=0;
 	private int jitterBuffer[]=new int[JITTERCOUNTERSIZE];
