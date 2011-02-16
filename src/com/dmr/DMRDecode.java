@@ -110,6 +110,12 @@ public class DMRDecode {
 	private int syncHighLowlBuf[]=new int[24];
 	public UsersLogged usersLogged=new UsersLogged();
 	
+	private static final int MAXMINBUFSIZE=5;
+	private int maxminBufferCounter=0;
+	private int maxBuffer[]=new int[MAXMINBUFSIZE];
+	private int minBuffer[]=new int[MAXMINBUFSIZE];
+	
+	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
@@ -203,6 +209,14 @@ public class DMRDecode {
 		centre=(max+min)/2;
 		umid=(int)((float)(max-centre)*(float)0.625)+centre;
 	    lmid=(int)((float)(min-centre)*(float)0.625)+centre;		
+	    
+	 // If debug enabled then record this
+		if (debug==true)	{
+			String l=getTimeStamp()+" Setting new params : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
+			addLine(l);
+			fileWrite(l);
+			}
+	    
 	    // Pass these settings to the display bar
 	    window.displayBarParams(max,min,umid,lmid);
 	}
@@ -214,6 +228,13 @@ public class DMRDecode {
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
 			  // Fall back or catch up
 			  if ((i==0)&&(jitter>0))	{
+				  
+				  if ((frameSync==true)&&(debug==true))	{
+					  String l=getTimeStamp()+" jitter change to "+Integer.toString(jitter);
+					  addLine(l);
+					  fileWrite(l);
+				  }
+				  
 				  if ((jitter>0)&&(jitter<=SYMBOLCENTRE)) i--;          
 				  else if ((jitter>SYMBOLCENTRE)&&(jitter<SAMPLESPERSYMBOL)) i++;
 				  jitter=-1;
@@ -240,7 +261,7 @@ public class DMRDecode {
 					  }
 			  }
 			  // Sample the symbol from its centre 
-			  if (i==SYMBOLCENTRE)	{
+			  if ((i>=SYMBOLCENTRE)&&(i<=SYMBOLCENTRE+1))	{
 			  		  sum=sum+sample;
 					  count++;
 				  }
@@ -303,7 +324,7 @@ public class DMRDecode {
 			if (t>=144) {
 				// If we don't have frame sync then rotate the symbol buffer
 				// and also find the new minimum and maximum
-				if (frameSync==false)	{
+				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
 					// Get the frames 24 sync symbols
 					syncHighLowlBuf=getSyncSymbols();
 					lmin=1;
@@ -343,6 +364,7 @@ public class DMRDecode {
 							frameCalcs(lmin,lmax);
 							frameSync=true;
 						}
+						else addToMinMaxBuffer(lmin,lmax);
 						if (lastsynctype==-1) firstframe=true;
 						else firstframe=false;
 						lastsynctype=10;
@@ -357,6 +379,7 @@ public class DMRDecode {
 							frameCalcs(lmin,lmax);
 							frameSync=true;
 						}
+						else addToMinMaxBuffer(lmin,lmax);
 						if (lastsynctype==-1) firstframe=true;
 						else firstframe=false;
 						lastsynctype=12;
@@ -880,6 +903,31 @@ public class DMRDecode {
 		addToSamplesAheadBuffer(sample);
 		// Pull the oldest sample from the circular samples ahead buffer
 		return getOldestSample();
+	}
+	
+	// The the max and min values to a circular buffer of values
+	private void addToMinMaxBuffer (int tmin,int tmax)	{
+		maxBuffer[maxminBufferCounter]=tmax;
+		minBuffer[maxminBufferCounter]=tmin;
+		maxminBufferCounter++;
+		// When the buffer reaches its maximum size use calculate new parameters
+		if (maxminBufferCounter==MAXMINBUFSIZE)	{
+			maxminBufferCounter=0;
+			calcAverageMinMax();
+		}
+	}
+	
+	// Calculate new min and max parameters as averages from the circular buffer
+	private void calcAverageMinMax()	{
+		int a,totalmax=0,totalmin=0;
+		for (a=0;a<MAXMINBUFSIZE;a++)	{
+			totalmax=totalmax+maxBuffer[a];
+			totalmin=totalmin+minBuffer[a];
+		}
+		totalmax=totalmax/MAXMINBUFSIZE;
+		totalmin=totalmin/MAXMINBUFSIZE;
+		jitterCounter=0;
+		frameCalcs(totalmin,totalmax);
 	}
 	
 
