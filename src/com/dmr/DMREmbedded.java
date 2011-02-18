@@ -5,11 +5,16 @@ public class DMREmbedded {
 	private String line[]=new String[10];
 	private boolean resCACH,resEMB;
 	private DMRDecode theApp;
+	private DecodeCACH cachdecode=new DecodeCACH();
+	private BPTC19696 bptc19696=new BPTC19696();
+	private FullLinkControl flc=new FullLinkControl();
+	private crc tCRC=new crc();
+	private CSBK csbk=new CSBK();
+	private DMRData data=new DMRData();
 	
 	public String[] decode (DMRDecode TtheApp,byte[] dibit_buf)	{
 		String cline;
 		theApp=TtheApp;
-		DecodeCACH cachdecode=new DecodeCACH();
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
 		resCACH=cachdecode.isPassErrorCheck();
@@ -129,12 +134,10 @@ public class DMREmbedded {
 				int dataType=slottype.returnDataType();
 				// Voice LC Header
 				if (dataType==1)	{
-					BPTC19696 bptc19696=new BPTC19696();
 					if (bptc19696.decode(dibit_buf)==true)	{
 						BPTCres=true;
 						boolean bits[]=bptc19696.dataOut();
 						// TODO : Ensure the Voice LC Headers in Embedded Data Frames pass the Reed Solomon (12,9) error check 
-						FullLinkControl flc=new FullLinkControl();
 						String clines[]=new String[3];
 						clines=flc.decode(theApp,bits);
 						line[3]=clines[0];
@@ -144,12 +147,10 @@ public class DMREmbedded {
 				}
 				// Terminator with LC
 				if (dataType==2)	{
-					BPTC19696 bptc19696=new BPTC19696();
 					if (bptc19696.decode(dibit_buf)==true)	{
 						BPTCres=true;
 						boolean bits[]=bptc19696.dataOut();
 						// TODO : Ensure the Terminator LCs in Embedded Data Frames pass the Reed Solomon (12,9) error check 
-						FullLinkControl flc=new FullLinkControl();
 						String clines[]=new String[3];
 						clines=flc.decode(theApp,bits);
 						line[3]=clines[0];
@@ -159,13 +160,10 @@ public class DMREmbedded {
 				}		
 				// CSBK
 				if (dataType==3)	{
-					BPTC19696 bptc19696=new BPTC19696();
 					if (bptc19696.decode(dibit_buf)==true)	{
-						crc tCRC=new crc();
 						boolean bits[]=bptc19696.dataOut();
 						// Does the CSBK pass its CRC test ?
 						if (tCRC.crcCSBK(bits)==true)	{
-							CSBK csbk=new CSBK();
 							String clines[]=new String[3];
 							BPTCres=true;
 							clines=csbk.decode(theApp,bits);
@@ -177,15 +175,12 @@ public class DMREmbedded {
 				}
 				// Data Header
 				if (dataType==6)	{
-					BPTC19696 bptc19696=new BPTC19696();
 					if (bptc19696.decode(dibit_buf)==true)	{
-						crc tCRC=new crc();
 						boolean bits[]=bptc19696.dataOut();
 						// Does the Data Header pass its CRC test ?
 						if (tCRC.crcDataHeader(bits)==true)	{
 							String clines[]=new String[3];
 							BPTCres=true;
-							DMRData data=new DMRData();
 							clines=data.decodeHeader(bits);
 							line[3]=clines[0];
 							line[4]=clines[1];

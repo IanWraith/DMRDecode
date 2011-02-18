@@ -115,6 +115,12 @@ public class DMRDecode {
 	private int maxBuffer[]=new int[MAXMINBUFSIZE];
 	private int minBuffer[]=new int[MAXMINBUFSIZE];
 	
+	private DMRDataDecode DMRdata=new DMRDataDecode();
+	private DMRVoice DMRvoice=new DMRVoice();
+	private DMREmbedded DMRembedded=new DMREmbedded();
+	private String line[]=new String[10];
+	
+	
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -326,7 +332,7 @@ public class DMRDecode {
 				// and also find the new minimum and maximum
 				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
 					// Get the frames 24 sync symbols
-					syncHighLowlBuf=getSyncSymbols();
+					getSyncSymbols();
 					lmin=1;
 					lmax=-1;
 					for (a=0;a<24;a++)	{
@@ -508,17 +514,15 @@ public class DMRDecode {
 	}
 	
 	// Extract just the 24 symbols of the sync sequence and return them in an array
-	private int[] getSyncSymbols()	{
+	private void getSyncSymbols()	{
 		int i,circPos;
-		int syms[]=new int[24];
 		circPos=symbolBufferCounter+66;
 		if (circPos>=144) circPos=circPos-144;
 		for (i=0;i<24;i++)	{
-			syms[i]=symbolBuffer[circPos];
+			syncHighLowlBuf[i]=symbolBuffer[circPos];
 			circPos++;
 			if (circPos==144) circPos=0;
 		}
-		return syms;	
 	}
 	  
 	// Adds a line to the display
@@ -561,8 +565,6 @@ public class DMRDecode {
 
 	// Handle a DMR Voice Frame
 	void processDMRvoice ()	{	
-		DMRVoice DMRvoice=new DMRVoice();
-		String line[]=new String[10];
 		line=DMRvoice.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		frameCount++;
@@ -584,8 +586,6 @@ public class DMRDecode {
 	
 	// Handle a DMR Data Frame
 	void processDMRdata ()	{
-		DMRDataDecode DMRdata=new DMRDataDecode();
-		String line[]=new String[10];
 		line=DMRdata.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();		
 		frameCount++;
@@ -611,8 +611,6 @@ public class DMRDecode {
 	
 	// Handle an embedded frame
 	void processEmbedded ()	{
-		DMREmbedded DMRembedded=new DMREmbedded();
-		String line[]=new String[10];
 		line=DMRembedded.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		frameCount++;

@@ -3,10 +3,10 @@ package com.dmr;
 public class DMRVoice {
 	private String line[]=new String[10];
 	private boolean res;
+	private DecodeCACH cachdecode=new DecodeCACH();
 	
 	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
-		DecodeCACH cachdecode=new DecodeCACH();
 		line[0]="<b>"+theApp.getTimeStamp()+" DMR Voice Frame </b>";
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
