@@ -34,6 +34,7 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.StyleConstants;
 import javax.swing.JEditorPane;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.io.DataInputStream;
 import java.io.PipedInputStream;
@@ -109,18 +110,14 @@ public class DMRDecode {
 	private int jitterBuffer[]=new int[JITTERCOUNTERSIZE];
 	private int syncHighLowlBuf[]=new int[24];
 	public UsersLogged usersLogged=new UsersLogged();
-	
 	private static final int MAXMINBUFSIZE=5;
 	private int maxminBufferCounter=0;
 	private int maxBuffer[]=new int[MAXMINBUFSIZE];
 	private int minBuffer[]=new int[MAXMINBUFSIZE];
-	
 	private DMRDataDecode DMRdata=new DMRDataDecode();
 	private DMRVoice DMRvoice=new DMRVoice();
 	private DMREmbedded DMRembedded=new DMREmbedded();
 	private String line[]=new String[10];
-	
-	
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
