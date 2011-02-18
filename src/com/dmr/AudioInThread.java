@@ -14,10 +14,10 @@ public class AudioInThread extends Thread {
 	private TargetDataLine Line;
 	private AudioFormat format;
 	private boolean gettingAudio;
-	private static int VOLUMEBUFFERSIZE=100;
+	private static int VOLUMEBUFFERSIZE=50;
 	private int volumeBuffer[]=new int[VOLUMEBUFFERSIZE];
 	private int volumeBufferCounter=0;
-	private static int ISIZE=4096;
+	private static int ISIZE=16384;
 	private byte buffer[]=new byte[ISIZE+1];
 	private PipedOutputStream ps=new PipedOutputStream();
 	private DataOutputStream outPipe=new DataOutputStream(ps);
