@@ -34,7 +34,6 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.StyleConstants;
 import javax.swing.JEditorPane;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.util.Date;
 import java.io.DataInputStream;
 import java.io.PipedInputStream;
