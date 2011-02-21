@@ -9,7 +9,8 @@ public class SlotType {
 	public String decode (byte[] dibit_buf)	{
 		sb.delete(0,sb.length());
 		passErrorCheck=mainDecode(dibit_buf);
-		return sb.toString();
+		if (passErrorCheck==false) return null;
+		else return sb.toString();
 	}
 	
 	// The main decode and display method

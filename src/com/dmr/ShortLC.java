@@ -81,6 +81,7 @@ public class ShortLC {
 	
 	// Clear the data ready boolean
 	public void clrDataReady()	{
+		sb.delete(0,sb.length());
 		dataReady=false;
 	}
 	
