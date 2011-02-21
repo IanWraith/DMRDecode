@@ -72,7 +72,8 @@ public class EmbeddedLC {
 		int a,b=0,crc;
 		boolean data[]=new boolean[128];
 		boolean row[]=new boolean[16];
-		lines[0]="Embedded Multi Block LC : ";
+		StringBuilder sb=new StringBuilder(250);
+		sb.append("Embedded Multi Block LC : ");
 		// The data is unpacked downwards in columns
 		for (a=0;a<128;a++)	{
 			data[b]=rawLC[a];
@@ -126,12 +127,13 @@ public class EmbeddedLC {
 		// Now CRC check this
 		crc tCRC=new crc();
 		if (tCRC.crcFiveBit(lcData,crc)==false) return false;
-		
+		// For now just display this in raw binary format
 		for (a=0;a<72;a++)	{
-			if (lcData[a]==false) lines[0]=lines[0]+"0";
-			else lines[0]=lines[0]+"1";
+			if (lcData[a]==false) sb.append("0");
+			else sb.append("1");
 		}
-
+		// Convert the stringbuilder to a string
+		lines[0]=sb.toString();
 		dataReady=true;
 		return true;
 	}
