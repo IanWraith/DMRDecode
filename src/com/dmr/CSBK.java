@@ -7,6 +7,10 @@ public class CSBK {
 	// The main decode method
 	public String[] decode (DMRDecode theApp,boolean bits[]) 	{
 		int csbko,fid;
+		// Clear the display lines
+		display[0]=null;
+		display[1]=null;
+		display[2]=null;
 		// LB
 		lb=bits[0];
 		// PF

@@ -134,6 +134,8 @@ public class FullLinkControl {
 		}
 		sb.append("</b>");
 		display[0]=sb.toString();
+		display[1]=null;
+		display[2]=null;
 	}
 	
 	// Return a 24 bit address 
