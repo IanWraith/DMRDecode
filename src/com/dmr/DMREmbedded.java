@@ -102,6 +102,8 @@ public class DMREmbedded {
 			if (EMDdata[5]==true) lcss=2;
 			else lcss=0;
 			if (EMDdata[6]==true) lcss++;
+			// Delete what is in the stringbuilder
+			sb.delete(0,sb.length());
 			// Display the colour code
 			sb.append("EMB : Colour Code "+Integer.toString(cc));
 			// PI
