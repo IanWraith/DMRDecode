@@ -2,7 +2,7 @@ package com.dmr;
 
 public class ShortLC {
 	private boolean dataReady;
-	private String line;
+	private StringBuilder sb=new StringBuilder(250);
 	private boolean rawData[]=new boolean[69];
 	private boolean crcResult=false;
 	private int currentState=-1;
@@ -23,7 +23,7 @@ public class ShortLC {
 			// Set the current state to 0 to indicate a first fragment has arrived
 			currentState=0;
 			// Clear the display line
-			line="";
+			sb.delete(0,sb.length());
 		}
 		// Continuation fragments
 		else if (type==1)	{
@@ -66,7 +66,7 @@ public class ShortLC {
 	
 	// Make the text string available
 	public String getLine()	{
-		return line;
+		return sb.toString();
 	}
 	
 	// Tell the main object if decoded data is available
@@ -90,11 +90,11 @@ public class ShortLC {
 		if (shortLCHamming(rawData)==true)	{
 			boolean shortLC[]=deInterleaveShortLC(rawData);
 			if (shortLCcrc(shortLC)==true)	{
-				line=decodeShortLC(shortLC);
+				sb=decodeShortLC(shortLC);
 				crcResult=true;
 			}
 		}
-		else line="";
+		else sb.delete(0,sb.length());
 		dataReady=true;
 	}
 	
@@ -193,9 +193,9 @@ public class ShortLC {
 	}
 	
 	// Decode and display the info in SHORT LC PDUs
-	private String decodeShortLC (boolean db[])	{
+	private StringBuilder decodeShortLC (boolean db[])	{
 		int slco,a;
-		String dline;
+		StringBuilder tsb=new StringBuilder(250);
 		// Calculate the SLCO
 		if (db[0]==true) slco=8;
 		else slco=0;
@@ -204,18 +204,18 @@ public class ShortLC {
 		if (db[3]==true) slco++;
 		// Short LC Types
 		if (slco==0)	{
-			dline="Nul_Msg";
+			tsb.append("Nul_Msg");
 		}
 		else if (slco==1)	{
 			int addr1,addr2,inf;
-			dline="Act_Updt - ";
+			tsb.append("Act_Updt - ");
 			// Slot 1
 			if (db[4]==true) inf=8;
 			else inf=0;
 			if (db[5]==true) inf=inf+4;
 			if (db[6]==true) inf=inf+2;
 			if (db[7]==true) inf++;
-			dline=dline+decodeAct_Updt(inf,1);
+			tsb.append(decodeAct_Updt(inf,1));
 			// Hashed Address
 			if (inf!=0)	{
 				if (db[12]==true) addr1=128;
@@ -227,16 +227,16 @@ public class ShortLC {
 				if (db[17]==true) addr1=addr1+4;
 				if (db[18]==true) addr1=addr1+2;
 				if (db[19]==true) addr1++;
-				dline=dline+" Hashed Addr "+Integer.toString(addr1);
+				tsb.append(" Hashed Addr "+Integer.toString(addr1));
 			}
-			dline=dline+" : ";
+			tsb.append(" : ");
 			// Slot 2
 			if (db[8]==true) inf=8;
 			else inf=0;
 			if (db[9]==true) inf=inf+4;
 			if (db[10]==true) inf=inf+2;
 			if (db[11]==true) inf++;
-			dline=dline+decodeAct_Updt(inf,2);
+			tsb.append(decodeAct_Updt(inf,2));
 			if (inf!=0)	{
 				// Hashed Address
 				if (db[20]==true) addr2=128;
@@ -248,18 +248,18 @@ public class ShortLC {
 				if (db[25]==true) addr2=addr2+4;
 				if (db[26]==true) addr2=addr2+2;
 				if (db[27]==true) addr2++;
-				dline=dline+" Hashed Addr "+Integer.toString(addr2);
+				tsb.append(" Hashed Addr "+Integer.toString(addr2));
 			}
 		}
 		else	{
-			dline="Unknown SLCO="+Integer.toString(slco)+" ";
+			tsb.append("Unknown SLCO="+Integer.toString(slco)+" ");
 			for (a=4;a<28;a++)	{
-				if (db[a]==true) dline=dline+"1";
-				else dline=dline+"0";
+				if (db[a]==true) tsb.append("1");
+				tsb.append("0");
 			}
 		}
 		
-		return dline;
+		return tsb;
 	}
 	
 	// Decode a 4 bit section of an Act_Updt

@@ -1,8 +1,8 @@
 package com.dmr;
 
 public class DecodeCACH {
-	private String line;
-	private String shortLCline;
+	private StringBuilder sb=new StringBuilder(250);
+	private StringBuilder shortLCline=new StringBuilder(250);
 	private boolean at;
 	private boolean channel;
 	private int lcss;
@@ -13,11 +13,12 @@ public class DecodeCACH {
 	
 	public String decode (DMRDecode TtheApp,byte[] dibit_buf)	{
 		theApp=TtheApp;
-		line="<i>CACH : TACT ";
+		sb.delete(0,sb.length());
+		sb.append("<i>CACH : TACT ");
 		// CACH decode
 		passErrorCheck=mainDecode(dibit_buf);
-		line=line+"</i>";
-		return line;
+		sb.append("</i>");
+		return sb.toString();
 	}
 	
 	// De-interleave , CRC check and decode the CACH
@@ -69,13 +70,13 @@ public class DecodeCACH {
 		else lcss=0;
 		if (dataCACH[3]==true) lcss++;
 		// Display TACT info
-		if (at==true) line=line+" AT=1";
-		if (channel==false) line=line+" Ch 1";
-		else line=line+" Ch 2";
-		if (lcss==0) line=line+" First fragment of CSBK ";
-		else if (lcss==1) line=line+" First fragment of LC ";
-		else if (lcss==2) line=line+" Last fragment of LC ";
-		else if (lcss==3) line=line+" Continuation fragment of LC ";
+		if (at==true) sb.append(" AT=1");
+		if (channel==false) sb.append(" Ch 1");
+		else sb.append(" Ch 2");
+		if (lcss==0) sb.append(" First fragment of CSBK ");
+		else if (lcss==1) sb.append(" First fragment of LC ");
+		else if (lcss==2) sb.append(" Last fragment of LC ");
+		else if (lcss==3) sb.append(" Continuation fragment of LC ");
 		// If this is an short LC message pass the data on to the ShortLC object
 		if (lcss==3) fragType=1;
 		else if (lcss==2) fragType=2;
@@ -84,10 +85,11 @@ public class DecodeCACH {
 		// Also other things need fixing first
 		if (fragType!=-1) theApp.short_lc.addData(dataCACH,fragType);
 		// Is short LC data ready ?
+		shortLCline.delete(0,shortLCline.length());
 		if (theApp.short_lc.isDataReady()==true)	{
 			// See if the short LC passed its error checks
-			if (theApp.short_lc.isCRCgood()==true) shortLCline="<b>"+theApp.getTimeStamp()+" Short LC : "+theApp.short_lc.getLine()+"</b>";
-			else shortLCline=theApp.getTimeStamp()+" Bad Short LC !";
+			if (theApp.short_lc.isCRCgood()==true) shortLCline.append("<b>"+theApp.getTimeStamp()+" Short LC : "+theApp.short_lc.getLine()+"</b>");
+			else shortLCline.append(theApp.getTimeStamp()+" Bad Short LC !");
 			theApp.short_lc.clrDataReady();
 			haveShortLC=true;
 		}
@@ -165,7 +167,7 @@ public class DecodeCACH {
 	
 	// Return the decoded short LC
 	public String getShortLCline()	{
-		return shortLCline;
+		return shortLCline.toString();
 	}
 	
 }

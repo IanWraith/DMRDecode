@@ -14,7 +14,9 @@ public class DMRDataDecode {
 	
 	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
-		line[0]="<b>"+theApp.getTimeStamp()+" DMR Data Frame </b>";
+		StringBuilder sb=new StringBuilder(250);
+		sb.append("<b>"+theApp.getTimeStamp()+" DMR Data Frame </b>");
+		line[0]=sb.toString();
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
 		CACHres=cachdecode.isPassErrorCheck();
@@ -112,6 +114,7 @@ public class DMRDataDecode {
 		return line;
 	}
 
+	// Inform the main program of any errors
 	public boolean isError() {
 	  if ((SLOT_TYPEres==true)&&(CACHres==true)&&(BPTCres==true)) return true;
 	  else return false;

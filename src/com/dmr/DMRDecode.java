@@ -43,7 +43,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 24)";
+	public String program_version="DMR Decoder (Build 25)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -229,8 +229,7 @@ public class DMRDecode {
 		  int sample,i,sum=0,symbol,count=0;
 		  for (i=0;i<SAMPLESPERSYMBOL;i++)	{
 			  // Fall back or catch up
-			  if ((i==0)&&(jitter>0))	{
-				  
+			  if ((i==0)&&(jitter>0))	{  
 				  if ((frameSync==true)&&(debug==true))	{
 					  String l=getTimeStamp()+" jitter change to "+Integer.toString(jitter);
 					  addLine(l);
@@ -396,11 +395,12 @@ public class DMRDecode {
 			if (synctest_pos>=1728) {
 				// If in debug mode show that sync has been lost
 				if (debug==true)	{
-					String l=getTimeStamp()+" Sync Lost";
-					l=l+" : centre="+Integer.toString(centre);
-					l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
-					addLine(l);
-					fileWrite(l);
+					StringBuilder sb=new StringBuilder(250);
+					sb.append(getTimeStamp()+" Sync Lost");
+					sb.append(" : centre="+Integer.toString(centre));
+					sb.append(" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+					addLine(sb.toString());
+					fileWrite(sb.toString());
 				}
 				frameSync=false;
 				noCarrier();
@@ -543,11 +543,11 @@ public class DMRDecode {
 		if (firstframe==true)	{
 	    	// If debug enabled record obtaining sync
 			if (debug==true)	{
-				String l;
-				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
-				else l=getTimeStamp()+" DMR Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
-				addLine(l);
-				fileWrite(l);
+				StringBuilder sb=new StringBuilder(250);
+				if (synctype==12) sb.append(getTimeStamp()+" DMR Voice Sync Acquired");
+				else sb.append(getTimeStamp()+" DMR Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				addLine(sb.toString());
+				fileWrite(sb.toString());
 				}
 			return;
 	    }
@@ -562,13 +562,13 @@ public class DMRDecode {
 	// Handle a DMR Voice Frame
 	void processDMRvoice ()	{	
 		line=DMRvoice.decode(theApp,dibitFrame);
-		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		frameCount++;
 		if (DMRvoice.isError()==false)	{
+			StringBuilder sb=new StringBuilder(250);
 			badFrameCount++;
 			continousBadFrameCount++;
-			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
-			line[0]=line[0]+dispSymbolsSinceLastFrame();	
+			sb.append(getTimeStamp()+" DMR Voice Frame - Error ! "+dispSymbolsSinceLastFrame());
+			line[0]=sb.toString();
 		}
 		else	{
 			continousBadFrameCount=0;
@@ -582,13 +582,13 @@ public class DMRDecode {
 	
 	// Handle a DMR Data Frame
 	void processDMRdata ()	{
-		line=DMRdata.decode(theApp,dibitFrame);
-		line[0]=line[0]+dispSymbolsSinceLastFrame();		
+		line=DMRdata.decode(theApp,dibitFrame);	
 		frameCount++;
 		if (DMRdata.isError()==false)	{
+			StringBuilder sb=new StringBuilder(250);
 			badFrameCount++;
-			line[0]=getTimeStamp()+" DMR Data Frame - Error ! ";
-			line[0]=line[0]+dispSymbolsSinceLastFrame();	
+			sb.append(getTimeStamp()+" DMR Data Frame - Error ! "+dispSymbolsSinceLastFrame());
+			line[0]=sb.toString();
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
@@ -608,12 +608,12 @@ public class DMRDecode {
 	// Handle an embedded frame
 	void processEmbedded ()	{
 		line=DMRembedded.decode(theApp,dibitFrame);
-		line[0]=line[0]+dispSymbolsSinceLastFrame();
 		frameCount++;
 		if (DMRembedded.isError()==false)	{
+			StringBuilder sb=new StringBuilder(250);
 			badFrameCount++;
-			line[0]=getTimeStamp()+" DMR Embedded Frame - Error ! ";
-			line[0]=line[0]+dispSymbolsSinceLastFrame();	
+			sb.append(getTimeStamp()+" DMR Embedded Frame - Error ! "+dispSymbolsSinceLastFrame());
+			line[0]=sb.toString();	
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
@@ -707,17 +707,17 @@ public class DMRDecode {
 		
 	// Display the dibit buffer as a string
 	public String displayDibitBuffer ()	{
-		String lb="";
+		StringBuilder sb=new StringBuilder(250);
 		int a;
 		for (a=0;a<144;a++)	{
-			lb=lb+Integer.toString(dibitFrame[a]);
+			sb.append(Integer.toString(dibitFrame[a]));
 		}
-		return lb;
+		return sb.toString();
 	}
 	
 	// Return a string showing the percentages of each dibit in the dibit buffer
 	public String returnDibitBufferPercentages ()	{
-		String dline;
+		StringBuilder sb=new StringBuilder(250);
 		int a,c0=0,c1=0,c2=0,c3=0;
 		for (a=0;a<144;a++)	{
 			// Exclude the sync burst from the percentages 
@@ -733,11 +733,11 @@ public class DMRDecode {
 		c2=(int)(((float)c2/(float)120.0)*(float)100);
 		c3=(int)(((float)c3/(float)120.0)*(float)100);
 		// Write this to a line
-		dline="Dibit 0="+Integer.toString(c0)+"% ";	
-		dline=dline+"Dibit 1="+Integer.toString(c1)+"% ";	
-		dline=dline+"Dibit 2="+Integer.toString(c2)+"% ";	
-		dline=dline+"Dibit 3="+Integer.toString(c3)+"% ";	
-		return dline;
+		sb.append("Dibit 0="+Integer.toString(c0)+"% ");	
+		sb.append("Dibit 1="+Integer.toString(c1)+"% ");	
+		sb.append("Dibit 2="+Integer.toString(c2)+"% ");	
+		sb.append("Dibit 3="+Integer.toString(c3)+"% ");	
+		return sb.toString();
 	}
 	
 	// Open a file which contains data that can be sucked in

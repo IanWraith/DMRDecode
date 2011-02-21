@@ -2,13 +2,14 @@ package com.dmr;
 
 public class SlotType {
 	private int dataType;
-	private String line;
+	private StringBuilder sb=new StringBuilder(250);
 	private boolean passErrorCheck;
 	
 	// Decode a SLOT TYPE field given a int array of dibit values
 	public String decode (byte[] dibit_buf)	{
+		sb.delete(0,sb.length());
 		passErrorCheck=mainDecode(dibit_buf);
-		return line;
+		return sb.toString();
 	}
 	
 	// The main decode and display method
@@ -74,19 +75,19 @@ public class SlotType {
 		if (dataSLOT[6]==true) dataType=dataType+2;
 		if (dataSLOT[7]==true) dataType++;
 		// Display this info
-		line="<i>Slot Type : Colour Code "+Integer.toString(colourCode);
-		if (dataType==0) line=line+" PI Header";
-		else if (dataType==1) line=line+" Voice LC Header";
-		else if (dataType==2) line=line+" Terminator with LC";
-		else if (dataType==3) line=line+" CSBK";
-		else if (dataType==4) line=line+" MBC Header";
-		else if (dataType==5) line=line+" MBC Continuation";
-		else if (dataType==6) line=line+" Data Header";
-		else if (dataType==7) line=line+" Rate ½ Data Continuation";
-		else if (dataType==8) line=line+" Rate ¾ Data Continuation";
-		else if (dataType==9) line=line+" Idle";
-		else line=line+" Reserved for future use";
-		line=line+"</i>";	
+		sb.append("<i>Slot Type : Colour Code "+Integer.toString(colourCode));
+		if (dataType==0) sb.append(" PI Header");
+		else if (dataType==1) sb.append(" Voice LC Header");
+		else if (dataType==2) sb.append(" Terminator with LC");
+		else if (dataType==3) sb.append(" CSBK");
+		else if (dataType==4) sb.append(" MBC Header");
+		else if (dataType==5) sb.append(" MBC Continuation");
+		else if (dataType==6) sb.append(" Data Header");
+		else if (dataType==7) sb.append(" Rate ½ Data Continuation");
+		else if (dataType==8) sb.append(" Rate ¾ Data Continuation");
+		else if (dataType==9) sb.append(" Idle");
+		else sb.append(" Reserved for future use");
+		sb.append("</i>");	
 		return true;
 	}
 	
