@@ -16,6 +16,8 @@ public class DMREmbedded {
 	public String[] decode (DMRDecode TtheApp,byte[] dibit_buf)	{
 		String cline;
 		theApp=TtheApp;
+		// Clear the display lines
+		clearLines();
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
 		resCACH=cachdecode.isPassErrorCheck();
@@ -296,6 +298,14 @@ public class DMREmbedded {
 		}
 		// No matches so we must have a problem and so should return false
 		return false;
+	}
+	
+	// Clear all the display lines
+	private void clearLines ()	{
+		int a;
+		for (a=0;a<10;a++)	{
+			line[a]=null;
+		}
 	}
 	
 }
