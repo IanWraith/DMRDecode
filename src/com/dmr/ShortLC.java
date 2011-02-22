@@ -6,6 +6,7 @@ public class ShortLC {
 	private boolean rawData[]=new boolean[69];
 	private boolean crcResult=false;
 	private int currentState=-1;
+	private crc tCRC=new crc();
 	
 	// Add data to the Short LC data buffer
 	// Type 0 if First fragment of LC
@@ -184,7 +185,6 @@ public class ShortLC {
 	// Test if the short LC passes its CRC8 test
 	private boolean shortLCcrc (boolean dataBits[])	{
 		int a;
-		crc tCRC=new crc();
 		tCRC.setCrc8Value(0);
 		for (a=0;a<dataBits.length;a++)	{
 			tCRC.crc8(dataBits[a]);
