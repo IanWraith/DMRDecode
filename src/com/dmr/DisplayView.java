@@ -29,7 +29,10 @@ import java.awt.Graphics2D;
 public class DisplayView extends JComponent implements Observer  {
 	private DMRDecode theApp;	
 	public static final long serialVersionUID=1;
-	static public String display_string[]=new String[100];
+	private static final int DISPLAYLINES=100;
+	static public String display_string[]=new String[DISPLAYLINES];
+	private int displayLinesCounter=0;
+	
 			
 	public DisplayView (DMRDecode theApp) {
 		this.theApp=theApp;	
@@ -39,24 +42,29 @@ public class DisplayView extends JComponent implements Observer  {
 	}
 			
 	// Draw the main screen //
+	// Pull the lines from their circular buffer store going backwards so the
+	// oldest line is displayed last
 	public void paint (Graphics g) {
-		int i;
-		int pos=20;
+		int i=0,pos=20;
+		// Get the newest line first
+		int cp=displayLinesCounter-1;
 		Graphics2D g2D=(Graphics2D)g;	
-		// Draw in the lines on the screen
-		for (i=0;i<100;i++) {
-			if (display_string[i]!=null) g2D.drawString(display_string[i],(5-theApp.horizontal_scrollbar_value),(pos-theApp.vertical_scrollbar_value));	
+		while (i<DISPLAYLINES)	{
+			if (display_string[cp]!=null) g2D.drawString(display_string[cp],(5-theApp.horizontal_scrollbar_value),(pos-theApp.vertical_scrollbar_value));	
 			pos=pos+20;
+			// Go backwards
+			cp--;
+			if (cp==-1) cp=DISPLAYLINES-1;
+			i++;
 		}
 	}
 
 	// Add a line to the display //
+	// Lines are stored in a circular buffer
 	public void add_line (String line) {
-		int i;
-		for (i=99;i>0;i--) {
-			display_string[i]=display_string[i-1];
-		}
-		display_string[0]=line;
+		display_string[displayLinesCounter]=line;
+		displayLinesCounter++;
+		if (displayLinesCounter==DISPLAYLINES) displayLinesCounter=0;
 		repaint();
 	}
 	
