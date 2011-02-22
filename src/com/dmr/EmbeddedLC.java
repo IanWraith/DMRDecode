@@ -155,27 +155,29 @@ public class EmbeddedLC {
 	// Deal with a single block embedded LC
 	private void processSingleBlockEmbeddedLC (boolean data[])	{
 		boolean isnull=true;
-		String tline="";
+		StringBuilder sb=new StringBuilder(250);
+		StringBuilder bin=new StringBuilder(250);
 		int a;
-		lines[0]="Embedded Single Block LC : ";
+		sb.append("Embedded Single Block LC : ");
 		// Check if this message is all 0's as if it is then it is a null
 		for (a=0;a<32;a++)	{
 			if (data[a]==true)	{
-				tline=tline+"1";
+				bin.append("1");
 				isnull=false;
 			}
 			else 	{
-				tline=tline+"0";
+				bin.append("0");
 			}
 		}
 		// Is this message a null short LC
 		if (isnull==true)	{
-			lines[0]=lines[0]+"Null";
+			sb.append("Null");
 		}
 		else	{
-			lines[0]=lines[0]+tline;
+			sb.append(bin);
 		}
 		dataReady=true;
+		lines[0]=sb.toString();
 	}
 	
 	// Tell the main program if we have data to return
