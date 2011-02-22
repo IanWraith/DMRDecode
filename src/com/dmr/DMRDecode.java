@@ -567,7 +567,7 @@ public class DMRDecode {
 			StringBuilder sb=new StringBuilder(250);
 			badFrameCount++;
 			continousBadFrameCount++;
-			sb.append(getTimeStamp()+" DMR Voice Frame - Error ! "+dispSymbolsSinceLastFrame());
+			sb.append("<FONT COLOR=\"D91414\">"+getTimeStamp()+" DMR Voice Frame - Error ! "+dispSymbolsSinceLastFrame()+"</FONT>");
 			line[0]=sb.toString();
 		}
 		else	{
@@ -587,7 +587,7 @@ public class DMRDecode {
 		if (DMRdata.isError()==false)	{
 			StringBuilder sb=new StringBuilder(250);
 			badFrameCount++;
-			sb.append(getTimeStamp()+" DMR Data Frame - Error ! "+dispSymbolsSinceLastFrame());
+			sb.append("<FONT COLOR=\"D91414\">"+getTimeStamp()+" DMR Data Frame - Error !</FONT>");
 			line[0]=sb.toString();
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
@@ -612,7 +612,7 @@ public class DMRDecode {
 		if (DMRembedded.isError()==false)	{
 			StringBuilder sb=new StringBuilder(250);
 			badFrameCount++;
-			sb.append(getTimeStamp()+" DMR Embedded Frame - Error ! "+dispSymbolsSinceLastFrame());
+			sb.append("<FONT COLOR=\"D91414\">"+getTimeStamp()+" DMR Embedded Frame - Error ! "+dispSymbolsSinceLastFrame()+"</FONT>");
 			line[0]=sb.toString();	
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;

@@ -93,7 +93,6 @@ public class DMRDataDecode {
 						}	
 					}
 				}
-				
 				// TODO : Decode Rate ½ Data Continuation frames
 				// Rate ½ Data Continuation
 				if (dataType==7) BPTCres=true;
@@ -105,7 +104,11 @@ public class DMRDataDecode {
 				if (dataType==9)	{
 					BPTCres=bptc19696.decode(dibit_buf);
 				}
-				
+				// There has been an error so delete theslot type line
+				if (BPTCres==false) line[2]=null;
+			}
+			else	{
+				line[2]=null;
 			}
 			
 		}

@@ -201,8 +201,14 @@ public class DMREmbedded {
 				// Idle
 				// Don't waste time BPTC testing Idle data
 				if (dataType==9) BPTCres=true;
-				
+			
+				// If there has been an error correction problem remove the slot type line
+				if (BPTCres==false) line[2]=null;
 			}
+			else	{
+				line[2]=null;
+			}
+			
 			if ((SLOT_TYPEres==true)&&(BPTCres==true)) return true;
 			else return false;
 		}

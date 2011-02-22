@@ -89,7 +89,7 @@ public class DecodeCACH {
 		if (theApp.short_lc.isDataReady()==true)	{
 			// See if the short LC passed its error checks
 			if (theApp.short_lc.isCRCgood()==true) shortLCline.append("<b>"+theApp.getTimeStamp()+" Short LC : "+theApp.short_lc.getLine()+"</b>");
-			else shortLCline.append(theApp.getTimeStamp()+" Bad Short LC !");
+			else shortLCline.append("<FONT COLOR=\"D91414\">"+theApp.getTimeStamp()+" Bad Short LC !</FONT>");
 			theApp.short_lc.clrDataReady();
 			haveShortLC=true;
 		}
