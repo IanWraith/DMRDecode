@@ -73,9 +73,10 @@ public class EmbeddedLC {
 	// Unpack and error check a embedded LC
 	private boolean processMultiBlockEmbeddedLC()	{
 		int a,b=0,crc;
+		StringBuilder sb=new StringBuilder(250);
 		boolean data[]=new boolean[128];
 		boolean row[]=new boolean[16];
-		lines[0]="Embedded Multi Block LC : ";
+		sb.append("Embedded Multi Block LC : ");
 		// The data is unpacked downwards in columns
 		for (a=0;a<128;a++)	{
 			data[b]=rawLC[a];
@@ -129,12 +130,13 @@ public class EmbeddedLC {
 		// Now CRC check this
 		crc tCRC=new crc();
 		if (tCRC.crcFiveBit(lcData,crc)==false) return false;
-		
+		// Display what we have in binary form
 		for (a=0;a<72;a++)	{
-			if (lcData[a]==false) lines[0]=lines[0]+"0";
-			else lines[0]=lines[0]+"1";
+			if (lcData[a]==false) sb.append("0");
+			else sb.append("1");
 		}
-
+		// Convert from StringBuilder to a String
+		lines[0]=sb.toString();
 		dataReady=true;
 		return true;
 	}
@@ -156,26 +158,28 @@ public class EmbeddedLC {
 	// Deal with a single block embedded LC
 	private void processSingleBlockEmbeddedLC (boolean data[])	{
 		boolean isnull=true;
-		String tline="";
+		StringBuilder sb=new StringBuilder(250);
+		StringBuilder bin=new StringBuilder(250);
 		int a;
-		lines[0]="Embedded Single Block LC : ";
+		sb.append("Embedded Single Block LC : ");
 		// Check if this message is all 0's as if it is then it is a null
 		for (a=0;a<32;a++)	{
 			if (data[a]==true)	{
-				tline=tline+"1";
+				bin.append("1");
 				isnull=false;
 			}
 			else 	{
-				tline=tline+"0";
+				bin.append("0");
 			}
 		}
 		// Is this message a null short LC
 		if (isnull==true)	{
-			lines[0]=lines[0]+"Null";
+			sb.append("Null");
 		}
 		else	{
-			lines[0]=lines[0]+tline;
+			sb.append(bin);
 		}
+		lines[0]=sb.toString();
 		dataReady=true;
 	}
 	
