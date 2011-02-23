@@ -61,18 +61,22 @@ public class CSBK {
 	// Handle unknown CSBK types
 	private void unknownCSBK (int csbko,int fid,boolean bits[])	{
 		int a;
-		display[0]="<b>Unknown CSBK : CSBKO="+Integer.toString(csbko)+" + FID="+Integer.toString(fid)+" ";
+		StringBuilder sb=new StringBuilder(250);
+		sb.append("<b>Unknown CSBK : CSBKO="+Integer.toString(csbko)+" + FID="+Integer.toString(fid)+" ");
 		// Display the binary
 		for (a=16;a<80;a++)	{
-			if (bits[a]==true) display[0]=display[0]+"1";
-			else display[0]=display[0]+"0";
+			if (bits[a]==true) sb.append("1");
+			else sb.append("0");
 		}
-		display[0]=display[0]+"</b>";
+		sb.append("</b>");
+		display[0]=sb.toString();
 	}
 	
 	// Handle a Preamble CSBK
 	private void preCSBK (DMRDecode theApp,boolean bits[])	{
 		int index;
+		StringBuilder sb=new StringBuilder(250);
+		StringBuilder sc=new StringBuilder(250);
 		// 0 if CSBK , 1 if Data
 		boolean dc=bits[16];
 		// 0 if target is individual and 1 if group
@@ -93,13 +97,15 @@ public class CSBK {
 		// Source address
 		int source=retAddress(bits,56);
 		// Display this
-		display[0]="<b>Preamble CSBK : ";
-		if (dc==false) display[0]=display[0]+" CSBK content ";
-		else display[0]=display[0]+" Data content ";
-		display[0]=display[0]+Integer.toString(bfol)+" Blocks to follow</b>";
-		display[1]="<b>Target Address : "+Integer.toString(target);
-		if (gi==true) display[1]=display[1]+" (Group)";
-		display[1]=display[1]+" Source Address : "+Integer.toString(source)+"</b>";
+		sb.append("<b>Preamble CSBK : ");
+		if (dc==false) sb.append(" CSBK content ");
+		else sb.append(" Data content ");
+		sb.append(Integer.toString(bfol)+" Blocks to follow</b>");
+		display[0]=sb.toString();		
+		sc.append("<b>Target Address : "+Integer.toString(target));
+		if (gi==true) sc.append(" (Group)");
+		sc.append(" Source Address : "+Integer.toString(source)+"</b>");
+		display[1]=sc.toString();
 		// Target
 		theApp.usersLogged.addUser(target);
 		index=theApp.usersLogged.findUserIndex(target);
