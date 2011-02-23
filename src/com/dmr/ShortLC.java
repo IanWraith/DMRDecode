@@ -195,7 +195,7 @@ public class ShortLC {
 	// Decode and display the info in SHORT LC PDUs
 	private String decodeShortLC (boolean db[])	{
 		int slco,a;
-		String dline;
+		StringBuilder dline=new StringBuilder(250);
 		// Calculate the SLCO
 		if (db[0]==true) slco=8;
 		else slco=0;
@@ -204,18 +204,18 @@ public class ShortLC {
 		if (db[3]==true) slco++;
 		// Short LC Types
 		if (slco==0)	{
-			dline="Nul_Msg";
+			dline.append("Nul_Msg");
 		}
 		else if (slco==1)	{
 			int addr1,addr2,inf;
-			dline="Act_Updt - ";
+			dline.append("Act_Updt - ");
 			// Slot 1
 			if (db[4]==true) inf=8;
 			else inf=0;
 			if (db[5]==true) inf=inf+4;
 			if (db[6]==true) inf=inf+2;
 			if (db[7]==true) inf++;
-			dline=dline+decodeAct_Updt(inf,1);
+			dline.append(decodeAct_Updt(inf,1));
 			// Hashed Address
 			if (inf!=0)	{
 				if (db[12]==true) addr1=128;
@@ -227,16 +227,16 @@ public class ShortLC {
 				if (db[17]==true) addr1=addr1+4;
 				if (db[18]==true) addr1=addr1+2;
 				if (db[19]==true) addr1++;
-				dline=dline+" Hashed Addr "+Integer.toString(addr1);
+				dline.append(" Hashed Addr "+Integer.toString(addr1));
 			}
-			dline=dline+" : ";
+			dline.append(" : ");
 			// Slot 2
 			if (db[8]==true) inf=8;
 			else inf=0;
 			if (db[9]==true) inf=inf+4;
 			if (db[10]==true) inf=inf+2;
 			if (db[11]==true) inf++;
-			dline=dline+decodeAct_Updt(inf,2);
+			dline.append(decodeAct_Updt(inf,2));
 			if (inf!=0)	{
 				// Hashed Address
 				if (db[20]==true) addr2=128;
@@ -248,32 +248,32 @@ public class ShortLC {
 				if (db[25]==true) addr2=addr2+4;
 				if (db[26]==true) addr2=addr2+2;
 				if (db[27]==true) addr2++;
-				dline=dline+" Hashed Addr "+Integer.toString(addr2);
+				dline.append(" Hashed Addr "+Integer.toString(addr2));
 			}
 		}
 		else	{
-			dline="Unknown SLCO="+Integer.toString(slco)+" ";
+			dline.append("Unknown SLCO="+Integer.toString(slco)+" ");
 			for (a=4;a<28;a++)	{
-				if (db[a]==true) dline=dline+"1";
-				else dline=dline+"0";
+				if (db[a]==true) dline.append("1");
+				else dline.append("0");
 			}
 		}
-		
-		return dline;
+		return dline.toString();
 	}
 	
 	// Decode a 4 bit section of an Act_Updt
 	private String decodeAct_Updt (int inf,int channel)	{
-		String l="Reserved";
+		String l;
 		if (inf==0) l="No activity on BS time slot "+Integer.toString(channel);
-		if (inf==2) l="Group CSBK activity on BS time slot "+Integer.toString(channel);
-		if (inf==3) l="Individual CSBK activity on BS time slot "+Integer.toString(channel);
-		if (inf==8) l="Group voice activity on BS time slot "+Integer.toString(channel);
-		if (inf==9) l="Individual voice activity on BS time slot "+Integer.toString(channel);
-		if (inf==10) l="Individual data activity on BS time slot "+Integer.toString(channel);
-		if (inf==11) l="Group data activity on BS time slot "+Integer.toString(channel);
-		if (inf==12) l="Emergency group activity on BS time slot "+Integer.toString(channel);
-		if (inf==13) l="Emergency individual voice activity on BS time slot "+Integer.toString(channel);
+		else if (inf==2) l="Group CSBK activity on BS time slot "+Integer.toString(channel);
+		else if (inf==3) l="Individual CSBK activity on BS time slot "+Integer.toString(channel);
+		else if (inf==8) l="Group voice activity on BS time slot "+Integer.toString(channel);
+		else if (inf==9) l="Individual voice activity on BS time slot "+Integer.toString(channel);
+		else if (inf==10) l="Individual data activity on BS time slot "+Integer.toString(channel);
+		else if (inf==11) l="Group data activity on BS time slot "+Integer.toString(channel);
+		else if (inf==12) l="Emergency group activity on BS time slot "+Integer.toString(channel);
+		else if (inf==13) l="Emergency individual voice activity on BS time slot "+Integer.toString(channel);
+		else l="Reserved";
 		return l;
 	}
 	
