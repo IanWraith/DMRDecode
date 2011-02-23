@@ -127,6 +127,9 @@ public class DMREmbedded {
 			// If the slot type is OK try to decode the rest
 			if (SLOT_TYPEres==true)	{
 				int dataType=slottype.returnDataType();
+				// PI
+				if (dataType==0) BPTCres=true;
+				
 				// Voice LC Header
 				if (dataType==1)	{
 					BPTC19696 bptc19696=new BPTC19696();
