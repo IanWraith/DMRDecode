@@ -570,7 +570,6 @@ public class DMRDecode {
 			badFrameCount++;
 			continousBadFrameCount++;
 			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
-			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 		}
 		else	{
 			continousBadFrameCount=0;
@@ -592,7 +591,6 @@ public class DMRDecode {
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Data Frame - Error ! ";
-			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
@@ -619,7 +617,6 @@ public class DMRDecode {
 		if (DMRembedded.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Embedded Frame - Error ! ";
-			line[0]=line[0]+dispSymbolsSinceLastFrame();	
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
