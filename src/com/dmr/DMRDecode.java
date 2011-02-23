@@ -47,22 +47,22 @@ public class DMRDecode {
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
-	private static final int SAMPLESPERSYMBOL=10;
-	private static final int SYMBOLCENTRE=4;
-	private static final int MAXSTARTVALUE=15000;
-	private static final int MINSTARTVALUE=-15000;
+	private final int SAMPLESPERSYMBOL=10;
+	private final int SYMBOLCENTRE=4;
+	private final int MAXSTARTVALUE=15000;
+	private final int MINSTARTVALUE=-15000;
 	private int max=MAXSTARTVALUE;
 	private int min=MINSTARTVALUE;
 	private int centre=0;
 	private int lastsynctype=-1;
 	private int symbolcnt=0;
-	private static final byte DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
-	private static final byte DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
+	private final byte DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
+	private final byte DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private boolean carrier=false;
 	public boolean inverted=true;
 	private boolean firstframe=false;
 	public JEditorPane editorPane;
-	public HTMLDocument doc;
+	public HTMLDocument HTMLdoc;
 	public Element el;
 	private int lmid=0;
 	private int umid=0;
@@ -95,21 +95,21 @@ public class DMRDecode {
 	private boolean captureMode=false;
 	private long captureCount=0;
 	private boolean enableDisplayBar=false;
-	private static final int SYMBOLSAHEAD=144;
-	private static final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
+	private final int SYMBOLSAHEAD=144;
+	private final int SAMPLESAHEADSIZE=(SYMBOLSAHEAD*SAMPLESPERSYMBOL)+SAMPLESPERSYMBOL;
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
 	private int jitter=-1;
 	private DataInputStream inPipeData;
 	private PipedInputStream inPipe;
 	private int lastSample=0;
-	private static final int JITTERFRAMEADJUST=1;
-	private static final int JITTERCOUNTERSIZE=(JITTERFRAMEADJUST*144);
+	private final int JITTERFRAMEADJUST=1;
+	private final int JITTERCOUNTERSIZE=(JITTERFRAMEADJUST*144);
 	private int jitterCounter=0;
 	private int jitterBuffer[]=new int[JITTERCOUNTERSIZE];
 	private int syncHighLowlBuf[]=new int[24];
 	public UsersLogged usersLogged=new UsersLogged();
-	private static final int MAXMINBUFSIZE=5;
+	private final int MAXMINBUFSIZE=5;
 	private int maxminBufferCounter=0;
 	private int maxBuffer[]=new int[MAXMINBUFSIZE];
 	private int minBuffer[]=new int[MAXMINBUFSIZE];
@@ -156,8 +156,8 @@ public class DMRDecode {
 		editorPane.setContentType("text/html");
 		editorPane.setEditable(false);
 		editorPane.setText("<html><table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"></table></html>");
-	    doc=(HTMLDocument)editorPane.getDocument();
-		el=doc.getElement(doc.getDefaultRootElement(),StyleConstants.NameAttribute,HTML.Tag.TABLE);
+	    HTMLdoc=(HTMLDocument)editorPane.getDocument();
+		el=HTMLdoc.getElement(HTMLdoc.getDefaultRootElement(),StyleConstants.NameAttribute,HTML.Tag.TABLE);
 		JScrollPane scrollPane=new JScrollPane(editorPane);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		window.getContentPane().add(scrollPane,BorderLayout.CENTER);
@@ -524,7 +524,7 @@ public class DMRDecode {
 	// Adds a line to the display
 	public void addLine(String line) {
 		  try {
-			  doc.insertAfterStart(el,"<tr>"+line +"</tr>");
+			  HTMLdoc.insertAfterStart(el,"<tr>"+line +"</tr>");
 		  }
 		  catch (Exception e) {
 			  JOptionPane.showMessageDialog(null,"Error in addLine()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
