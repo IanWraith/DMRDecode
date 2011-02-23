@@ -15,6 +15,7 @@ public class SlotType {
 	private boolean mainDecode (byte[] dibit_buf)	{
 		int a,r,colourCode;
 		boolean dataSLOT[]=new boolean[20];
+		StringBuilder sb=new StringBuilder(250);
 		// Convert from dibits into boolean
 		// DATA SLOT is broken into 2 parts either side of the sync burst
 		// these need reuniting into a single 20 bit boolean array
@@ -57,10 +58,8 @@ public class SlotType {
 			}
 			r=r+2;
 		}
-		
 		// Error check SLOT TYPE
 		if (checkGolay208(dataSLOT)==false) return false;
-		
 		// Colour code
 		if (dataSLOT[0]==true) colourCode=8;
 		else colourCode=0;
@@ -74,19 +73,21 @@ public class SlotType {
 		if (dataSLOT[6]==true) dataType=dataType+2;
 		if (dataSLOT[7]==true) dataType++;
 		// Display this info
-		line="<i>Slot Type : Colour Code "+Integer.toString(colourCode);
-		if (dataType==0) line=line+" PI Header";
-		else if (dataType==1) line=line+" Voice LC Header";
-		else if (dataType==2) line=line+" Terminator with LC";
-		else if (dataType==3) line=line+" CSBK";
-		else if (dataType==4) line=line+" MBC Header";
-		else if (dataType==5) line=line+" MBC Continuation";
-		else if (dataType==6) line=line+" Data Header";
-		else if (dataType==7) line=line+" Rate ½ Data Continuation";
-		else if (dataType==8) line=line+" Rate ¾ Data Continuation";
-		else if (dataType==9) line=line+" Idle";
-		else line=line+" Reserved for future use";
-		line=line+"</i>";	
+		sb.append("<i>Slot Type : Colour Code "+Integer.toString(colourCode));
+		if (dataType==0) sb.append(" PI Header");
+		else if (dataType==1) sb.append(" Voice LC Header");
+		else if (dataType==2) sb.append(" Terminator with LC");
+		else if (dataType==3) sb.append(" CSBK");
+		else if (dataType==4) sb.append(" MBC Header");
+		else if (dataType==5) sb.append(" MBC Continuation");
+		else if (dataType==6) sb.append(" Data Header");
+		else if (dataType==7) sb.append(" Rate ½ Data Continuation");
+		else if (dataType==8) sb.append(" Rate ¾ Data Continuation");
+		else if (dataType==9) sb.append(" Idle");
+		else sb.append(" Reserved for future use");
+		sb.append("</i>");	
+		// Convert from StringBuilder to a String
+		line=sb.toString();
 		return true;
 	}
 	
