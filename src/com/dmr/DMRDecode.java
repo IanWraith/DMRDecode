@@ -569,7 +569,7 @@ public class DMRDecode {
 		if (DMRvoice.isError()==false)	{
 			badFrameCount++;
 			continousBadFrameCount++;
-			line[0]=getTimeStamp()+" DMR Voice Frame - Error ! ";
+			line[0]="<FONT COLOR=\"D91414\">"+getTimeStamp()+" DMR Voice Frame - Error !</FONT>";
 		}
 		else	{
 			continousBadFrameCount=0;
@@ -590,7 +590,7 @@ public class DMRDecode {
 		frameCount++;
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
-			line[0]=getTimeStamp()+" DMR Data Frame - Error ! ";
+			line[0]="<FONT COLOR=\"D91414\">"+getTimeStamp()+" DMR Data Frame - Error !</FONT>";
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
@@ -616,7 +616,7 @@ public class DMRDecode {
 		frameCount++;
 		if (DMRembedded.isError()==false)	{
 			badFrameCount++;
-			line[0]=getTimeStamp()+" DMR Embedded Frame - Error ! ";
+			line[0]="<FONT COLOR=\"D91414\">"+getTimeStamp()+" DMR Embedded Frame - Error !</FONT>";
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
