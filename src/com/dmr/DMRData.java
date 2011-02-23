@@ -32,13 +32,16 @@ public class DMRData {
 	// Response Packet
 	void responsePacket (boolean bits[])	{
 		int blocks,dclass,status,type;
+		StringBuilder sa=new StringBuilder(250);
+		StringBuilder sb=new StringBuilder(250);
 		display[0]="<b>Response Packet</b>";
 		// Destination LLID
 		int dllid=retAddress(bits,16);
 		// Source LLID
 		int sllid=retAddress(bits,40);
-		display[1]="<b>Destination Logical Link ID : "+Integer.toString(dllid);
-		display[1]=display[1]+" Source Logical Link ID : "+Integer.toString(sllid)+"</b>";
+		sa.append("<b>Destination Logical Link ID : "+Integer.toString(dllid));
+		sa.append(" Source Logical Link ID : "+Integer.toString(sllid)+"</b>");
+		display[1]=sa.toString();
 		// Bit 64 is 0
 		// Blocks to follow
 		if (bits[65]==true) blocks=64;
@@ -64,15 +67,16 @@ public class DMRData {
 		if (bits[78]==true) status=status+2;
 		if (bits[79]==true) status++;
 		// Display this
-		display[2]="<b>"+Integer.toString(blocks)+" blocks follow : ";
-		if ((dclass==0)&&(type==1)) display[2]=display[2]+"ACK";
-		else if ((dclass==1)&&(type==0)) display[2]=display[2]+"NACK (Illegal Format)";
-		else if ((dclass==1)&&(type==1)) display[2]=display[2]+"NACK (CRC Failed)";
-		else if ((dclass==1)&&(type==2)) display[2]=display[2]+"NACK (Memory Full)";
-		else if ((dclass==1)&&(type==4)) display[2]=display[2]+"NACK (Undeliverable)";
-		else if ((dclass==2)&&(type==0)) display[2]=display[2]+"SACK";
-		else display[2]=display[2]+" Unknown C="+Integer.toString(dclass)+" T="+Integer.toString(type)+" S="+Integer.toString(status);
-		display[2]=display[2]+"</b>";
+		sb.append("<b>"+Integer.toString(blocks)+" blocks follow : ");
+		if ((dclass==0)&&(type==1)) sb.append("ACK");
+		else if ((dclass==1)&&(type==0)) sb.append("NACK (Illegal Format)");
+		else if ((dclass==1)&&(type==1)) sb.append("NACK (CRC Failed)");
+		else if ((dclass==1)&&(type==2)) sb.append("NACK (Memory Full)");
+		else if ((dclass==1)&&(type==4)) sb.append("NACK (Undeliverable)");
+		else if ((dclass==2)&&(type==0)) sb.append("SACK");
+		else sb.append(" Unknown C="+Integer.toString(dclass)+" T="+Integer.toString(type)+" S="+Integer.toString(status));
+		sb.append("</b>");
+		display[2]=sb.toString();
 	}
 	
 	// Unconfirmed Data
