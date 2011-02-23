@@ -109,7 +109,6 @@ public class DMRDecode {
 	private int jitterBuffer[]=new int[JITTERCOUNTERSIZE];
 	private int syncHighLowlBuf[]=new int[24];
 	public UsersLogged usersLogged=new UsersLogged();
-	
 	private static final int MAXMINBUFSIZE=5;
 	private int maxminBufferCounter=0;
 	private int maxBuffer[]=new int[MAXMINBUFSIZE];
@@ -394,11 +393,12 @@ public class DMRDecode {
 			if (synctest_pos>=1728) {
 				// If in debug mode show that sync has been lost
 				if (debug==true)	{
-					String l=getTimeStamp()+" Sync Lost";
-					l=l+" : centre="+Integer.toString(centre);
-					l=l+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
-					addLine(l);
-					fileWrite(l);
+					StringBuilder l=new StringBuilder(250);
+					l.append(getTimeStamp()+" Sync Lost");
+					l.append(" : centre="+Integer.toString(centre));
+					l.append(" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+					addLine(l.toString());
+					fileWrite(l.toString());
 				}
 				frameSync=false;
 				noCarrier();
@@ -543,11 +543,11 @@ public class DMRDecode {
 		if (firstframe==true)	{
 	    	// If debug enabled record obtaining sync
 			if (debug==true)	{
-				String l;
-				if (synctype==12) l=getTimeStamp()+" DMR Voice Sync Acquired";
-				else l=getTimeStamp()+" DMR Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
-				addLine(l);
-				fileWrite(l);
+				StringBuilder l=new StringBuilder(250);
+				if (synctype==12) l.append(getTimeStamp()+" DMR Voice Sync Acquired");
+				else l.append(getTimeStamp()+" DMR Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				addLine(l.toString());
+				fileWrite(l.toString());
 				}
 			return;
 	    }
@@ -710,17 +710,17 @@ public class DMRDecode {
 		
 	// Display the dibit buffer as a string
 	public String displayDibitBuffer ()	{
-		String lb="";
+		StringBuilder lb=new StringBuilder(500);
 		int a;
 		for (a=0;a<144;a++)	{
-			lb=lb+Integer.toString(dibitFrame[a]);
+			lb.append(Integer.toString(dibitFrame[a]));
 		}
-		return lb;
+		return lb.toString();
 	}
 	
 	// Return a string showing the percentages of each dibit in the dibit buffer
 	public String returnDibitBufferPercentages ()	{
-		String dline;
+		StringBuilder dline=new StringBuilder(500);
 		int a,c0=0,c1=0,c2=0,c3=0;
 		for (a=0;a<144;a++)	{
 			// Exclude the sync burst from the percentages 
@@ -736,11 +736,11 @@ public class DMRDecode {
 		c2=(int)(((float)c2/(float)120.0)*(float)100);
 		c3=(int)(((float)c3/(float)120.0)*(float)100);
 		// Write this to a line
-		dline="Dibit 0="+Integer.toString(c0)+"% ";	
-		dline=dline+"Dibit 1="+Integer.toString(c1)+"% ";	
-		dline=dline+"Dibit 2="+Integer.toString(c2)+"% ";	
-		dline=dline+"Dibit 3="+Integer.toString(c3)+"% ";	
-		return dline;
+		dline.append("Dibit 0="+Integer.toString(c0)+"% ");	
+		dline.append("Dibit 1="+Integer.toString(c1)+"% ");	
+		dline.append("Dibit 2="+Integer.toString(c2)+"% ");	
+		dline.append("Dibit 3="+Integer.toString(c3)+"% ");	
+		return dline.toString();
 	}
 	
 	// Open a file which contains data that can be sucked in
