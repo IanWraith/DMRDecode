@@ -61,7 +61,10 @@ public class EmbeddedLC {
 				rawLC[a+96]=rawdata[a];
 			}
 			// Process the complete data block
-			processMultiBlockEmbeddedLC();
+			if (processMultiBlockEmbeddedLC()==false)	{
+				dataReady=true;
+				lines[0]="Bad Embedded Multi Block LC";
+			}
 		}
 		// Is this a single block embedded LC
 		else if (type==0) processSingleBlockEmbeddedLC(rawdata);
