@@ -18,8 +18,10 @@ Milestone 4 - To decode the Short LCs that make up the CACH payload. (Reached 25
 
 Milestone 5 - To work out why and then fix the problem that is causing single bit errors in frames. (Reached 14th February 2011)
 
-Milestone 6 - Add a feature where all DMR users are logged
+Milestone 6 - Add a feature where all DMR users are logged. (Reached 19th February 2011)
 
-Ian Wraith (15th February 2011)
+Milestone 7 - To fix a memory leak type problem where the heap memory used by the program keeps growing until it slows down and crashes.
+
+Ian Wraith (23rd February 2011)
 
 
