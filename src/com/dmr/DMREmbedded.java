@@ -83,6 +83,7 @@ public class DMREmbedded {
 		// Error check the EMB
 		// If it passes this is a Voice Burst with Embedded Signalling
 		if (QuadResidue1676(EMDdata)==true)	{
+			StringBuilder sb=new StringBuilder(250);
 			line[0]="<b>"+theApp.getTimeStamp()+" DMR Voice Frame with Embedded Signalling </b>";
 			// Color code
 			if (EMDdata[0]==true) cc=8;
@@ -97,14 +98,15 @@ public class DMREmbedded {
 			else lcss=0;
 			if (EMDdata[6]==true) lcss++;
 			// Display the colour code
-			line[2]="EMB : Colour Code "+Integer.toString(cc);
+			sb.append("EMB : Colour Code "+Integer.toString(cc));
 			// PI
-			if (pi==true) line[2]=line[2]+" : PI=1";
+			if (pi==true) sb.append(" : PI=1");
 			// LCSS
-			if (lcss==0) line[2]=line[2]+" : Single fragment LC ";
-			else if (lcss==1) line[2]=line[2]+" : First fragment of LC ";
-			else if (lcss==2) line[2]=line[2]+" : Last fragment of LC";
-			else if (lcss==3) line[2]=line[2]+" : Continuation fragment of LC";
+			if (lcss==0) sb.append(" : Single fragment LC ");
+			else if (lcss==1) sb.append(" : First fragment of LC ");
+			else if (lcss==2) sb.append(" : Last fragment of LC");
+			else if (lcss==3) sb.append(" : Continuation fragment of LC");
+			line[2]=sb.toString();
 			// Add this to the embedded data class
 			theApp.embedded_lc.addData(dibit_buf,lcss);
 			// Is embedded data ready
