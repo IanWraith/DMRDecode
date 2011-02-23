@@ -1,7 +1,7 @@
 package com.dmr;
 
 public class DecodeCACH {
-	private String line;
+	private StringBuilder line=new StringBuilder(250);
 	private String shortLCline;
 	private boolean at;
 	private boolean channel;
@@ -13,11 +13,11 @@ public class DecodeCACH {
 	
 	public String decode (DMRDecode TtheApp,byte[] dibit_buf)	{
 		theApp=TtheApp;
-		line="<i>CACH : TACT ";
+		line.append("<i>CACH : TACT ");
 		// CACH decode
 		passErrorCheck=mainDecode(dibit_buf);
-		line=line+"</i>";
-		return line;
+		line.append("</i>");
+		return line.toString();
 	}
 	
 	// De-interleave , CRC check and decode the CACH
@@ -69,13 +69,13 @@ public class DecodeCACH {
 		else lcss=0;
 		if (dataCACH[3]==true) lcss++;
 		// Display TACT info
-		if (at==true) line=line+" AT=1";
-		if (channel==false) line=line+" Ch 1";
-		else line=line+" Ch 2";
-		if (lcss==0) line=line+" First fragment of CSBK ";
-		else if (lcss==1) line=line+" First fragment of LC ";
-		else if (lcss==2) line=line+" Last fragment of LC ";
-		else if (lcss==3) line=line+" Continuation fragment of LC ";
+		if (at==true) line.append(" AT=1");
+		if (channel==false) line.append(" Ch 1");
+		else line.append(" Ch 2");
+		if (lcss==0) line.append(" First fragment of CSBK ");
+		else if (lcss==1) line.append(" First fragment of LC ");
+		else if (lcss==2) line.append(" Last fragment of LC ");
+		else if (lcss==3) line.append(" Continuation fragment of LC ");
 		// If this is an short LC message pass the data on to the ShortLC object
 		if (lcss==3) fragType=1;
 		else if (lcss==2) fragType=2;
@@ -87,7 +87,7 @@ public class DecodeCACH {
 		if (theApp.short_lc.isDataReady()==true)	{
 			// See if the short LC passed its error checks
 			if (theApp.short_lc.isCRCgood()==true) shortLCline="<b>"+theApp.getTimeStamp()+" Short LC : "+theApp.short_lc.getLine()+"</b>";
-			else shortLCline=theApp.getTimeStamp()+" Bad Short LC !";
+			else shortLCline="<FONT COLOR=\"D91414\">"+theApp.getTimeStamp()+" Bad Short LC !</FONT>";
 			theApp.short_lc.clrDataReady();
 			haveShortLC=true;
 		}
