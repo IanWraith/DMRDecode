@@ -27,6 +27,9 @@ public class DMRDataDecode {
 				// If no error then get the data type
 				dataType=slottype.returnDataType();
 				// Main section decode
+				// PI
+				if (dataType==0) BPTCres=true;
+				
 				// Voice LC Header
 				if (dataType==1)	{
 					BPTC19696 bptc19696=new BPTC19696();
@@ -118,6 +121,7 @@ public class DMRDataDecode {
 		return line;
 	}
 
+	// Inform the main class that there has been an error
 	public boolean isError() {
 	  if ((SLOT_TYPEres==true)&&(CACHres==true)&&(BPTCres==true)) return true;
 	  else return false;
