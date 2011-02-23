@@ -50,6 +50,7 @@ public class FullLinkControl {
 	// Group Voice Channer User LC
 	void group_v_ch_usr (DMRDecode theApp,boolean bits[])	{
 		int index;
+		StringBuilder sb=new StringBuilder(250);
 		display[0]="<b>Group Voice Channel User LC</b>";
 		// Service Options
 		display[1]=decodeServiceOptions(bits,16);
@@ -57,8 +58,9 @@ public class FullLinkControl {
 		int group=retAddress(bits,24);
 		// Source address
 		int source=retAddress(bits,48);
-		display[2]="<b>Group Address : "+Integer.toString(group);
-		display[2]=display[2]+" Source Address : "+Integer.toString(source)+"</b>";
+		sb.append("<b>Group Address : "+Integer.toString(group));
+		sb.append(" Source Address : "+Integer.toString(source)+"</b>");
+		display[2]=sb.toString();
 		// Log these users
 		// Group
 		if (theApp.usersLogged.addUser(group)==true)	{
@@ -69,12 +71,12 @@ public class FullLinkControl {
 		theApp.usersLogged.addUser(source);
 		index=theApp.usersLogged.findUserIndex(source);
 		if (index!=-1) theApp.usersLogged.setAsGroupUser(index);
-		
 	}
 	
 	// Unit to Unit Voice Channel User LC
 	void uu_v_ch_usr (DMRDecode theApp,boolean bits[])	{
 		int index;
+		StringBuilder sb=new StringBuilder(250);
 		display[0]="<b>Unit to Unit Voice Channel User LC</b>";
 		// Service Options
 		display[1]=decodeServiceOptions(bits,16);
@@ -82,8 +84,9 @@ public class FullLinkControl {
 		int target=retAddress(bits,24);
 		// Source address
 		int source=retAddress(bits,48);
-		display[2]="<b>Target Address : "+Integer.toString(target);
-		display[2]=display[2]+" Source Address : "+Integer.toString(source)+"</b>";
+		sb.append("<b>Target Address : "+Integer.toString(target));
+		sb.append(" Source Address : "+Integer.toString(source)+"</b>");
+		display[2]=sb.toString();
 		// Log these users
 		// Target
 		theApp.usersLogged.addUser(target);	
@@ -98,13 +101,15 @@ public class FullLinkControl {
 	// Terminator Data Link Control PDU
 	void td_lc (DMRDecode theApp,boolean bits[])	{
 		int index;
+		StringBuilder sb=new StringBuilder(250);
 		display[0]="<b>Terminator Data Link Control PDU</b>";
 		// Destination LLID
 		int dllid=retAddress(bits,16);
 		// Source LLID
 		int sllid=retAddress(bits,40);
-		display[1]="<b>Destination Logical Link ID : "+Integer.toString(dllid);
-		display[1]=display[1]+" Source Logical Link ID : "+Integer.toString(sllid)+"</b>";
+		sb.append("<b>Destination Logical Link ID : "+Integer.toString(dllid));
+		sb.append(" Source Logical Link ID : "+Integer.toString(sllid)+"</b>");
+		display[1]=sb.toString();
 		// Log these users
 		// Destination
 		theApp.usersLogged.addUser(dllid);
@@ -119,13 +124,15 @@ public class FullLinkControl {
 	// Handle unknown Full Link Control types
 	private void unknown_flc (int flco,int fid,boolean bits[])	{
 		int a;
-		display[0]="<b>Unknown Full Link Control LC : FLCO="+Integer.toString(flco)+" + FID="+Integer.toString(fid)+" ";
+		StringBuilder sb=new StringBuilder(300);
+	    sb.append("<b>Unknown Full Link Control LC : FLCO="+Integer.toString(flco)+" + FID="+Integer.toString(fid)+" ");
 		// Display the binary
 		for (a=16;a<72;a++)	{
-			if (bits[a]==true) display[0]=display[0]+"1";
-			else display[0]=display[0]+"0";
+			if (bits[a]==true) sb.append("1");
+			else sb.append("0");
 		}
-		display[0]=display[0]+"</b>";
+		sb.append("</b>");
+		display[0]=sb.toString();
 	}
 	
 	// Return a 24 bit address 
@@ -142,24 +149,25 @@ public class FullLinkControl {
 	// Decode and display Service Options
 	private String decodeServiceOptions (boolean bits[],int offset)	{
 		int priority;
-		String so="<b>Service Options : ";
+		StringBuilder so=new StringBuilder(300);
+		so.append("<b>Service Options : ");
 		// Emergency
-		if (bits[offset]==false) so=so+"Non-emergency";
-		else so=so+"Emergency";
+		if (bits[offset]==false) so.append("Non-emergency");
+		else so.append("Emergency");
 		// Privacy
-		if (bits[offset+1]==true) so=so+"/Privacy Enabled";
+		if (bits[offset+1]==true) so.append("/Privacy Enabled");
 		// +2 and +3 are reserved bits
 		// +4 is Broadcast
-		if (bits[offset+4]==true) so=so+"/Broadcast";
+		if (bits[offset+4]==true) so.append("/Broadcast");
 		// +5 is OVCM
-		if (bits[offset+5]==true) so=so+"/OVCM Call";
+		if (bits[offset+5]==true) so.append("/OVCM Call");
 		// 6 and 7 are priority
 		if (bits[offset+6]==true) priority=2;
 		else priority=0;
 		if (bits[offset+7]==true) priority++;
-		if (priority==0) so=so+"/No priority";
-		else so=so+"/Priority "+Integer.toString(priority);
-        so=so+"</b>";
-		return so;
+		if (priority==0) so.append("/No priority");
+		else so.append("/Priority "+Integer.toString(priority));
+		so.append("</b>");
+		return so.toString();
 	}
 }
