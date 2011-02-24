@@ -35,6 +35,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuItem exit_item,about_item,help_item,view_display_bar;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
+	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,500);
 
 	// Constructor
 	public DisplayFrame(String title,DMRDecode theApp) {
@@ -85,14 +86,25 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		statusBar.setLoggingStatus("Not Logging");
 		// Setup the display bar
 		getContentPane().add(displayBar, java.awt.BorderLayout.WEST);
+		// Add the vertical scrollbar
+		add(vscrollbar,BorderLayout.EAST);
+		// Add a listener for this
+		vscrollbar.addAdjustmentListener(new MyAdjustmentListener());
 		}
 
+	
 	// Handle messages from the scrollbars
 	class MyAdjustmentListener implements AdjustmentListener  {
 		public void adjustmentValueChanged(AdjustmentEvent e) {
-
+			// Vertical scrollbar
+			if (e.getSource()==vscrollbar) {
+				theApp.vertical_scrollbar_value=e.getValue();
+				repaint();   
+			}
+			
 		}
 	 }
+
 
 	// Handle all menu events
 	public void actionPerformed (ActionEvent event) {

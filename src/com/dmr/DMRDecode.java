@@ -28,11 +28,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import javax.swing.*;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.Element;
-import javax.swing.text.html.HTML;
-import javax.swing.text.StyleConstants;
-import javax.swing.JEditorPane;
 import java.text.DateFormat;
 import java.util.Date;
 import java.io.DataInputStream;
@@ -42,7 +37,7 @@ public class DMRDecode {
 	private DisplayModel display_model;
 	private DisplayView display_view;
 	private static DMRDecode theApp;
-	static DisplayFrame window;
+	private static DisplayFrame window;
 	public String program_version="DMR Decoder (Build 26)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
@@ -61,9 +56,6 @@ public class DMRDecode {
 	private boolean carrier=false;
 	public boolean inverted=true;
 	private boolean firstframe=false;
-	public JEditorPane editorPane;
-	public HTMLDocument HTMLdoc;
-	public Element el;
 	private int lmid=0;
 	private int umid=0;
 	private int synctype;
@@ -146,21 +138,15 @@ public class DMRDecode {
 	
 	// Setup the window //
 	public void createGUI() {
-		window=new DisplayFrame(program_version,this);	
+		window=new DisplayFrame(program_version,this);
 		Toolkit theKit=window.getToolkit();
 		Dimension wndsize=theKit.getScreenSize();
 		window.setBounds(wndsize.width/6,wndsize.height/6,2*wndsize.width/3,2*wndsize.height/3);
 		window.addWindowListener(new WindowHandler());
 		display_model=new DisplayModel();
-		editorPane=new JEditorPane();
-		editorPane.setContentType("text/html");
-		editorPane.setEditable(false);
-		editorPane.setText("<html><table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"></table></html>");
-	    HTMLdoc=(HTMLDocument)editorPane.getDocument();
-		el=HTMLdoc.getElement(HTMLdoc.getDefaultRootElement(),StyleConstants.NameAttribute,HTML.Tag.TABLE);
-		JScrollPane scrollPane=new JScrollPane(editorPane);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		window.getContentPane().add(scrollPane,BorderLayout.CENTER);
+		display_view=new DisplayView(this);
+		display_model.addObserver(display_view);
+		window.getContentPane().add(display_view,BorderLayout.CENTER);
 		window.setVisible(true);
 		// Make certain the program knows the GUI is ready
 		pReady=true;
@@ -524,7 +510,7 @@ public class DMRDecode {
 	// Adds a line to the display
 	public void addLine(String line) {
 		  try {
-			  HTMLdoc.insertAfterStart(el,"<tr>"+line +"</tr>");
+			  display_view.add_line(line);
 		  }
 		  catch (Exception e) {
 			  JOptionPane.showMessageDialog(null,"Error in addLine()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
