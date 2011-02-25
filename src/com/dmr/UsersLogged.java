@@ -123,7 +123,7 @@ public class UsersLogged {
 			items++;
 			l=l+" Unit to Unit Calls ";
 		}
-		if (items==1) l=l+" only";
+		if (items==1) l=l+"only";
 		// All done
 		return l;
 	}

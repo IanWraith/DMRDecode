@@ -196,8 +196,7 @@ public class DMRDecode {
 		centre=(max+min)/2;
 		umid=(int)((float)(max-centre)*(float)0.625)+centre;
 	    lmid=(int)((float)(min-centre)*(float)0.625)+centre;		
-	    
-	 // If debug enabled then record this
+	    // If debug enabled then record this
 		if (debug==true)	{
 			String l=getTimeStamp()+" Setting new params : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
 			addLine(l,Color.BLACK,plainFont);
@@ -524,7 +523,9 @@ public class DMRDecode {
 	// Handle an incoming DMR Frame
 	void processFrame ()	{
 		if (firstframe==true)	{
-	    	// If debug enabled record obtaining sync
+			// Clear the max min buffer counter so we don't use old values
+			maxminBufferCounter=0;
+			// If debug enabled record obtaining sync
 			if (debug==true)	{
 				StringBuilder l=new StringBuilder(250);
 				if (synctype==12) l.append(getTimeStamp()+" DMR Voice Sync Acquired");
@@ -549,7 +550,8 @@ public class DMRDecode {
 		Color lcol[]=new Color[10];
 		String line[]=new String[10];
 		line=DMRvoice.decode(theApp,dibitFrame);
-		line[0]=line[0]+dispSymbolsSinceLastFrame();
+		font=DMRvoice.getFonts();
+		lcol=DMRvoice.getColours();
 		frameCount++;
 		if (DMRvoice.isError()==false)	{
 			badFrameCount++;
@@ -559,10 +561,9 @@ public class DMRDecode {
 		}
 		else	{
 			continousBadFrameCount=0;
-			font=DMRvoice.getFonts();
-			lcol=DMRvoice.getColours();
 		}
 		if (debug==true)	{
+			line[0]=line[0]+dispSymbolsSinceLastFrame();
 			lcol[8]=Color.BLACK;
 			lcol[9]=Color.BLACK;
 			font[8]=plainFont;
@@ -580,13 +581,15 @@ public class DMRDecode {
 		Color lcol[]=new Color[10];
 		String line[]=new String[10];
 		line=DMRdata.decode(theApp,dibitFrame);
-		line[0]=line[0]+dispSymbolsSinceLastFrame();		
+		font=DMRdata.getFonts();
+		lcol=DMRdata.getColours();
 		frameCount++;
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Data Frame - Error !";
 			lcol[0]=Color.RED;
 			font[0]=plainFont;
+			line[2]=null;
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
@@ -594,10 +597,9 @@ public class DMRDecode {
 		else	{
 			// Record that there has been an error free frame
 			errorFreeFrameCount++;
-			font=DMRdata.getFonts();
-			lcol=DMRdata.getColours();
 		}
 		if (debug==true)	{
+			line[0]=line[0]+dispSymbolsSinceLastFrame();
 			lcol[8]=Color.BLACK;
 			lcol[9]=Color.BLACK;
 			font[8]=plainFont;
@@ -616,13 +618,15 @@ public class DMRDecode {
 		Font font[]=new Font[10];
 		String line[]=new String[10];
 		line=DMRembedded.decode(theApp,dibitFrame);
-		line[0]=line[0]+dispSymbolsSinceLastFrame();
+		font=DMRembedded.getFonts();
+		lcol=DMRembedded.getColours();
 		frameCount++;
 		if (DMRembedded.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Embedded Frame - Error !";
 			lcol[0]=Color.RED;
 			font[0]=plainFont;
+			line[2]=null;
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
@@ -631,10 +635,9 @@ public class DMRDecode {
 			// Set last sync type to 14 to show this was a good embedded frame
 			lastsynctype=14;
 			continousBadFrameCount=0;
-			font=DMRembedded.getFonts();
-			lcol=DMRembedded.getColours();
 		}
 		if (debug==true)	{
+			line[0]=line[0]+dispSymbolsSinceLastFrame();
 			lcol[8]=Color.BLACK;
 			lcol[9]=Color.BLACK;
 			font[8]=plainFont;
@@ -664,7 +667,7 @@ public class DMRDecode {
 	// Write to a string to the logging file
 	public boolean fileWrite(String fline) {
 		// Add a CR to the end of each line
-		fline=fline+"<br>\r\n";
+		fline=fline+"\r\n";
 		// If we aren't logging don't try to do anything
 		if (logging==false)
 			return false;

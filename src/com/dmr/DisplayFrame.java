@@ -235,13 +235,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		if (returnval==JFileChooser.CANCEL_OPTION) return false;
 		// Get the file name an path of the selected file
 		file_name=fc.getSelectedFile().getPath();
-		// Does the file name end in .html ? //
-		// If not then automatically add a .html ending //
-		int last_index=file_name.lastIndexOf(".html");
-		if (last_index!=(file_name.length()-5))
-			file_name=file_name + ".html";
+		// Does the file name end in .txt ? //
+		// If not then automatically add a .txt ending //
+		int last_index=file_name.lastIndexOf(".txt");
+		if (last_index!=(file_name.length()-4)) file_name=file_name + ".txt";
 		// Create a file with this name //
-		File tfile = new File(file_name);
+		File tfile=new File(file_name);
 		// If the file exists ask the user if they want to overwrite it
 		if (tfile.exists()) {
 			int response = JOptionPane.showConfirmDialog(null,
@@ -256,7 +255,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			// Clear all logged info
 			theApp.usersLogged.clearAll();
 			// Write the program version as the first line of the log
-			String fline="<HTML>"+theApp.program_version+"<br>\r\n";
+			String fline=theApp.program_version+"\r\n";
 			theApp.file.write(fline);
 			
 		} catch (Exception e) {
@@ -278,21 +277,20 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			 count=theApp.usersLogged.returnUserCounter();
 			 // No users
 			 if (count==0)	{
-				 theApp.file.write("<br><br><b>No users were logged");
+				 theApp.file.write("\r\n\r\nNo users were logged");
 			 }
 			 else	{
-				 line="<br><br><b>The following "+Integer.toString(count)+" users were logged ..</b>";
+				 line="\r\n\r\nThe following "+Integer.toString(count)+" users were logged ..";
 				 theApp.file.write(line);
 				 // Sort the users
 				 theApp.usersLogged.sortByIdent();
 				 // Run through each user
 				 for (a=0;a<count;a++)	{
-					 line="<br>"+theApp.usersLogged.returnInfo(a);
+					 line="\r\n"+theApp.usersLogged.returnInfo(a);
 					 theApp.file.write(line);
 				 }
 			 }
 			 // Close the file
-			 theApp.file.write("</HTML>");
 			 theApp.file.flush();
 			 theApp.file.close();
 		 }
