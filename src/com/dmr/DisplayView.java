@@ -24,6 +24,7 @@ import javax.swing.JComponent;
 import java.util.Observer;
 import java.util.Observable;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
@@ -32,6 +33,7 @@ public class DisplayView extends JComponent implements Observer  {
 	private static final int DISPLAYCOUNT=100;
 	private String display_string[]=new String[DISPLAYCOUNT];
 	private Color displayColour[]=new Color[DISPLAYCOUNT];
+	private Font displayFont[]=new Font[DISPLAYCOUNT];
 	private DMRDecode theApp;	
 	
 	public DisplayView (DMRDecode theApp) {
@@ -49,20 +51,23 @@ public class DisplayView extends JComponent implements Observer  {
 		// Draw in the lines on the screen
 		for (i=0;i<DISPLAYCOUNT;i++) {
 			g.setColor(displayColour[i]);
+			g.setFont(displayFont[i]);
 			if (display_string[i]!=null) g2D.drawString(display_string[i],(5-theApp.horizontal_scrollbar_value),(pos-theApp.vertical_scrollbar_value));	
 			pos=pos+20;
 		}
 	}
 	
 	// Add a line to the display //
-	public void add_line (String line,Color tcol) {
+	public void add_line (String line,Color tcol,Font tfont) {
 		int i;
 		for (i=(DISPLAYCOUNT-1);i>0;i--) {
 			display_string[i]=display_string[i-1];
 			displayColour[i]=displayColour[i-1];
+			displayFont[i]=displayFont[i-1];
 		}
 		display_string[0]=line;
 		displayColour[0]=tcol;
+		displayFont[0]=tfont;
 		repaint();
 	}
 

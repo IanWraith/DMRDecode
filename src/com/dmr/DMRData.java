@@ -26,7 +26,7 @@ public class DMRData {
 	
 	// Unified Data Transport
 	void udt (boolean bits[])	{
-		display[0]="<b>Unified Data Transport</b>";
+		display[0]="Unified Data Transport";
 	}
 	
 	// Response Packet
@@ -34,13 +34,13 @@ public class DMRData {
 		int blocks,dclass,status,type;
 		StringBuilder sa=new StringBuilder(250);
 		StringBuilder sb=new StringBuilder(250);
-		display[0]="<b>Response Packet</b>";
+		display[0]="Response Packet";
 		// Destination LLID
 		int dllid=retAddress(bits,16);
 		// Source LLID
 		int sllid=retAddress(bits,40);
-		sa.append("<b>Destination Logical Link ID : "+Integer.toString(dllid));
-		sa.append(" Source Logical Link ID : "+Integer.toString(sllid)+"</b>");
+		sa.append("Destination Logical Link ID : "+Integer.toString(dllid));
+		sa.append(" Source Logical Link ID : "+Integer.toString(sllid));
 		display[1]=sa.toString();
 		// Bit 64 is 0
 		// Blocks to follow
@@ -75,38 +75,37 @@ public class DMRData {
 		else if ((dclass==1)&&(type==4)) sb.append("NACK (Undeliverable)");
 		else if ((dclass==2)&&(type==0)) sb.append("SACK");
 		else sb.append(" Unknown C="+Integer.toString(dclass)+" T="+Integer.toString(type)+" S="+Integer.toString(status));
-		sb.append("</b>");
 		display[2]=sb.toString();
 	}
 	
 	// Unconfirmed Data
 	void unconfirmedData (boolean bits[])	{
-		display[0]="<b>Unconfirmed Data</b>";
+		display[0]="Unconfirmed Data";
 	}
 	
 	// Confirmed Data
 	void confirmedData (boolean bits[])	{
-		display[0]="<b>Confirmed Data</b>";
+		display[0]="Confirmed Data";
 	}
 	
 	// Defined Short Data
 	void definedShortData (boolean bits[])	{
-		display[0]="<b>Defined Short Data</b>";
+		display[0]="Defined Short Data";
 	}
 	
 	// Raw Short Data
 	void rawShortData (boolean bits[])	{
-		display[0]="<b>Raw or Status Short Data</b>";
+		display[0]="Raw or Status Short Data";
 	}
 	
 	// Proprietary Data Packet
 	void propData (boolean bits[])	{
-		display[0]="<b>Proprietary Data Packet</b>";
+		display[0]="Proprietary Data Packet";
 	}
 	
 	// Unknown Data
 	void unknownData (boolean bits[],int dpf)	{
-		display[0]="<b>Unknown Data : DPF="+Integer.toString(dpf)+"</b>";
+		display[0]="Unknown Data : DPF="+Integer.toString(dpf);
 	}
 	
 	// Return a 24 bit address 
@@ -120,7 +119,4 @@ public class DMRData {
 		return addr;
 	}
 	
-	
-	
-
 }

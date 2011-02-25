@@ -8,15 +8,15 @@ public class DecodeCACH {
 	private int lcss;
 	private boolean passErrorCheck=false;
 	private boolean haveShortLC=false;
+	private boolean shortLCError=false;
 	private int errorRes;
 	private DMRDecode theApp;
 	
 	public String decode (DMRDecode TtheApp,byte[] dibit_buf)	{
 		theApp=TtheApp;
-		line.append("<i>CACH : TACT ");
+		line.append("CACH : TACT ");
 		// CACH decode
 		passErrorCheck=mainDecode(dibit_buf);
-		line.append("</i>");
 		return line.toString();
 	}
 	
@@ -86,8 +86,14 @@ public class DecodeCACH {
 		// Is short LC data ready ?
 		if (theApp.short_lc.isDataReady()==true)	{
 			// See if the short LC passed its error checks
-			if (theApp.short_lc.isCRCgood()==true) shortLCline="<b>"+theApp.getTimeStamp()+" Short LC : "+theApp.short_lc.getLine()+"</b>";
-			else shortLCline="<FONT COLOR=\"D91414\">"+theApp.getTimeStamp()+" Bad Short LC !</FONT>";
+			if (theApp.short_lc.isCRCgood()==true)	{
+				shortLCError=false;
+				shortLCline=theApp.getTimeStamp()+" Short LC : "+theApp.short_lc.getLine();
+			}
+			else	{
+				shortLCError=true;
+				shortLCline=theApp.getTimeStamp()+" Bad Short LC !";
+			}
 			theApp.short_lc.clrDataReady();
 			haveShortLC=true;
 		}
@@ -166,6 +172,10 @@ public class DecodeCACH {
 	// Return the decoded short LC
 	public String getShortLCline()	{
 		return shortLCline;
+	}
+	
+	public boolean getshortLCError()	{
+		return shortLCError;
 	}
 	
 }

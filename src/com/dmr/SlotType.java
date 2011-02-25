@@ -73,7 +73,7 @@ public class SlotType {
 		if (dataSLOT[6]==true) dataType=dataType+2;
 		if (dataSLOT[7]==true) dataType++;
 		// Display this info
-		sb.append("<i>Slot Type : Colour Code "+Integer.toString(colourCode));
+		sb.append("Slot Type : Colour Code "+Integer.toString(colourCode));
 		if (dataType==0) sb.append(" PI Header");
 		else if (dataType==1) sb.append(" Voice LC Header");
 		else if (dataType==2) sb.append(" Terminator with LC");
@@ -85,7 +85,6 @@ public class SlotType {
 		else if (dataType==8) sb.append(" Rate ¾ Data Continuation");
 		else if (dataType==9) sb.append(" Idle");
 		else sb.append(" Reserved for future use");
-		sb.append("</i>");	
 		// Convert from StringBuilder to a String
 		line=sb.toString();
 		return true;

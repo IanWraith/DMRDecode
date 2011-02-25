@@ -1,29 +1,43 @@
 package com.dmr;
 
+import java.awt.Color;
+import java.awt.Font;
+
 public class DMRDataDecode {
 	private int dataType=-1;
 	private String line[]=new String[10];
+	private Font fonts[]=new Font[10];
+	private Color colours[]=new Color[10];
 	private boolean CACHres,SLOT_TYPEres,BPTCres;
 	
 	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
 		DecodeCACH cachdecode=new DecodeCACH();
 		SlotType slottype=new SlotType();
-		line[0]="<b>"+theApp.getTimeStamp()+" DMR Data Frame </b>";
+		line[0]=theApp.getTimeStamp()+" DMR Data Frame";
+		colours[0]=Color.BLACK;
+		fonts[0]=theApp.boldFont;
 		// CACH decode
 		cline=cachdecode.decode(theApp,dibit_buf);
 		CACHres=cachdecode.isPassErrorCheck();
 		// Slot Type Decode
 		if (CACHres==true)	{
 			line[1]=cline;
+			fonts[1]=theApp.italicFont;
+			colours[1]=Color.BLACK;
 			line[2]=slottype.decode(dibit_buf);
 			SLOT_TYPEres=slottype.isPassErrorCheck();
 			// If short LC data is available then display it
 			if (cachdecode.getShortLC()==true)	{
 				line[7]=cachdecode.getShortLCline();
+				fonts[7]=theApp.boldFont;
+				if (cachdecode.getshortLCError()==true) colours[7]=Color.RED;
+				else colours[7]=Color.BLACK;
 				cachdecode.clearShortLC();
 			}
 			if (SLOT_TYPEres==true)	{
+				fonts[2]=theApp.boldFont;
+				colours[2]=Color.BLACK;
 				// If no error then get the data type
 				dataType=slottype.returnDataType();
 				// Main section decode
@@ -43,6 +57,12 @@ public class DMRDataDecode {
 						line[3]=clines[0];
 						line[4]=clines[1];
 						line[5]=clines[2];
+						fonts[3]=theApp.boldFont;
+						colours[3]=Color.BLACK;
+						fonts[4]=theApp.boldFont;
+						colours[4]=Color.BLACK;
+						fonts[5]=theApp.boldFont;
+						colours[5]=Color.BLACK;
 						}
 				}
 				
@@ -59,6 +79,12 @@ public class DMRDataDecode {
 						line[3]=clines[0];
 						line[4]=clines[1];
 						line[5]=clines[2];
+						fonts[3]=theApp.boldFont;
+						colours[3]=Color.BLACK;
+						fonts[4]=theApp.boldFont;
+						colours[4]=Color.BLACK;
+						fonts[5]=theApp.boldFont;
+						colours[5]=Color.BLACK;
 						}
 				}
 				
@@ -77,6 +103,12 @@ public class DMRDataDecode {
 							line[3]=clines[0];
 							line[4]=clines[1];
 							line[5]=clines[2];
+							fonts[3]=theApp.boldFont;
+							colours[3]=Color.BLACK;
+							fonts[4]=theApp.boldFont;
+							colours[4]=Color.BLACK;
+							fonts[5]=theApp.boldFont;
+							colours[5]=Color.BLACK;
 						}
 					}
 				}
@@ -96,6 +128,12 @@ public class DMRDataDecode {
 							line[3]=clines[0];
 							line[4]=clines[1];
 							line[5]=clines[2];
+							fonts[3]=theApp.boldFont;
+							colours[3]=Color.BLACK;
+							fonts[4]=theApp.boldFont;
+							colours[4]=Color.BLACK;
+							fonts[5]=theApp.boldFont;
+							colours[5]=Color.BLACK;
 						}	
 					}
 				}
@@ -126,5 +164,17 @@ public class DMRDataDecode {
 	  if ((SLOT_TYPEres==true)&&(CACHres==true)&&(BPTCres==true)) return true;
 	  else return false;
 	}
+	
+	// Return the fonts in use
+	public Font[] getFonts()	{
+		return fonts;
+	}
+	
+	// Return the colours in use
+	public Color[] getColours()	{
+		return colours;
+	}
+	
+
 	
 }

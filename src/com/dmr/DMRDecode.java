@@ -105,7 +105,9 @@ public class DMRDecode {
 	private int maxminBufferCounter=0;
 	private int maxBuffer[]=new int[MAXMINBUFSIZE];
 	private int minBuffer[]=new int[MAXMINBUFSIZE];
-	
+	public final Font plainFont=new Font("SanSerif",Font.PLAIN,12);
+	public final Font boldFont=new Font("SanSerif",Font.BOLD,12);
+	public final Font italicFont=new Font("SanSerif",Font.ITALIC,12);
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -198,7 +200,7 @@ public class DMRDecode {
 	 // If debug enabled then record this
 		if (debug==true)	{
 			String l=getTimeStamp()+" Setting new params : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid);
-			addLine(l,Color.BLACK);
+			addLine(l,Color.BLACK,plainFont);
 			fileWrite(l);
 			}
 	    
@@ -216,7 +218,7 @@ public class DMRDecode {
 				  
 				  if ((frameSync==true)&&(debug==true))	{
 					  String l=getTimeStamp()+" jitter change to "+Integer.toString(jitter);
-					  addLine(l,Color.BLACK);
+					  addLine(l,Color.BLACK,plainFont);
 					  fileWrite(l);
 				  }
 				  
@@ -383,7 +385,7 @@ public class DMRDecode {
 					l.append(getTimeStamp()+" Sync Lost");
 					l.append(" : centre="+Integer.toString(centre));
 					l.append(" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
-					addLine(l.toString(),Color.BLACK);
+					addLine(l.toString(),Color.BLACK,plainFont);
 					fileWrite(l.toString());
 				}
 				frameSync=false;
@@ -508,8 +510,8 @@ public class DMRDecode {
 	}
 	  
 	// Adds a line to the display
-	public void addLine(String line,Color col) {
-		display_view.add_line(line,col);
+	public void addLine(String line,Color col,Font font) {
+		display_view.add_line(line,col,font);
 	}
 
 	// Return a time stamp
@@ -527,7 +529,7 @@ public class DMRDecode {
 				StringBuilder l=new StringBuilder(250);
 				if (synctype==12) l.append(getTimeStamp()+" DMR Voice Sync Acquired");
 				else l.append(getTimeStamp()+" DMR Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
-				addLine(l.toString(),Color.BLACK);
+				addLine(l.toString(),Color.BLACK,plainFont);
 				fileWrite(l.toString());
 				}
 			return;
@@ -543,7 +545,8 @@ public class DMRDecode {
 	// Handle a DMR Voice Frame
 	void processDMRvoice ()	{	
 		DMRVoice DMRvoice=new DMRVoice();
-		Color lcol;
+		Font font[]=new Font[10];
+		Color lcol[]=new Color[10];
 		String line[]=new String[10];
 		line=DMRvoice.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
@@ -552,23 +555,29 @@ public class DMRDecode {
 			badFrameCount++;
 			continousBadFrameCount++;
 			line[0]=getTimeStamp()+" DMR Voice Frame - Error !";
-			lcol=Color.RED;
+			lcol[0]=Color.RED;
 		}
 		else	{
 			continousBadFrameCount=0;
-			lcol=Color.BLACK;
+			font=DMRvoice.getFonts();
+			lcol=DMRvoice.getColours();
 		}
 		if (debug==true)	{
+			lcol[8]=Color.BLACK;
+			lcol[9]=Color.BLACK;
+			font[8]=plainFont;
+			font[9]=plainFont;
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
-		displayLines(line,lcol);
+		displayLines(line,lcol,font);
 	}
 	
 	// Handle a DMR Data Frame
 	void processDMRdata ()	{
 		DMRDataDecode DMRdata=new DMRDataDecode();
-		Color lcol;
+		Font font[]=new Font[10];
+		Color lcol[]=new Color[10];
 		String line[]=new String[10];
 		line=DMRdata.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();		
@@ -576,28 +585,35 @@ public class DMRDecode {
 		if (DMRdata.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Data Frame - Error !";
-			lcol=Color.RED;
+			lcol[0]=Color.RED;
+			font[0]=plainFont;
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
 		}
 		else	{
-			lcol=Color.BLACK;
 			// Record that there has been an error free frame
 			errorFreeFrameCount++;
+			font=DMRdata.getFonts();
+			lcol=DMRdata.getColours();
 		}
 		if (debug==true)	{
+			lcol[8]=Color.BLACK;
+			lcol[9]=Color.BLACK;
+			font[8]=plainFont;
+			font[9]=plainFont;
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
 		// Display the info
-		displayLines(line,lcol);
+		displayLines(line,lcol,font);
 	}
 	
 	// Handle an embedded frame
 	void processEmbedded ()	{
 		DMREmbedded DMRembedded=new DMREmbedded();
-		Color lcol;
+		Color lcol[]=new Color[10];
+		Font font[]=new Font[10];
 		String line[]=new String[10];
 		line=DMRembedded.decode(theApp,dibitFrame);
 		line[0]=line[0]+dispSymbolsSinceLastFrame();
@@ -605,31 +621,37 @@ public class DMRDecode {
 		if (DMRembedded.isError()==false)	{
 			badFrameCount++;
 			line[0]=getTimeStamp()+" DMR Embedded Frame - Error !";
-			lcol=Color.RED;
+			lcol[0]=Color.RED;
+			font[0]=plainFont;
 			// Record that there has been a frame with an error
 			errorFreeFrameCount=0;
 			continousBadFrameCount++;
 		}
 		else	{
-			lcol=Color.BLACK;
 			// Set last sync type to 14 to show this was a good embedded frame
 			lastsynctype=14;
 			continousBadFrameCount=0;
+			font=DMRembedded.getFonts();
+			lcol=DMRembedded.getColours();
 		}
 		if (debug==true)	{
+			lcol[8]=Color.BLACK;
+			lcol[9]=Color.BLACK;
+			font[8]=plainFont;
+			font[9]=plainFont;
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
 		// Display the info
-		displayLines(line,lcol);
+		displayLines(line,lcol,font);
 	}
 
 	// Display a group of lines
-	void displayLines (String line[],Color col)	{
+	void displayLines (String line[],Color col[],Font font[])	{
 		int a;
 		int len=line.length;
 		for (a=(len-1);a>=0;a--)	{
-			if (line[a]!=null) addLine(line[a],col);
+			if (line[a]!=null) addLine(line[a],col[a],font[a]);
 		}
 		// Log to disk if needed
 		if (logging==true)	{

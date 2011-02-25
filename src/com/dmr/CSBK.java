@@ -62,13 +62,12 @@ public class CSBK {
 	private void unknownCSBK (int csbko,int fid,boolean bits[])	{
 		int a;
 		StringBuilder sb=new StringBuilder(250);
-		sb.append("<b>Unknown CSBK : CSBKO="+Integer.toString(csbko)+" + FID="+Integer.toString(fid)+" ");
+		sb.append("Unknown CSBK : CSBKO="+Integer.toString(csbko)+" + FID="+Integer.toString(fid)+" ");
 		// Display the binary
 		for (a=16;a<80;a++)	{
 			if (bits[a]==true) sb.append("1");
 			else sb.append("0");
 		}
-		sb.append("</b>");
 		display[0]=sb.toString();
 	}
 	
@@ -97,14 +96,14 @@ public class CSBK {
 		// Source address
 		int source=retAddress(bits,56);
 		// Display this
-		sb.append("<b>Preamble CSBK : ");
+		sb.append("Preamble CSBK : ");
 		if (dc==false) sb.append(" CSBK content ");
 		else sb.append(" Data content ");
 		sb.append(Integer.toString(bfol)+" Blocks to follow</b>");
 		display[0]=sb.toString();		
 		sc.append("<b>Target Address : "+Integer.toString(target));
 		if (gi==true) sc.append(" (Group)");
-		sc.append(" Source Address : "+Integer.toString(source)+"</b>");
+		sc.append(" Source Address : "+Integer.toString(source));
 		display[1]=sc.toString();
 		// Target
 		theApp.usersLogged.addUser(target);
@@ -131,25 +130,25 @@ public class CSBK {
 	// BS Outbound Activation CSBK
 	private void bs_dwn_act (boolean bits[])	{
 		// TODO : Full decoding of bs_dwn_act
-		display[0]="<b>BS Outbound Activation</b>";
+		display[0]="BS Outbound Activation";
 	}
 	
 	// Unit to Unit Voice Service Request CSBK
 	private void uu_v_reg (boolean bits[])	{
 		// TODO : Full decoding of UU_V_Req
-		display[0]="<b>Unit to Unit Voice Service Request</b>";
+		display[0]="Unit to Unit Voice Service Request";
 	}
 	
 	// Unit to Unit Service Answer Response CSBK
 	private void uu_ans_rep (boolean bits[])	{
 		// TODO : Full decoding of UU_Ans_Rsp
-		display[0]="<b>Unit to Unit Service Answer Response</b>";
+		display[0]="Unit to Unit Service Answer Response";
 	}
 	
 	// Negative Acknowledge Response CSBK
 	private void nack_rsp (boolean bits[])	{
 		// TODO : Full decoding of NACK_Rsp
-		display[0]="<b>Negative Acknowledge Response</b>";
+		display[0]="Negative Acknowledge Response";
 	}
 
 

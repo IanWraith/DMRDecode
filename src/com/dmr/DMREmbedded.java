@@ -1,8 +1,13 @@
 package com.dmr;
 
+import java.awt.Color;
+import java.awt.Font;
+
 public class DMREmbedded {
 	private int residueValue;
 	private String line[]=new String[10];
+	private Font fonts[]=new Font[10];
+	private Color colours[]=new Color[10];
 	private boolean resCACH,resEMB;
 	private DMRDecode theApp;
 	
@@ -15,10 +20,15 @@ public class DMREmbedded {
 		resCACH=cachdecode.isPassErrorCheck();
 		if (resCACH==true) {
 			line[1]=cline;
+			fonts[1]=theApp.italicFont;
+			colours[1]=Color.BLACK;
 			resEMB=EMBdecode(dibit_buf);
 			// If short LC data is available then display it
 			if (cachdecode.getShortLC()==true)	{
 				line[7]=cachdecode.getShortLCline();
+				fonts[7]=theApp.boldFont;
+				if (cachdecode.getshortLCError()==true) colours[7]=Color.RED;
+				else colours[7]=Color.BLACK;
 				cachdecode.clearShortLC();
 			}
 		}
@@ -84,7 +94,9 @@ public class DMREmbedded {
 		// If it passes this is a Voice Burst with Embedded Signalling
 		if (QuadResidue1676(EMDdata)==true)	{
 			StringBuilder sb=new StringBuilder(250);
-			line[0]="<b>"+theApp.getTimeStamp()+" DMR Voice Frame with Embedded Signalling </b>";
+			line[0]=theApp.getTimeStamp()+" DMR Voice Frame with Embedded Signalling";
+			colours[0]=Color.BLACK;
+			fonts[0]=theApp.boldFont;
 			// Color code
 			if (EMDdata[0]==true) cc=8;
 			else cc=0;
@@ -123,7 +135,9 @@ public class DMREmbedded {
 			// See if its has a slot type field that passes its error check
 			SlotType slottype=new SlotType();
 			boolean SLOT_TYPEres,BPTCres=false;
-			line[0]="<b>"+theApp.getTimeStamp()+" DMR Data Frame with Embedded Signalling </b>";
+			line[0]=theApp.getTimeStamp()+" DMR Data Frame with Embedded Signalling";
+			colours[0]=Color.BLACK;
+			fonts[0]=theApp.boldFont;
 			line[2]=slottype.decode(dibit_buf);
 			SLOT_TYPEres=slottype.isPassErrorCheck();
 			// If the slot type is OK try to decode the rest
@@ -145,6 +159,12 @@ public class DMREmbedded {
 						line[3]=clines[0];
 						line[4]=clines[1];
 						line[5]=clines[2];
+						fonts[3]=theApp.boldFont;
+						colours[3]=Color.BLACK;
+						fonts[4]=theApp.boldFont;
+						colours[4]=Color.BLACK;
+						fonts[5]=theApp.boldFont;
+						colours[5]=Color.BLACK;
 						}
 				}
 				// Terminator with LC
@@ -160,6 +180,12 @@ public class DMREmbedded {
 						line[3]=clines[0];
 						line[4]=clines[1];
 						line[5]=clines[2];
+						fonts[3]=theApp.boldFont;
+						colours[3]=Color.BLACK;
+						fonts[4]=theApp.boldFont;
+						colours[4]=Color.BLACK;
+						fonts[5]=theApp.boldFont;
+						colours[5]=Color.BLACK;
 						}
 				}		
 				// CSBK
@@ -176,7 +202,13 @@ public class DMREmbedded {
 							clines=csbk.decode(theApp,bits);
 							line[3]=clines[0];
 							line[4]=clines[1];
-							line[5]=clines[2];							
+							line[5]=clines[2];	
+							fonts[3]=theApp.boldFont;
+							colours[3]=Color.BLACK;
+							fonts[4]=theApp.boldFont;
+							colours[4]=Color.BLACK;
+							fonts[5]=theApp.boldFont;
+							colours[5]=Color.BLACK;
 						}
 					}
 				}
@@ -195,6 +227,12 @@ public class DMREmbedded {
 							line[3]=clines[0];
 							line[4]=clines[1];
 							line[5]=clines[2];
+							fonts[3]=theApp.boldFont;
+							colours[3]=Color.BLACK;
+							fonts[4]=theApp.boldFont;
+							colours[4]=Color.BLACK;
+							fonts[5]=theApp.boldFont;
+							colours[5]=Color.BLACK;
 						}	
 					}
 				}
@@ -303,5 +341,16 @@ public class DMREmbedded {
 		// No matches so we must have a problem and so should return false
 		return false;
 	}
+	
+	// Return the fonts in use
+	public Font[] getFonts()	{
+		return fonts;
+	}
+	
+	// Return the colours in use
+	public Color[] getColours()	{
+		return colours;
+	}
+	
 	
 }
