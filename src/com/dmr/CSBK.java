@@ -53,8 +53,6 @@ public class CSBK {
 		else	{
 			unknownCSBK(csbko,fid,bits);
 		}
-		
-		
 		return display;
 	}
 	
@@ -99,9 +97,9 @@ public class CSBK {
 		sb.append("Preamble CSBK : ");
 		if (dc==false) sb.append(" CSBK content ");
 		else sb.append(" Data content ");
-		sb.append(Integer.toString(bfol)+" Blocks to follow</b>");
+		sb.append(Integer.toString(bfol)+" Blocks to follow");
 		display[0]=sb.toString();		
-		sc.append("<b>Target Address : "+Integer.toString(target));
+		sc.append("Target Address : "+Integer.toString(target));
 		if (gi==true) sc.append(" (Group)");
 		sc.append(" Source Address : "+Integer.toString(source));
 		display[1]=sc.toString();
