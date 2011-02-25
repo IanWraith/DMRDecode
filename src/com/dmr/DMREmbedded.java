@@ -125,7 +125,7 @@ public class DMREmbedded {
 			if (theApp.embedded_lc.getDataReady()==true)	{
 				String elines[]=theApp.embedded_lc.getLines();
 				// Display the embedded LC along with a timestamp
-				line[3]="<b>"+theApp.getTimeStamp()+" "+elines[0]+"</b>";
+				line[3]=theApp.getTimeStamp()+" "+elines[0];
 			}
 			// Return all done
 			return true;
