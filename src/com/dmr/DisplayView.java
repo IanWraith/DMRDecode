@@ -23,12 +23,15 @@ package com.dmr;
 import javax.swing.JComponent;
 import java.util.Observer;
 import java.util.Observable;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 public class DisplayView extends JComponent implements Observer  {	
 	public static final long serialVersionUID=1;
-	private String display_string[]=new String[100];
+	private static final int DISPLAYCOUNT=100;
+	private String display_string[]=new String[DISPLAYCOUNT];
+	private Color displayColour[]=new Color[DISPLAYCOUNT];
 	private DMRDecode theApp;	
 	
 	public DisplayView (DMRDecode theApp) {
@@ -44,19 +47,22 @@ public class DisplayView extends JComponent implements Observer  {
 		int pos=20;
 		Graphics2D g2D=(Graphics2D)g;	
 		// Draw in the lines on the screen
-		for (i=0;i<100;i++) {
+		for (i=0;i<DISPLAYCOUNT;i++) {
+			g.setColor(displayColour[i]);
 			if (display_string[i]!=null) g2D.drawString(display_string[i],(5-theApp.horizontal_scrollbar_value),(pos-theApp.vertical_scrollbar_value));	
 			pos=pos+20;
 		}
 	}
 	
 	// Add a line to the display //
-	public void add_line (String line) {
+	public void add_line (String line,Color tcol) {
 		int i;
-		for (i=99;i>0;i--) {
+		for (i=(DISPLAYCOUNT-1);i>0;i--) {
 			display_string[i]=display_string[i-1];
+			displayColour[i]=displayColour[i-1];
 		}
 		display_string[0]=line;
+		displayColour[0]=tcol;
 		repaint();
 	}
 
