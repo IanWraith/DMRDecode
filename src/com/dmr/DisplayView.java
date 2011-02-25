@@ -30,7 +30,7 @@ import java.awt.Graphics2D;
 
 public class DisplayView extends JComponent implements Observer  {	
 	public static final long serialVersionUID=1;
-	private static final int DISPLAYCOUNT=100;
+	private static final int DISPLAYCOUNT=150;
 	private String display_string[]=new String[DISPLAYCOUNT];
 	private Color displayColour[]=new Color[DISPLAYCOUNT];
 	private Font displayFont[]=new Font[DISPLAYCOUNT];

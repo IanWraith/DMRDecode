@@ -35,7 +35,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuItem exit_item,about_item,help_item,view_display_bar;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
-	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,500);
+	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,2000);
 
 	// Constructor
 	public DisplayFrame(String title,DMRDecode theApp) {
