@@ -51,15 +51,15 @@ public class FullLinkControl {
 	void group_v_ch_usr (DMRDecode theApp,boolean bits[])	{
 		int index;
 		StringBuilder sb=new StringBuilder(250);
-		display[0]="<b>Group Voice Channel User LC</b>";
+		display[0]="Group Voice Channel User LC";
 		// Service Options
 		display[1]=decodeServiceOptions(bits,16);
 		// Group address
 		int group=retAddress(bits,24);
 		// Source address
 		int source=retAddress(bits,48);
-		sb.append("<b>Group Address : "+Integer.toString(group));
-		sb.append(" Source Address : "+Integer.toString(source)+"</b>");
+		sb.append("Group Address : "+Integer.toString(group));
+		sb.append(" Source Address : "+Integer.toString(source));
 		display[2]=sb.toString();
 		// Log these users
 		// Group
@@ -77,15 +77,15 @@ public class FullLinkControl {
 	void uu_v_ch_usr (DMRDecode theApp,boolean bits[])	{
 		int index;
 		StringBuilder sb=new StringBuilder(250);
-		display[0]="<b>Unit to Unit Voice Channel User LC</b>";
+		display[0]="Unit to Unit Voice Channel User LC";
 		// Service Options
 		display[1]=decodeServiceOptions(bits,16);
 		// Target address
 		int target=retAddress(bits,24);
 		// Source address
 		int source=retAddress(bits,48);
-		sb.append("<b>Target Address : "+Integer.toString(target));
-		sb.append(" Source Address : "+Integer.toString(source)+"</b>");
+		sb.append("Target Address : "+Integer.toString(target));
+		sb.append(" Source Address : "+Integer.toString(source));
 		display[2]=sb.toString();
 		// Log these users
 		// Target
@@ -102,13 +102,13 @@ public class FullLinkControl {
 	void td_lc (DMRDecode theApp,boolean bits[])	{
 		int index;
 		StringBuilder sb=new StringBuilder(250);
-		display[0]="<b>Terminator Data Link Control PDU</b>";
+		display[0]="Terminator Data Link Control PDU";
 		// Destination LLID
 		int dllid=retAddress(bits,16);
 		// Source LLID
 		int sllid=retAddress(bits,40);
-		sb.append("<b>Destination Logical Link ID : "+Integer.toString(dllid));
-		sb.append(" Source Logical Link ID : "+Integer.toString(sllid)+"</b>");
+		sb.append("Destination Logical Link ID : "+Integer.toString(dllid));
+		sb.append(" Source Logical Link ID : "+Integer.toString(sllid));
 		display[1]=sb.toString();
 		// Log these users
 		// Destination
@@ -125,13 +125,12 @@ public class FullLinkControl {
 	private void unknown_flc (int flco,int fid,boolean bits[])	{
 		int a;
 		StringBuilder sb=new StringBuilder(300);
-	    sb.append("<b>Unknown Full Link Control LC : FLCO="+Integer.toString(flco)+" + FID="+Integer.toString(fid)+" ");
+	    sb.append("Unknown Full Link Control LC : FLCO="+Integer.toString(flco)+" + FID="+Integer.toString(fid)+" ");
 		// Display the binary
 		for (a=16;a<72;a++)	{
 			if (bits[a]==true) sb.append("1");
 			else sb.append("0");
 		}
-		sb.append("</b>");
 		display[0]=sb.toString();
 	}
 	
@@ -150,7 +149,7 @@ public class FullLinkControl {
 	private String decodeServiceOptions (boolean bits[],int offset)	{
 		int priority;
 		StringBuilder so=new StringBuilder(300);
-		so.append("<b>Service Options : ");
+		so.append("Service Options : ");
 		// Emergency
 		if (bits[offset]==false) so.append("Non-emergency");
 		else so.append("Emergency");
@@ -167,7 +166,6 @@ public class FullLinkControl {
 		if (bits[offset+7]==true) priority++;
 		if (priority==0) so.append("/No priority");
 		else so.append("/Priority "+Integer.toString(priority));
-		so.append("</b>");
 		return so.toString();
 	}
 }
