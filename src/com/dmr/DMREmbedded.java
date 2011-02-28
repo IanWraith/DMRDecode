@@ -127,6 +127,9 @@ public class DMREmbedded {
 				// Display the embedded LC along with a timestamp
 				line[3]=theApp.getTimeStamp()+" "+elines[0];
 			}
+			// Pass on voice data
+			VoiceData voicedata=new VoiceData();
+			voicedata.handleVoice(theApp,dibit_buf);
 			// Return all done
 			return true;
 		}

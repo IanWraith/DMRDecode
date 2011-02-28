@@ -8,9 +8,11 @@ public class DMRVoice {
 	private boolean res;
 	private Font fonts[]=new Font[10];
 	private Color colours[]=new Color[10];
+	private DMRDecode theApp;
 	
-	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
+	public String[] decode (DMRDecode tTheApp,byte[] dibit_buf)	{
 		String cline;
+		theApp=tTheApp;
 		DecodeCACH cachdecode=new DecodeCACH();
 		line[0]=theApp.getTimeStamp()+" DMR Voice Frame";
 		fonts[0]=theApp.boldFont;
@@ -28,6 +30,9 @@ public class DMRVoice {
 				else colours[7]=Color.BLACK;
 				cachdecode.clearShortLC();
 			}
+			// Pass on voice data
+			VoiceData voicedata=new VoiceData();
+			voicedata.handleVoice(tTheApp,dibit_buf);
 		}
 		theApp.frameCount++;
 		return line;
