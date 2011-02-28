@@ -34,6 +34,7 @@ public class DisplayView extends JComponent implements Observer  {
 	private String display_string[]=new String[DISPLAYCOUNT];
 	private Color displayColour[]=new Color[DISPLAYCOUNT];
 	private Font displayFont[]=new Font[DISPLAYCOUNT];
+	private int displayCounter=0;
 	private DMRDecode theApp;	
 	
 	public DisplayView (DMRDecode theApp) {
@@ -45,29 +46,34 @@ public class DisplayView extends JComponent implements Observer  {
 			
 	// Draw the main screen //
 	public void paint (Graphics g) {
-		int i;
-		int pos=20;
+		int count=0,pos=20;
+		int i=displayCounter;
 		Graphics2D g2D=(Graphics2D)g;	
 		// Draw in the lines on the screen
-		for (i=0;i<DISPLAYCOUNT;i++) {
-			g.setColor(displayColour[i]);
-			g.setFont(displayFont[i]);
-			if (display_string[i]!=null) g2D.drawString(display_string[i],(5-theApp.horizontal_scrollbar_value),(pos-theApp.vertical_scrollbar_value));	
-			pos=pos+20;
+		// taking account of the fact that the data is stored in a circular buffer
+		while(count<DISPLAYCOUNT)	{
+			// Only display info if something is stored in the display string
+			if (display_string[i]!=null)	{
+				g.setColor(displayColour[i]);
+				g.setFont(displayFont[i]);
+				g2D.drawString(display_string[i],(5-theApp.horizontal_scrollbar_value),(pos-theApp.vertical_scrollbar_value));	
+				pos=pos+20;
+			}	
+			i++;
+			if (i==DISPLAYCOUNT) i=0;
+			count++;
 		}
 	}
 	
-	// Add a line to the display //
+	// Add a line to the display circular buffer //
 	public void add_line (String line,Color tcol,Font tfont) {
-		int i;
-		for (i=(DISPLAYCOUNT-1);i>0;i--) {
-			display_string[i]=display_string[i-1];
-			displayColour[i]=displayColour[i-1];
-			displayFont[i]=displayFont[i-1];
-		}
-		display_string[0]=line;
-		displayColour[0]=tcol;
-		displayFont[0]=tfont;
+		display_string[displayCounter]=line;
+		displayColour[displayCounter]=tcol;
+		displayFont[displayCounter]=tfont;
+		// Increment the circular buffer
+		displayCounter++;
+		// Check it hasn't reached its maximum size
+		if (displayCounter==DISPLAYCOUNT) displayCounter=0;
 		repaint();
 	}
 
