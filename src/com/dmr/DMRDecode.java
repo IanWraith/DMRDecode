@@ -38,7 +38,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 27)";
+	public String program_version="DMR Decoder (Build 28)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -109,9 +109,18 @@ public class DMRDecode {
 	public final Font boldFont=new Font("SanSerif",Font.BOLD,12);
 	public final Font italicFont=new Font("SanSerif",Font.ITALIC,12);
 	
+	public SocketOut socketThread=new SocketOut(this);
+	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
+		// Setup the TCP/IP socket code
+		try	{
+			theApp.socketThread.setupSocket();			
+		} catch (Exception e)	{
+			JOptionPane.showMessageDialog(null,"Error in socket setup during main()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
+		}
 		// If sucking in test data then open the file
 		if (theApp.audioSuck==true)	{
 			theApp.prepareAudioSuck("aor3000_audiodump.csv");
