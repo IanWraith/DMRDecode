@@ -20,8 +20,10 @@ Milestone 5 - To work out why and then fix the problem that is causing single bi
 
 Milestone 6 - Add a feature where all DMR users are logged. (Reached 19th February 2011)
 
-Milestone 7 - To fix a memory leak type problem where the heap memory used by the program keeps growing until it slows down and crashes.
+Milestone 7 - To fix a memory leak type problem where the heap memory used by the program keeps growing until it slows down and crashes. (Reached 28th February 2011)
 
-Ian Wraith (23rd February 2011)
+Milestone 8 - To pass certain data on to other programs via TCP/IP socket.
+
+Ian Wraith (28th February 2011)
 
 
