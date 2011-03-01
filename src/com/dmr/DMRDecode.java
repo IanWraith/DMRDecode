@@ -108,8 +108,8 @@ public class DMRDecode {
 	public final Font plainFont=new Font("SanSerif",Font.PLAIN,12);
 	public final Font boldFont=new Font("SanSerif",Font.BOLD,12);
 	public final Font italicFont=new Font("SanSerif",Font.ITALIC,12);
-	
 	public SocketOut socketThread=new SocketOut(this);
+	public int currentChannel=0;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();

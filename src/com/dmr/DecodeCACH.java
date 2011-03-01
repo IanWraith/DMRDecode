@@ -70,8 +70,14 @@ public class DecodeCACH {
 		if (dataCACH[3]==true) lcss++;
 		// Display TACT info
 		if (at==true) line.append(" AT=1");
-		if (channel==false) line.append(" Ch 1");
-		else line.append(" Ch 2");
+		if (channel==false)	{
+			line.append(" Ch 1");
+			theApp.currentChannel=1;
+		}
+		else	{
+			line.append(" Ch 2");
+			theApp.currentChannel=2;
+		}
 		if (lcss==0) line.append(" First fragment of CSBK ");
 		else if (lcss==1) line.append(" First fragment of LC ");
 		else if (lcss==2) line.append(" Last fragment of LC ");

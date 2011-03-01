@@ -12,6 +12,8 @@ public class VoiceData {
 		bits=extractVoiceBits(dibit_buf);
 		// Pack the bits into an int array
 		vdata=packBits(bits);
+		// Send the data via the sockets
+		tTheApp.socketThread.sendVoiceViaSocket(vdata,tTheApp.currentChannel);
 	}
 	
 	// Get the voice data bits

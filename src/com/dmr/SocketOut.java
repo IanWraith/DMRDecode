@@ -1,5 +1,7 @@
 package com.dmr;
 
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -10,6 +12,7 @@ public class SocketOut extends Thread {
 	private ServerSocket serversocket;
 	private Socket socket[]=new Socket[MAXCONNS];
 	private boolean socketStatus[]=new boolean[MAXCONNS];
+	private PrintWriter socketPrintWriter[]=new PrintWriter[MAXCONNS];
 
 	public SocketOut (DMRDecode theApp) {
     	ready=false;
@@ -29,7 +32,7 @@ public class SocketOut extends Thread {
     			// Get the index of the next available socket
     			next=nextFreeSocket();
     			// Wait for a connection and when it arrives use the free socket
-        		waitForConnection(next);
+        		waitForConnection(next);	
      		}
      	}
     }
@@ -48,7 +51,13 @@ public class SocketOut extends Thread {
     // Wait for a connection to the next free socket
     private void waitForConnection(int n)	{
     	try	{
+    		// Wait for the connection
     		socket[n]=serversocket.accept();
+    		// Assign a PrintWriter to this socket
+    		socketPrintWriter[n]=new PrintWriter(new OutputStreamWriter(socket[n].getOutputStream(),"8859_1"));
+    		// Send "OK" to the connected client
+    		socketPrintWriter[n].print("OK");
+    		socketPrintWriter[n].flush();
     	} catch (Exception e)	{
     		return;
     	}
@@ -73,6 +82,33 @@ public class SocketOut extends Thread {
     	}
     	// Return false if no sockets are free
     	return false;
+    }
+    
+    // Send voice data to connected clients
+    public void sendVoiceViaSocket (int vdata[],int channel)	{
+    	int a,b;
+    	for (a=0;a<vdata.length;a++)	{
+    		// Run through all the possible sockets
+    		for (b=0;b<MAXCONNS;b++)	{
+    			try	{
+    				if (socketStatus[b]==true)	{
+    					if (a==0)	{
+    						// Send a # to show the start of the voice frame
+    						socketPrintWriter[b].print("#");
+    						// Send the channel number at the start of the frame
+    						socketPrintWriter[b].print(channel);
+    					}
+    					socketPrintWriter[b].print(vdata[a]);
+    					// If this is the last int of the voice frame flush the stream
+    					// this way there is no delay in sending the data
+    					if (a==(vdata.length-1)) socketPrintWriter[b].flush();
+    				}
+    			} catch (Exception e)	{
+    				// If we have a problem this socket can't be valid anymore
+    				socketStatus[b]=false;
+    			}
+    		}
+    	}
     }
     
 
