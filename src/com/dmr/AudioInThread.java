@@ -93,7 +93,8 @@ public class AudioInThread extends Thread {
 			  Line.start();
 			  audioReady=true;
 		  } catch (Exception e) {
-			  JOptionPane.showMessageDialog(null, "Fatal error in setupAudio()","DMRdecoder", JOptionPane.ERROR_MESSAGE);
+			  String err="Fatal error in setupAudio()\n"+e.getMessage();
+			  JOptionPane.showMessageDialog(null,err,"DMRdecoder",JOptionPane.ERROR_MESSAGE);
 			  System.exit(0);
 	   		}
     }
