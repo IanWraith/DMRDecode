@@ -56,7 +56,7 @@ public class SocketOut extends Thread {
     		// Assign a PrintWriter to this socket
     		socketPrintWriter[n]=new PrintWriter(new OutputStreamWriter(socket[n].getOutputStream(),"8859_1"));
     		// Send "OK" to the connected client
-    		socketPrintWriter[n].print("OK");
+    		socketPrintWriter[n].println("OK");
     		socketPrintWriter[n].flush();
     	} catch (Exception e)	{
     		return;
@@ -94,11 +94,11 @@ public class SocketOut extends Thread {
     				if (socketStatus[b]==true)	{
     					if (a==0)	{
     						// Send a # to show the start of the voice frame
-    						socketPrintWriter[b].print("#");
+    						socketPrintWriter[b].println("#");
     						// Send the channel number at the start of the frame
-    						socketPrintWriter[b].print(channel);
+    						socketPrintWriter[b].println(channel);
     					}
-    					socketPrintWriter[b].print(vdata[a]);
+    					socketPrintWriter[b].println(vdata[a]);
     					// If this is the last int of the voice frame flush the stream
     					// this way there is no delay in sending the data
     					if (a==(vdata.length-1)) socketPrintWriter[b].flush();
