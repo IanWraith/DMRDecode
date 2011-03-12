@@ -56,7 +56,6 @@ public class DMRDecode {
 	private int lmid=0;
 	private int umid=0;
 	private int synctype;
-	//private BufferedReader br;
 	private byte dibitCircularBuffer[]=new byte[144];
 	private int dibitCircularBufferCounter=0;
 	private byte dibitFrame[]=new byte[144];
@@ -69,9 +68,6 @@ public class DMRDecode {
 	private int symbolBuffer[]=new int[144];
 	public AudioInThread lineInThread=new AudioInThread(this);
 	private boolean debug=false;
-	private boolean viewVoiceFrames=true;
-	private boolean viewDataFrames=true;
-	private boolean viewEmbeddedFrames=true;
 	public int frameCount=0;
 	public int badFrameCount=0;
 	public ShortLC short_lc=new ShortLC();
@@ -536,9 +532,9 @@ public class DMRDecode {
 	    // Update the sync label
 	    window.updateSyncLabel(frameSync);
 	    // Deal with the frame
-	    if ((synctype==12)&&(viewVoiceFrames==true)) processDMRvoice ();
-	    else if ((synctype==10)&&(viewDataFrames==true)) processDMRdata ();
-	    else if ((synctype==13)&&(viewEmbeddedFrames==true)) processEmbedded ();
+	    if (synctype==12) processDMRvoice ();
+	    else if (synctype==10) processDMRdata ();
+	    else if (synctype==13) processEmbedded ();
 	}
 
 	// Handle a DMR Voice Frame
@@ -755,14 +751,6 @@ public class DMRDecode {
 		dline.append("Dibit 3="+Integer.toString(c3)+"% ");	
 		return dline.toString();
 	}
-	
-	public void setViewVoiceFrames(boolean viewVoiceFrames) {
-		this.viewVoiceFrames=viewVoiceFrames;
-	}
-
-	public boolean isViewVoiceFrames() {
-		return viewVoiceFrames;
-	}
 		
 	public boolean isDebug() {
 		return debug;
@@ -772,22 +760,6 @@ public class DMRDecode {
 		this.debug=debug;
 	}
 
-	public void setViewDataFrames(boolean viewDataFrames) {
-		this.viewDataFrames = viewDataFrames;
-	}
-
-	public boolean isViewDataFrames() {
-		return viewDataFrames;
-	}
-
-	public void setViewEmbeddedFrames(boolean viewEmbeddedFrames) {
-		this.viewEmbeddedFrames = viewEmbeddedFrames;
-	}
-
-	public boolean isViewEmbeddedFrames() {
-		return viewEmbeddedFrames;
-	}
-	
 	// Put the dibits into dibitFrame in the correct order from the circular dibit buffer
 	private void createDibitFrame()	{
 		int i,circPos;

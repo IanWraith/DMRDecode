@@ -31,8 +31,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private DMRDecode theApp;
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item;
-	private JMenuItem view_voice_frames,view_data_frames,view_embedded_frames,error_rate;
-	private JMenuItem exit_item,about_item,help_item,view_display_bar;
+	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
 	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,2000);
@@ -67,12 +66,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		menuBar.add(infoMenu);
 		// View
 		JMenu viewMenu=new JMenu("View");
-		viewMenu.add(view_data_frames=new JRadioButtonMenuItem("View Data Frames",theApp.isViewDataFrames()));
-		view_data_frames.addActionListener(this);		
-		viewMenu.add(view_embedded_frames=new JRadioButtonMenuItem("View Embedded Frames",theApp.isViewEmbeddedFrames()));
-		view_embedded_frames.addActionListener(this);		
-		viewMenu.add(view_voice_frames=new JRadioButtonMenuItem("View Voice Frames",theApp.isViewVoiceFrames()));
-		view_voice_frames.addActionListener(this);
+		
 		menuBar.add(viewMenu);
 		// Help
 		JMenu helpMenu=new JMenu("Help");
@@ -151,30 +145,6 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			// Restart the audio in thread
 			theApp.lineInThread.startAudio();
 		}	
-		
-		// View data frames
-		if (event_name=="View Data Frames")	{
-			boolean cstate=theApp.isViewDataFrames();
-			if (cstate==true) cstate=false;
-			else cstate=true;
-			theApp.setViewDataFrames(cstate);
-		}
-		
-		// View embedded frames
-		if (event_name=="View Embedded Frames")	{
-			boolean cstate=theApp.isViewEmbeddedFrames();
-			if (cstate==true) cstate=false;
-			else cstate=true;
-			theApp.setViewEmbeddedFrames(cstate);
-		}
-		
-		// View voice frames
-		if (event_name=="View Voice Frames")	{
-			boolean cstate=theApp.isViewVoiceFrames();
-			if (cstate==true) cstate=false;
-			else cstate=true;
-			theApp.setViewVoiceFrames(cstate);
-		}
 		
 		// Error rate info
 		if (event_name=="Error Check Info")	{
