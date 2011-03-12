@@ -32,7 +32,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item;
 	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
-	private JMenuItem view_cach;
+	private JMenuItem view_cach,view_idle;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
 	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,2000);
@@ -69,6 +69,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		JMenu viewMenu=new JMenu("View");
 		viewMenu.add(view_cach=new JRadioButtonMenuItem("Display CACH",theApp.isDisplayCACH()));
 		view_cach.addActionListener(this);
+		viewMenu.add(view_idle=new JRadioButtonMenuItem("Display Idle PDU",theApp.isDisplayIdlePDU()));
+		view_idle.addActionListener(this);
 		menuBar.add(viewMenu);
 		// Help
 		JMenu helpMenu=new JMenu("Help");
@@ -180,6 +182,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		if (event_name=="Display CACH")	{
 			if (theApp.isDisplayCACH()==true) theApp.setDisplayCACH(false);
 			else theApp.setDisplayCACH(true);
+		}
+		
+		// Display Idle PDU
+		if (event_name=="Display Idle PDU")	{
+			if (theApp.isDisplayIdlePDU()==true) theApp.setDisplayIdlePDU(false);
+			else theApp.setDisplayIdlePDU(true);
 		}
 		
 		menuItemUpdate();

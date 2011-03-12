@@ -103,6 +103,7 @@ public class DMRDecode {
 	public SocketOut socketThread=new SocketOut(this);
 	public int currentChannel=0;
 	private boolean displayCACH=true;
+	private boolean displayIdlePDU=true;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -603,7 +604,7 @@ public class DMRDecode {
 			line[9]=displayDibitBuffer();
 		}
 		// Display the info
-		displayLines(line,lcol,font);
+		if (DMRdata.getShouldDisplay()==true) displayLines(line,lcol,font);
 	}
 	
 	// Handle an embedded frame
@@ -888,6 +889,14 @@ public class DMRDecode {
 
 	public boolean isDisplayCACH() {
 		return displayCACH;
+	}
+
+	public void setDisplayIdlePDU(boolean displayIdlePDU) {
+		this.displayIdlePDU = displayIdlePDU;
+	}
+
+	public boolean isDisplayIdlePDU() {
+		return displayIdlePDU;
 	}
 	
 

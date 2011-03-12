@@ -17,7 +17,7 @@ public class DecodeCACH {
 		line.append("CACH : TACT ");
 		// CACH decode
 		passErrorCheck=mainDecode(dibit_buf);
-		
+		// Only pass the decoded data back if the user wants to display CACH info
 		if (theApp.isDisplayCACH()==true) return line.toString();
 		else return null;
 	}

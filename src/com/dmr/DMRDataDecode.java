@@ -9,6 +9,7 @@ public class DMRDataDecode {
 	private Font fonts[]=new Font[10];
 	private Color colours[]=new Color[10];
 	private boolean CACHres,SLOT_TYPEres,BPTCres;
+	private boolean shouldDisplay=true;
 	
 	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
@@ -149,6 +150,8 @@ public class DMRDataDecode {
 				if (dataType==9)	{
 					BPTC19696 bptc19696=new BPTC19696();
 					BPTCres=bptc19696.decode(dibit_buf);
+					// If we don't want to display these then clear the lines
+					if (theApp.isDisplayIdlePDU()==false) shouldDisplay=false;
 				}
 				
 			}
@@ -175,6 +178,9 @@ public class DMRDataDecode {
 		return colours;
 	}
 	
-
+	// Tells the main program if this PDU should be displayed
+	public boolean getShouldDisplay()	{
+		return shouldDisplay;
+	}
 	
 }
