@@ -23,10 +23,7 @@ package com.dmr;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.io.InputStreamReader;
 import javax.swing.*;
 import java.text.DateFormat;
 import java.util.Date;
@@ -38,7 +35,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 30)";
+	public String program_version="DMR Decoder (Build 31)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -59,7 +56,7 @@ public class DMRDecode {
 	private int lmid=0;
 	private int umid=0;
 	private int synctype;
-	private BufferedReader br;
+	//private BufferedReader br;
 	private byte dibitCircularBuffer[]=new byte[144];
 	private int dibitCircularBufferCounter=0;
 	private byte dibitFrame[]=new byte[144];
@@ -69,7 +66,6 @@ public class DMRDecode {
 	public FileWriter captureFile;
 	public boolean logging=false;
 	public boolean pReady=false;
-	private boolean audioSuck=false;
 	private int symbolBuffer[]=new int[144];
 	public AudioInThread lineInThread=new AudioInThread(this);
 	private boolean debug=false;
@@ -121,26 +117,19 @@ public class DMRDecode {
 			JOptionPane.showMessageDialog(null,"Error in socket setup during main()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 			System.exit(0);
 		}
-		// If sucking in test data then open the file
-		if (theApp.audioSuck==true)	{
-			theApp.prepareAudioSuck("aor3000_audiodump.csv");
-		}
-		else 	{
-			// Are getting data from the soundcard via a thread instead
-			try		{
-				// Start the audio thread
-				theApp.lineInThread.startAudio();
-				// Connected a piped input stream to the piped output stream in the thread
-				theApp.inPipe=new PipedInputStream(theApp.lineInThread.getPipedWriter());
-				// Now connect a data input stream to the piped input stream
-				theApp.inPipeData=new DataInputStream(theApp.inPipe);
+		// Get data from the soundcard thread
+		try	{
+			// Start the audio thread
+			theApp.lineInThread.startAudio();
+			// Connected a piped input stream to the piped output stream in the thread
+			theApp.inPipe=new PipedInputStream(theApp.lineInThread.getPipedWriter());
+			// Now connect a data input stream to the piped input stream
+			theApp.inPipeData=new DataInputStream(theApp.inPipe);
 			}
-			catch (Exception e)	{
-				JOptionPane.showMessageDialog(null,"Error in main()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
-				System.exit(0);
+		catch (Exception e)	{
+			JOptionPane.showMessageDialog(null,"Error in main()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
 			}
-		}
-		
 		// The main routine
 		while (RUNNING)	{
 			if ((theApp.lineInThread.getAudioReady()==true)&&(theApp.pReady==true)) theApp.decode();
@@ -767,31 +756,6 @@ public class DMRDecode {
 		return dline.toString();
 	}
 	
-	// Open a file which contains data that can be sucked in
-	public void prepareAudioSuck (String fn)	{
-		try	{
-			br=new BufferedReader(new InputStreamReader(new FileInputStream(fn)));
-		} catch (Exception e)	{
-			e.printStackTrace();
-			audioSuck=false;
-		}
-		audioSuck=true;
-	}
-
-	// Read in a line from the suck file and return the int it contains
-	private int getSuckData ()	{
-		int data=0;
-		String line;
-		try	{
-			line=br.readLine();
-			data=Integer.parseInt(line);
-		} catch (Exception e)	{
-			// We have a problem so stop sucking
-			audioSuck=false;
-		}
-		return data;
-	}
-
 	public void setViewVoiceFrames(boolean viewVoiceFrames) {
 		this.viewVoiceFrames=viewVoiceFrames;
 	}
@@ -901,25 +865,19 @@ public class DMRDecode {
 		return samplesAheadBuffer[samplesAheadCounter];
 	}
 	
-	// Get a sample either from the sound card or a capture file
+	// Get a sample either from the sound card 
 	private int getSample (boolean jitmode)	{
 		int sample=0;
-		if (audioSuck==false)	{ 
-			  // Get the sample from the sound card via the sound thread
-			  try	{
-				  sample=inPipeData.readInt();
-			  }
-			  catch (Exception e)	{
-				  JOptionPane.showMessageDialog(null,"Error in getSample()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
-			  }
-			  // If in capture mode record the sample in the capture file
-			  // but don't do this in jitter adjust mode
-			  if ((captureMode==true)&&(jitmode==false)) audioDump(sample);
-		  }
-		  else	{
-			  // Get the data from the suck file
-			  sample=getSuckData();
-		  }
+		// Get the sample from the sound card via the sound thread
+		try	{
+			sample=inPipeData.readInt();
+			}
+		catch (Exception e)	{
+			JOptionPane.showMessageDialog(null,"Error in getSample()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+			}
+		// If in capture mode record the sample in the capture file
+		// but don't do this in jitter adjust mode
+		if ((captureMode==true)&&(jitmode==false)) audioDump(sample);
 		// Add this to the circular samples ahead buffer
 		addToSamplesAheadBuffer(sample);
 		// Pull the oldest sample from the circular samples ahead buffer
