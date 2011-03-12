@@ -28,6 +28,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+// TODO : Fix a bug in the display where multi line commands appear to be displayed in the wrong order
+
 public class DisplayView extends JComponent implements Observer  {	
 	public static final long serialVersionUID=1;
 	private static final int DISPLAYCOUNT=150;
