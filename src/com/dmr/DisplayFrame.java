@@ -32,6 +32,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item;
 	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
+	private JMenuItem view_cach;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
 	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,2000);
@@ -66,7 +67,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		menuBar.add(infoMenu);
 		// View
 		JMenu viewMenu=new JMenu("View");
-		
+		viewMenu.add(view_cach=new JRadioButtonMenuItem("Display CACH",theApp.isDisplayCACH()));
+		view_cach.addActionListener(this);
 		menuBar.add(viewMenu);
 		// Help
 		JMenu helpMenu=new JMenu("Help");
@@ -172,6 +174,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		// Help
 		if (event_name=="Help") {
 			BareBonesBrowserLaunch.openURL("https://github.com/IanWraith/DMRDecode/wiki");
+		}
+		
+		// Display CACH
+		if (event_name=="Display CACH")	{
+			if (theApp.isDisplayCACH()==true) theApp.setDisplayCACH(false);
+			else theApp.setDisplayCACH(true);
 		}
 		
 		menuItemUpdate();

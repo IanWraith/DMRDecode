@@ -102,6 +102,7 @@ public class DMRDecode {
 	public final Font italicFont=new Font("SanSerif",Font.ITALIC,12);
 	public SocketOut socketThread=new SocketOut(this);
 	public int currentChannel=0;
+	private boolean displayCACH=true;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -879,6 +880,14 @@ public class DMRDecode {
 		totalmin=totalmin/MAXMINBUFSIZE;
 		jitterCounter=0;
 		frameCalcs(totalmin,totalmax);
+	}
+
+	public void setDisplayCACH(boolean displayCACH) {
+		this.displayCACH = displayCACH;
+	}
+
+	public boolean isDisplayCACH() {
+		return displayCACH;
 	}
 	
 

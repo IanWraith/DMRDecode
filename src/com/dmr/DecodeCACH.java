@@ -17,7 +17,9 @@ public class DecodeCACH {
 		line.append("CACH : TACT ");
 		// CACH decode
 		passErrorCheck=mainDecode(dibit_buf);
-		return line.toString();
+		
+		if (theApp.isDisplayCACH()==true) return line.toString();
+		else return null;
 	}
 	
 	// De-interleave , CRC check and decode the CACH
