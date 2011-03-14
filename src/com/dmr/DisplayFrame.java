@@ -339,4 +339,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		displayBar.setEnableDisplay(st);
 	}
 	
+	public void setCh1Label (String label,Color col)	{
+		statusBar.setCh1Label(label,col);
+	}
+	
+	public void setCh2Label (String label,Color col)	{
+		statusBar.setCh2Label(label,col);
+	}
+	
 }

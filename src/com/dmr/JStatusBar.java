@@ -8,6 +8,8 @@ public class JStatusBar extends JPanel {
 	public static final long serialVersionUID = 1;
 	private JLabel logMode=new JLabel();
 	private JLabel syncLabel=new JLabel();
+	private JLabel ch1Label=new JLabel();
+	private JLabel ch2Label=new JLabel();
 	private JProgressBar volumeBar=new JProgressBar(0,100);
 	private Border loweredbevel=BorderFactory.createLoweredBevelBorder();
 	
@@ -18,6 +20,12 @@ public class JStatusBar extends JPanel {
 		syncLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		syncLabel.setBorder(loweredbevel);
 		syncLabel.updateUI();
+		ch1Label.setHorizontalAlignment(SwingConstants.LEFT);
+		ch1Label.setBorder(loweredbevel);
+		ch1Label.updateUI();
+		ch2Label.setHorizontalAlignment(SwingConstants.LEFT);
+		ch2Label.setBorder(loweredbevel);
+		ch2Label.updateUI();
 		// Give the volume progress bar a border //
 		volumeBar.setBorder(loweredbevel);
 		// Ensure the elements of the status bar are displayed from the left
@@ -25,6 +33,8 @@ public class JStatusBar extends JPanel {
 		this.add(volumeBar,BorderLayout.CENTER);
 		this.add(syncLabel,BorderLayout.CENTER);
 		this.add(logMode,BorderLayout.CENTER);
+		this.add(ch1Label,BorderLayout.CENTER);
+		this.add(ch2Label,BorderLayout.CENTER);
 	}
 	
 	// Sets the logging label text
@@ -58,6 +68,18 @@ public class JStatusBar extends JPanel {
 		}
 		// Set the class value //
 		volumeBar.setValue(val);
+	}
+	
+	public void setCh1Label (String label,Color c)	{
+		label="Ch 1 : "+label;
+		ch1Label.setText(label);
+		ch1Label.setForeground(c);
+	}
+	
+	public void setCh2Label (String label,Color c)	{
+		label="Ch 2 : "+label;
+		ch2Label.setText(label);
+		ch2Label.setForeground(c);
 	}
 	
 

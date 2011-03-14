@@ -105,10 +105,13 @@ public class DMRDecode {
 	private boolean displayCACH=true;
 	private boolean displayIdlePDU=true;
 	private boolean displayOnlyGoodFrames=false;
+	public final Color labelBusyColour=Color.BLACK;
+	public final Color labelQuiteColour=Color.GRAY;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
 		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
+		theApp.short_lc.setApp(theApp);
 		// Setup the TCP/IP socket code
 		try	{
 			theApp.socketThread.setupSocket();			
@@ -423,8 +426,10 @@ public class DMRDecode {
 		firstframe=false;
 		errorFreeFrameCount=0;
 		continousBadFrameCount=0;
-		// Update the sync label
+		// Update the status bar
 		window.updateSyncLabel(false);
+		window.setCh1Label("Unused",labelQuiteColour);
+		window.setCh2Label("Unused",labelQuiteColour);
 	  	}
 	
 	// Given a symbol return a dibit
@@ -918,7 +923,13 @@ public class DMRDecode {
 		return displayOnlyGoodFrames;
 	}
 	
-
+	public void setCh1Label (String label,Color col)	{
+		window.setCh1Label(label,col);
+	}
+	
+	public void setCh2Label (String label,Color col)	{
+		window.setCh2Label(label,col);
+	}
 	
 
 }

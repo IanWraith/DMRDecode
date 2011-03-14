@@ -1,5 +1,7 @@
 package com.dmr;
 
+import java.awt.Color;
+
 public class FullLinkControl {
 	boolean pf;
 	private String display[]=new String[3];
@@ -71,6 +73,14 @@ public class FullLinkControl {
 		theApp.usersLogged.addUser(source);
 		index=theApp.usersLogged.findUserIndex(source);
 		if (index!=-1) theApp.usersLogged.setAsGroupUser(index);
+		// Display this in a label on the status bar
+		StringBuilder lab=new StringBuilder(250);
+		lab.append("Group Call to Group ");
+		lab.append(Integer.toString(group));
+		lab.append(" from ");
+		lab.append(Integer.toString(source));
+		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
+		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
 	}
 	
 	// Unit to Unit Voice Channel User LC
@@ -96,6 +106,14 @@ public class FullLinkControl {
 		theApp.usersLogged.addUser(source);
 		index=theApp.usersLogged.findUserIndex(source);
 		if (index!=-1) theApp.usersLogged.setAsUnitUser(index);
+		// Display this in a label on the status bar
+		StringBuilder lab=new StringBuilder(250);
+		lab.append("Unit to Unit Call from ");
+		lab.append(Integer.toString(source));
+		lab.append(" to ");
+		lab.append(Integer.toString(target));
+		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
+		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
 	}
 	
 	// Terminator Data Link Control PDU
@@ -119,6 +137,14 @@ public class FullLinkControl {
 		theApp.usersLogged.addUser(sllid);
 		index=theApp.usersLogged.findUserIndex(sllid);
 		if (index!=-1) theApp.usersLogged.setAsDataUser(index);
+		// Display this in a label on the status bar
+		StringBuilder lab=new StringBuilder(250);
+		lab.append("Data Call from ");
+		lab.append(Integer.toString(sllid));
+		lab.append(" to ");
+		lab.append(Integer.toString(dllid));
+		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
+		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
 	}
 	
 	// Handle unknown Full Link Control types

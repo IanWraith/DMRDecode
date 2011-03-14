@@ -1,11 +1,14 @@
 package com.dmr;
 
+import java.awt.Color;
+
 public class ShortLC {
 	private boolean dataReady;
 	private String line;
 	private boolean rawData[]=new boolean[69];
 	private boolean crcResult=false;
 	private int currentState=-1;
+	private DMRDecode TtheApp;
 	
 	// Add data to the Short LC data buffer
 	// Type 0 if First fragment of LC
@@ -264,7 +267,11 @@ public class ShortLC {
 	// Decode a 4 bit section of an Act_Updt
 	private String decodeAct_Updt (int inf,int channel)	{
 		String l;
-		if (inf==0) l="No activity on BS time slot "+Integer.toString(channel);
+		if (inf==0)	{
+			l="No activity on BS time slot "+Integer.toString(channel);
+			if (channel==1) TtheApp.setCh1Label("Unused",TtheApp.labelQuiteColour);
+			else if (channel==2) TtheApp.setCh2Label("Unused",TtheApp.labelQuiteColour);
+		}
 		else if (inf==2) l="Group CSBK activity on BS time slot "+Integer.toString(channel);
 		else if (inf==3) l="Individual CSBK activity on BS time slot "+Integer.toString(channel);
 		else if (inf==8) l="Group voice activity on BS time slot "+Integer.toString(channel);
@@ -275,6 +282,10 @@ public class ShortLC {
 		else if (inf==13) l="Emergency individual voice activity on BS time slot "+Integer.toString(channel);
 		else l="Reserved";
 		return l;
+	}
+	
+	public void setApp (DMRDecode theApp)	{
+		TtheApp=theApp;
 	}
 	
 }

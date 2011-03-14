@@ -191,7 +191,10 @@ public class EmbeddedLC {
 	// Return the display lines to the main program
 	public String[] getLines ()	{
 		// Make a copy of the objects lines
-		String clines[]=lines;
+		String clines[]=new String[3];
+		clines[0]=lines[0];
+		clines[1]=lines[1];
+		clines[2]=lines[2];
 		// Clear all the lines
 		lines[0]=null;
 		lines[1]=null;
