@@ -9,6 +9,7 @@ public class DMREmbedded {
 	private Font fonts[]=new Font[10];
 	private Color colours[]=new Color[10];
 	private boolean resCACH,resEMB;
+	private boolean shouldDisplay=true;
 	private DMRDecode theApp;
 	
 	public String[] decode (DMRDecode TtheApp,byte[] dibit_buf)	{
@@ -248,6 +249,8 @@ public class DMREmbedded {
 				if (dataType==9)	{
 					BPTC19696 bptc19696=new BPTC19696();
 					BPTCres=bptc19696.decode(dibit_buf);
+					// If we don't want to display these then clear the lines
+					if (theApp.isDisplayIdlePDU()==false) shouldDisplay=false;
 				}				
 			}
 			if ((SLOT_TYPEres==true)&&(BPTCres==true)) return true;
@@ -357,7 +360,10 @@ public class DMREmbedded {
 		return colours;
 	}
 	
-	
+	// Tells the main program if this PDU should be displayed
+	public boolean getShouldDisplay()	{
+		return shouldDisplay;
+	}
 	
 	
 }

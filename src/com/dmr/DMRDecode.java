@@ -642,7 +642,7 @@ public class DMRDecode {
 			line[9]=displayDibitBuffer();
 		}
 		// Display the info
-		displayLines(line,lcol,font);
+		if (DMRembedded.getShouldDisplay()==true) displayLines(line,lcol,font);
 	}
 
 	// Display a group of lines
