@@ -28,8 +28,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-// TODO : Fix a bug in the display where multi line commands appear to be displayed in the wrong order
-
 public class DisplayView extends JComponent implements Observer  {	
 	public static final long serialVersionUID=1;
 	private static final int DISPLAYCOUNT=150;
@@ -48,11 +46,14 @@ public class DisplayView extends JComponent implements Observer  {
 			
 	// Draw the main screen //
 	public void paint (Graphics g) {
-		int count=0,pos=20;
-		int i=displayCounter;
+		int count=0,pos=20,i;
+		if (displayCounter>0) i=displayCounter-1;
+		else i=DISPLAYCOUNT-1;
 		Graphics2D g2D=(Graphics2D)g;	
 		// Draw in the lines on the screen
 		// taking account of the fact that the data is stored in a circular buffer
+		// we need to display the oldest line stored first and then go backwards from
+		// that point onwards
 		while(count<DISPLAYCOUNT)	{
 			// Only display info if something is stored in the display string
 			if (display_string[i]!=null)	{
@@ -61,8 +62,8 @@ public class DisplayView extends JComponent implements Observer  {
 				g2D.drawString(display_string[i],(5-theApp.horizontal_scrollbar_value),(pos-theApp.vertical_scrollbar_value));	
 				pos=pos+20;
 			}	
-			i++;
-			if (i==DISPLAYCOUNT) i=0;
+			if (i==0) i=DISPLAYCOUNT;
+			i--;
 			count++;
 		}
 	}
