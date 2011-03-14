@@ -8,6 +8,7 @@ public class DMRVoice {
 	private boolean res;
 	private Font fonts[]=new Font[10];
 	private Color colours[]=new Color[10];
+	private boolean shouldDisplay=true;
 	private DMRDecode theApp;
 	
 	public String[] decode (DMRDecode tTheApp,byte[] dibit_buf)	{
@@ -26,7 +27,10 @@ public class DMRVoice {
 			if (cachdecode.getShortLC()==true)	{
 				line[7]=cachdecode.getShortLCline();
 				fonts[7]=theApp.boldFont;
-				if (cachdecode.getshortLCError()==true) colours[7]=Color.RED;
+				if (cachdecode.getshortLCError()==true)	{
+					colours[7]=Color.RED;
+					if (theApp.isDisplayOnlyGoodFrames()==true) line[7]=null;
+				}
 				else colours[7]=Color.BLACK;
 				cachdecode.clearShortLC();
 			}
@@ -51,5 +55,15 @@ public class DMRVoice {
 	public Color[] getColours()	{
 		return colours;
 	}
+	
+	// Tells the main program if this PDU should be displayed
+	public boolean getShouldDisplay()	{
+		return shouldDisplay;
+	}
+	
+	public void setShouldDisplay (boolean b)	{
+		shouldDisplay=b;
+	}
+	
 
 }

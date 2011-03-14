@@ -32,7 +32,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item;
 	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
-	private JMenuItem view_cach,view_idle;
+	private JMenuItem view_cach,view_idle,view_onlygood;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
 	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,2000);
@@ -69,6 +69,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		JMenu viewMenu=new JMenu("View");
 		viewMenu.add(view_cach=new JRadioButtonMenuItem("Display CACH",theApp.isDisplayCACH()));
 		view_cach.addActionListener(this);
+		viewMenu.add(view_onlygood=new JRadioButtonMenuItem("Display Good Frames Only",theApp.isDisplayOnlyGoodFrames()));
+		view_onlygood.addActionListener(this);
 		viewMenu.add(view_idle=new JRadioButtonMenuItem("Display Idle PDU",theApp.isDisplayIdlePDU()));
 		view_idle.addActionListener(this);
 		menuBar.add(viewMenu);
@@ -188,6 +190,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		if (event_name=="Display Idle PDU")	{
 			if (theApp.isDisplayIdlePDU()==true) theApp.setDisplayIdlePDU(false);
 			else theApp.setDisplayIdlePDU(true);
+		}
+		
+		// Display only good frames
+		if (event_name=="Display Good Frames Only")	{
+			if (theApp.isDisplayOnlyGoodFrames()==true) theApp.setDisplayOnlyGoodFrames(false);
+			else theApp.setDisplayOnlyGoodFrames(true);
 		}
 		
 		menuItemUpdate();

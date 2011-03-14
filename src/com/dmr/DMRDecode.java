@@ -104,6 +104,7 @@ public class DMRDecode {
 	public int currentChannel=0;
 	private boolean displayCACH=true;
 	private boolean displayIdlePDU=true;
+	private boolean displayOnlyGoodFrames=false;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -567,7 +568,11 @@ public class DMRDecode {
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
-		displayLines(line,lcol,font);
+		// If this frame contains errors and the user wants to display only good ones
+		// then stop them being shown
+		if ((DMRvoice.isError()==false)&&(displayOnlyGoodFrames==true)) DMRvoice.setShouldDisplay(false);
+		// Display the info
+		if (DMRvoice.getShouldDisplay()==true) displayLines(line,lcol,font);
 	}
 	
 	// Handle a DMR Data Frame
@@ -603,6 +608,9 @@ public class DMRDecode {
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
+		// If this frame contains errors and the user wants to display only good ones
+		// then stop them being shown
+		if ((DMRdata.isError()==false)&&(displayOnlyGoodFrames==true)) DMRdata.setShouldDisplay(false);
 		// Display the info
 		if (DMRdata.getShouldDisplay()==true) displayLines(line,lcol,font);
 	}
@@ -641,6 +649,9 @@ public class DMRDecode {
 			line[8]=returnDibitBufferPercentages();
 			line[9]=displayDibitBuffer();
 		}
+		// If this frame contains errors and the user wants to display only good ones
+		// then stop them being shown
+		if ((DMRembedded.isError()==false)&&(displayOnlyGoodFrames==true)) DMRembedded.setShouldDisplay(false);
 		// Display the info
 		if (DMRembedded.getShouldDisplay()==true) displayLines(line,lcol,font);
 	}
@@ -897,6 +908,14 @@ public class DMRDecode {
 
 	public boolean isDisplayIdlePDU() {
 		return displayIdlePDU;
+	}
+
+	public void setDisplayOnlyGoodFrames(boolean displayOnlyGoodFrames) {
+		this.displayOnlyGoodFrames = displayOnlyGoodFrames;
+	}
+
+	public boolean isDisplayOnlyGoodFrames() {
+		return displayOnlyGoodFrames;
 	}
 	
 

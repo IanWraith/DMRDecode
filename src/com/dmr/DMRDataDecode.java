@@ -32,7 +32,10 @@ public class DMRDataDecode {
 			if (cachdecode.getShortLC()==true)	{
 				line[7]=cachdecode.getShortLCline();
 				fonts[7]=theApp.boldFont;
-				if (cachdecode.getshortLCError()==true) colours[7]=Color.RED;
+				if (cachdecode.getshortLCError()==true)	{
+					colours[7]=Color.RED;
+					if (theApp.isDisplayOnlyGoodFrames()==true) line[7]=null;
+				}
 				else colours[7]=Color.BLACK;
 				cachdecode.clearShortLC();
 			}
@@ -181,6 +184,10 @@ public class DMRDataDecode {
 	// Tells the main program if this PDU should be displayed
 	public boolean getShouldDisplay()	{
 		return shouldDisplay;
+	}
+	
+	public void setShouldDisplay (boolean b)	{
+		shouldDisplay=b;
 	}
 	
 }
