@@ -67,7 +67,7 @@ public class DMRData {
 		if (bits[78]==true) status=status+2;
 		if (bits[79]==true) status++;
 		// Display this
-		sb.append("<b>"+Integer.toString(blocks)+" blocks follow : ");
+		sb.append(Integer.toString(blocks)+" blocks follow : ");
 		if ((dclass==0)&&(type==1)) sb.append("ACK");
 		else if ((dclass==1)&&(type==0)) sb.append("NACK (Illegal Format)");
 		else if ((dclass==1)&&(type==1)) sb.append("NACK (CRC Failed)");
