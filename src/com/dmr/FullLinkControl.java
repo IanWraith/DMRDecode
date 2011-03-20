@@ -1,7 +1,5 @@
 package com.dmr;
 
-import java.awt.Color;
-
 public class FullLinkControl {
 	boolean pf;
 	private String display[]=new String[3];

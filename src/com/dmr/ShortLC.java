@@ -1,7 +1,5 @@
 package com.dmr;
 
-import java.awt.Color;
-
 public class ShortLC {
 	private boolean dataReady;
 	private String line;
