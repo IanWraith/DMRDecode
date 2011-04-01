@@ -8,6 +8,8 @@ public class UsersLogged {
 	private boolean dataUser[]=new boolean[MAX];
 	private boolean groupCallUser[]=new boolean[MAX];
 	private boolean unitCallUser[]=new boolean[MAX];
+	private boolean usedChannel1[]=new boolean[MAX];
+	private boolean usedChannel2[]=new boolean[MAX];
 	
 	// Adds a user and returns TRUE if this has been done
 	public boolean addUser (int tident)	{
@@ -24,6 +26,8 @@ public class UsersLogged {
 		dataUser[userCounter]=false;
 		groupCallUser[userCounter]=false;
 		unitCallUser[userCounter]=false;
+		usedChannel1[userCounter]=false;
+		usedChannel2[userCounter]=false;
 		// Increment index
 		userCounter++;
 		return true;
@@ -65,6 +69,12 @@ public class UsersLogged {
 		return userCounter;
 	}
 	
+	// Records which channels as radio has used
+	public void setChannel (int tident,int channel)	{
+		if (channel==0) usedChannel1[tident]=true;
+		else usedChannel2[tident]=true;
+	}
+	
 	// Sort the users by mobile ident //
 	// This code is standard bubble sort taken from the book
 	// "Learning to Program in C" by N.Kantaris //
@@ -97,7 +107,14 @@ public class UsersLogged {
 					btemp=unitCallUser[j];
 					unitCallUser[j]=unitCallUser[j+1];
 					unitCallUser[j+1]=btemp;
-					
+					// Used Channel 1
+					btemp=usedChannel1[j];
+					usedChannel1[j]=usedChannel1[j+1];
+					usedChannel1[j+1]=btemp;
+					// Used Channel 2
+					btemp=usedChannel2[j];
+					usedChannel2[j]=usedChannel2[j+1];
+					usedChannel2[j+1]=btemp;
 					flag=true;
 				}
 			if (flag==false) break;
@@ -124,6 +141,10 @@ public class UsersLogged {
 			l=l+" Unit to Unit Calls ";
 		}
 		if (items==1) l=l+"only";
+		// Channels
+		if ((usedChannel1[index]==true)&&(usedChannel2[index]==false))	l=l+" (Only used channel 1)";
+		else if ((usedChannel2[index]==true)&&(usedChannel1[index]==false))	l=l+" (Only used channel 2)";
+		else if ((usedChannel1[index]==true)&&(usedChannel2[index]==true))	l=l+" (Used both channels)";
 		// All done
 		return l;
 	}

@@ -106,12 +106,17 @@ public class CSBK {
 		// Target
 		theApp.usersLogged.addUser(target);
 		index=theApp.usersLogged.findUserIndex(target);
-		if (index!=-1) theApp.usersLogged.setAsDataUser(index);
+		if (index!=-1)	{
+			theApp.usersLogged.setAsDataUser(index);
+			theApp.usersLogged.setChannel(index,theApp.currentChannel);
+		}
 		// Source
 		theApp.usersLogged.addUser(source);
 		index=theApp.usersLogged.findUserIndex(source);
-		if (index!=-1) theApp.usersLogged.setAsDataUser(index);
-		
+		if (index!=-1)	{
+			theApp.usersLogged.setAsDataUser(index);
+			theApp.usersLogged.setChannel(index,theApp.currentChannel);
+		}
 	}
 	
 	// Return a 24 bit address 

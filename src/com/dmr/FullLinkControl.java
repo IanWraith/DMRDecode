@@ -65,12 +65,18 @@ public class FullLinkControl {
 		// Group
 		if (theApp.usersLogged.addUser(group)==true)	{
 			index=theApp.usersLogged.findUserIndex(group);
-			if (index!=-1) theApp.usersLogged.setAsGroup(index);
+			if (index!=-1)	{
+				theApp.usersLogged.setAsGroup(index);
+				theApp.usersLogged.setChannel(index,theApp.currentChannel);
+			}
 		}
 		// Source
 		theApp.usersLogged.addUser(source);
 		index=theApp.usersLogged.findUserIndex(source);
-		if (index!=-1) theApp.usersLogged.setAsGroupUser(index);
+		if (index!=-1)	{
+			theApp.usersLogged.setAsGroupUser(index);
+			theApp.usersLogged.setChannel(index,theApp.currentChannel);
+		}
 		// Display this in a label on the status bar
 		StringBuilder lab=new StringBuilder(250);
 		lab.append("Group Call to Group ");
@@ -99,11 +105,17 @@ public class FullLinkControl {
 		// Target
 		theApp.usersLogged.addUser(target);	
 		index=theApp.usersLogged.findUserIndex(target);
-		if (index!=-1) theApp.usersLogged.setAsUnitUser(index);
+		if (index!=-1)	{
+			theApp.usersLogged.setAsUnitUser(index);
+			theApp.usersLogged.setChannel(index,theApp.currentChannel);
+		}
 		// Source
 		theApp.usersLogged.addUser(source);
 		index=theApp.usersLogged.findUserIndex(source);
-		if (index!=-1) theApp.usersLogged.setAsUnitUser(index);
+		if (index!=-1)	{
+			theApp.usersLogged.setAsUnitUser(index);
+			theApp.usersLogged.setChannel(index,theApp.currentChannel);
+		}
 		// Display this in a label on the status bar
 		StringBuilder lab=new StringBuilder(250);
 		lab.append("Unit to Unit Call from ");
