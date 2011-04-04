@@ -53,7 +53,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		debug_item.addActionListener(this);
 		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted));
 		inverted_item.addActionListener(this);
-		mainMenu.add(save_to_file=new JRadioButtonMenuItem("Save to File",theApp.saveToFile));
+		mainMenu.add(save_to_file=new JRadioButtonMenuItem("Save to File",theApp.getLogging()));
 		save_to_file.addActionListener(this);
 		mainMenu.add(exit_item=new JMenuItem("Exit"));		
 		exit_item.addActionListener(this);
@@ -136,13 +136,13 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		
 		// Save to File
 		if (event_name=="Save to File")	{		
-			if (theApp.saveToFile==false)	{
+			if (theApp.getLogging()==false)	{
 				if (saveDialogBox()==false)	{
 					// Restart the audio in thread
 					theApp.lineInThread.startAudio();
 					return;
 				}
-				theApp.saveToFile=true;
+				theApp.setLogging(true);
 				statusBar.setLoggingStatus("Logging");
 			}
 			 else	{
@@ -168,7 +168,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		// Exit 
 		if (event_name=="Exit") {
 			// If logging close the file
-			if (theApp.saveToFile==true) closeLogFile();
+			if (theApp.getLogging()==true) closeLogFile();
 			// Close the audio down //
 			theApp.lineInThread.shutDownAudio();
 			// Stop the program //
@@ -209,7 +209,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	
 	// Display a dialog box so the user can select a location and name for a log file
 	public boolean saveDialogBox ()	{
-		if (theApp.logging==true) return false;
+		if (theApp.getLogging()==true) return false;
 		String file_name;
 		// Bring up a dialog box that allows the user to select the name
 		// of the saved file
@@ -256,7 +256,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			System.out.println("\nError opening the logging file");
 			return false;
 		}
-		theApp.logging=true;
+		theApp.setLogging(true);
 		return true;
 	}
 	
@@ -264,7 +264,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public void closeLogFile()	{
 		 int a,count;
 		 String line;
-		 theApp.saveToFile=false;
+		 theApp.setLogging(false);
 		 statusBar.setLoggingStatus("Not Logging");
 		 try	{
 			 // Display users

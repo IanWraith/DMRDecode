@@ -60,10 +60,9 @@ public class DMRDecode {
 	private int dibitCircularBufferCounter=0;
 	private byte dibitFrame[]=new byte[144];
 	private boolean frameSync=false;
-	public boolean saveToFile=false;
 	public FileWriter file;
 	public FileWriter captureFile;
-	public boolean logging=false;
+	private boolean logging=false;
 	public boolean pReady=false;
 	private int symbolBuffer[]=new int[144];
 	public AudioInThread lineInThread=new AudioInThread(this);
@@ -929,6 +928,14 @@ public class DMRDecode {
 	
 	public void setCh2Label (String label,Color col)	{
 		window.setCh2Label(label,col);
+	}
+	
+	public boolean getLogging()	{
+		return logging;
+	}
+	
+	public void setLogging (boolean log)	{
+		logging=log;
 	}
 	
 
