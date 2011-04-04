@@ -71,7 +71,7 @@ public class UsersLogged {
 	
 	// Records which channels as radio has used
 	public void setChannel (int tident,int channel)	{
-		if (channel==0) usedChannel1[tident]=true;
+		if (channel==1) usedChannel1[tident]=true;
 		else usedChannel2[tident]=true;
 	}
 	
