@@ -1,6 +1,9 @@
 package com.dmr;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 
@@ -12,6 +15,8 @@ public class JStatusBar extends JPanel {
 	private JLabel ch2Label=new JLabel();
 	private JProgressBar volumeBar=new JProgressBar(0,100);
 	private Border loweredbevel=BorderFactory.createLoweredBevelBorder();
+	private JButton pauseButton=new JButton("Pause");
+	private DMRDecode TtheApp;
 	
 	public JStatusBar() {
 		logMode.setHorizontalAlignment(SwingConstants.LEFT);
@@ -26,10 +31,12 @@ public class JStatusBar extends JPanel {
 		ch2Label.setHorizontalAlignment(SwingConstants.LEFT);
 		ch2Label.setBorder(loweredbevel);
 		ch2Label.updateUI();
+		pauseButton.addActionListener(new ButtonListener());
 		// Give the volume progress bar a border //
 		volumeBar.setBorder(loweredbevel);
 		// Ensure the elements of the status bar are displayed from the left
 		this.setLayout(new FlowLayout(FlowLayout.LEFT));
+		this.add(pauseButton,BorderLayout.CENTER);
 		this.add(volumeBar,BorderLayout.CENTER);
 		this.add(syncLabel,BorderLayout.CENTER);
 		this.add(logMode,BorderLayout.CENTER);
@@ -39,11 +46,17 @@ public class JStatusBar extends JPanel {
 	
 	// Sets the logging label text
 	public void setLoggingStatus(String text) {
+		if (TtheApp!=null)	{
+			if (TtheApp.isPauseScreen()==true) return;
+		}
 		logMode.setText(text);
 	}
 
 	// Sets the sync mode label
 	public void setSyncLabel (boolean syn)	{
+		if (TtheApp!=null)	{
+			if (TtheApp.isPauseScreen()==true) return;
+		}
 		// Have sync
 		if (syn==true)	{
 			syncLabel.setText("SYNC");
@@ -57,6 +70,9 @@ public class JStatusBar extends JPanel {
 	
 	// Set the volume bar display
 	public void setVolumeBar(int val) {
+		if (TtheApp!=null)	{
+			if (TtheApp.isPauseScreen()==true) return;
+		}
 		if (val<40){
 			volumeBar.setForeground(Color.yellow);
 		}else if((val>40)&&(val<70)){
@@ -71,16 +87,46 @@ public class JStatusBar extends JPanel {
 	}
 	
 	public void setCh1Label (String label,Color c)	{
+		if (TtheApp!=null)	{
+			if (TtheApp.isPauseScreen()==true) return;
+		}
 		label="Ch 1 : "+label;
 		ch1Label.setText(label);
 		ch1Label.setForeground(c);
 	}
 	
 	public void setCh2Label (String label,Color c)	{
+		if (TtheApp!=null)	{
+			if (TtheApp.isPauseScreen()==true) return;
+		}
 		label="Ch 2 : "+label;
 		ch2Label.setText(label);
 		ch2Label.setForeground(c);
 	}
 	
+	public void setApp (DMRDecode theApp)	{
+		TtheApp=theApp;
+	}
 
+	// This class listens for button events
+	class ButtonListener implements ActionListener {
+		  ButtonListener() {
+		  }
+
+		  public void actionPerformed(ActionEvent e) {
+			// The user wants to pause the display
+			if (e.getActionCommand().equals("Pause")) {
+		    	pauseButton.setText("Restart");
+		    	if (TtheApp!=null) TtheApp.setPauseScreen(true);
+		    }
+		    // The user wants to restart the display
+		    if (e.getActionCommand().equals("Restart")) {
+		    	pauseButton.setText("Pause");
+			    if (TtheApp!=null) TtheApp.setPauseScreen(false);
+			    }
+		  }
+		}
+	
 }
+
+

@@ -84,6 +84,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		// Setup the status bar
 		getContentPane().add(statusBar, java.awt.BorderLayout.SOUTH);
 		statusBar.setLoggingStatus("Not Logging");
+		statusBar.setApp(theApp);
 		// Setup the display bar
 		getContentPane().add(displayBar, java.awt.BorderLayout.WEST);
 		// Add the vertical scrollbar

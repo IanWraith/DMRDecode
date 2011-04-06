@@ -106,6 +106,7 @@ public class DMRDecode {
 	private boolean displayOnlyGoodFrames=false;
 	public final Color labelBusyColour=Color.BLACK;
 	public final Color labelQuiteColour=Color.GRAY;
+	private boolean pauseScreen=false;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -509,9 +510,10 @@ public class DMRDecode {
 		return syms;	
 	}
 	  
-	// Adds a line to the display
+	// Adds a line to the display as long as pause isn't enabled
 	public void addLine(String line,Color col,Font font) {
-		display_view.add_line(line,col,font);
+		if (pauseScreen==true) return;
+		else display_view.add_line(line,col,font);
 	}
 
 	// Return a time stamp
@@ -936,6 +938,14 @@ public class DMRDecode {
 	
 	public void setLogging (boolean log)	{
 		logging=log;
+	}
+
+	public void setPauseScreen(boolean pauseScreen) {
+		this.pauseScreen=pauseScreen;
+	}
+
+	public boolean isPauseScreen() {
+		return pauseScreen;
 	}
 	
 
