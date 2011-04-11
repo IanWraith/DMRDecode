@@ -215,9 +215,14 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	}
 
 	// Update all the menu items 
+	
+	// TODO : Ensure all menu items are updated
+	
 	public void menuItemUpdate () {
 		inverted_item.setSelected(theApp.inverted);
 		debug_item.setSelected(theApp.isDebug());
+		save_to_file.setSelected(theApp.getLogging());
+		quick_log.setSelected(theApp.isQuickLog());
 	}
 	
 	// Display a dialog box so the user can select a location and name for a log file
@@ -333,7 +338,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		fc.setCurrentDirectory(new File("."));
 		// Don't all types of file to be selected //
 		fc.setAcceptAllFileFilterUsed(false);
-		// Only show .txt files //
+		// Only show .csv files //
 		fc.setFileFilter(new CSVFileFilter());
 		// Show save dialog; this method does not return until the
 		// dialog is closed

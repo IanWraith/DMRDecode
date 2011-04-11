@@ -11,7 +11,7 @@ public class CSVFileFilter extends javax.swing.filechooser.FileFilter {
 		// get the extension of the file
 		String extension = getExtension(f);
 		// check to see if the extension is equal to "csv"
-		if (extension.equals("CSV"))
+		if (extension.equals("csv"))
 			return true;
 		// default -- fall through. False is return on all
 		// occasions except:
