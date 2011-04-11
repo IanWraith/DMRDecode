@@ -35,7 +35,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 32)";
+	public String program_version="DMR Decoder (Build 33)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -107,6 +107,9 @@ public class DMRDecode {
 	public final Color labelBusyColour=Color.BLACK;
 	public final Color labelQuiteColour=Color.GRAY;
 	private boolean pauseScreen=false;
+	private boolean quickLog=false;
+	public FileWriter quickLogFile;
+	private int colourCode=0;
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -696,6 +699,31 @@ public class DMRDecode {
 		return true;
 	}
 	
+	// Make up a string for the quick log file
+	public void quickLogData(String line,int a,int b)	{
+		String tline=getTimeStamp()+","+Integer.toString(colourCode)+","+line+","+Integer.toString(a)+","+Integer.toString(b);
+		quickLogWrite(tline);
+	}
+	
+	// Write to a string to the logging file
+	private boolean quickLogWrite(String fline) {
+		// Add a CR to the end of each line
+		fline=fline+"\r\n";
+		// If we aren't logging don't try to do anything
+		if (quickLog==false)
+			return false;
+		try {
+			quickLogFile.write(fline);
+			quickLogFile.flush();
+		} catch (Exception e) {
+			// Stop logging as we have a problem
+			quickLog=false;
+			System.out.println("\nError writing to the quick log file");
+			return false;
+		}
+		return true;
+	}
+	
 	// Display the number of symbols since the last frame with a valid sync
 	public String dispSymbolsSinceLastFrame ()	{
 		// Don't display anything if 144 symbols since the last frame.
@@ -946,6 +974,22 @@ public class DMRDecode {
 
 	public boolean isPauseScreen() {
 		return pauseScreen;
+	}
+
+	public void setQuickLog(boolean quickLog) {
+		this.quickLog = quickLog;
+	}
+
+	public boolean isQuickLog() {
+		return quickLog;
+	}
+
+	public void setColourCode(int colourCode) {
+		this.colourCode = colourCode;
+	}
+
+	public int getColourCode() {
+		return colourCode;
 	}
 	
 

@@ -30,7 +30,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
 	private DMRDecode theApp;
 	public static final long serialVersionUID=1;
-	private JMenuItem save_to_file,inverted_item,debug_item,capture_item;
+	private JMenuItem save_to_file,inverted_item,debug_item,capture_item,quick_log;
 	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
 	private JMenuItem view_cach,view_idle,view_onlygood;
 	private JStatusBar statusBar=new JStatusBar();
@@ -53,6 +53,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		debug_item.addActionListener(this);
 		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted));
 		inverted_item.addActionListener(this);
+		mainMenu.add(quick_log=new JRadioButtonMenuItem("Quick Log",theApp.isQuickLog()));
+		quick_log.addActionListener(this);
 		mainMenu.add(save_to_file=new JRadioButtonMenuItem("Save to File",theApp.getLogging()));
 		save_to_file.addActionListener(this);
 		mainMenu.add(exit_item=new JMenuItem("Exit"));		
@@ -133,6 +135,16 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		if (event_name=="Invert Signal")	{
 			if (theApp.inverted==false) theApp.inverted=true;
 			 else theApp.inverted=false;
+		}
+		
+		// Quick Log
+		if (event_name=="Quick Log")	{
+			if (theApp.isQuickLog()==false)	{
+				if (quickLogDialogBox()==false) return;
+			}
+			else {
+				closeQuickLogFile();
+			}
 		}
 		
 		// Save to File
@@ -306,6 +318,65 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			line=df.format(err)+"% of frames were bad.";
 		}
 		JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	// Display a dialog box so the user can select a location and name for a quick log file
+	public boolean quickLogDialogBox ()	{
+		if (theApp.isQuickLog()==true) return false;
+		String file_name;
+		// Bring up a dialog box that allows the user to select the name
+		// of the saved file
+		JFileChooser fc=new JFileChooser();
+		// The dialog box title //
+		fc.setDialogTitle("Select the quick log file name");
+		// Start in current directory
+		fc.setCurrentDirectory(new File("."));
+		// Don't all types of file to be selected //
+		fc.setAcceptAllFileFilterUsed(false);
+		// Only show .txt files //
+		fc.setFileFilter(new CSVFileFilter());
+		// Show save dialog; this method does not return until the
+		// dialog is closed
+		int returnval=fc.showSaveDialog(this);
+		// If the user has selected cancel then quit
+		if (returnval==JFileChooser.CANCEL_OPTION) return false;
+		// Get the file name an path of the selected file
+		file_name=fc.getSelectedFile().getPath();
+		// Does the file name end in .csv ? //
+		// If not then automatically add a .csv ending //
+		int last_index=file_name.lastIndexOf(".csv");
+		if (last_index!=(file_name.length()-4)) file_name=file_name + ".csv";
+		// Create a file with this name //
+		File tfile=new File(file_name);
+		// If the file exists ask the user if they want to overwrite it
+		if (tfile.exists()) {
+			int response = JOptionPane.showConfirmDialog(null,
+					"Overwrite existing file?", "Confirm Overwrite",
+					JOptionPane.OK_CANCEL_OPTION,
+					JOptionPane.QUESTION_MESSAGE);
+			if (response==JOptionPane.CANCEL_OPTION) return false;
+		}
+		// Open the file
+		try {
+			theApp.quickLogFile=new FileWriter(tfile);
+			
+		} catch (Exception e) {
+			System.out.println("\nError opening the quick log file");
+			return false;
+		}
+		theApp.setQuickLog(true);
+		return true;
+	}
+	
+	public void closeQuickLogFile()	{
+		try	{
+			// Close the file
+			 theApp.quickLogFile.flush();
+			 theApp.quickLogFile.close();
+		} catch (Exception e)	{
+			JOptionPane.showMessageDialog(null,"Error closing Quick Log file","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+		}
+		theApp.setQuickLog(false);
 	}
 	
 	// Set the volume indicating progress bar //

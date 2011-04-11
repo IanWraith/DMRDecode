@@ -145,7 +145,7 @@ public class DMREmbedded {
 			line[0]=theApp.getTimeStamp()+" DMR Data Frame with Embedded Signalling";
 			colours[0]=Color.BLACK;
 			fonts[0]=theApp.boldFont;
-			line[2]=slottype.decode(dibit_buf);
+			line[2]=slottype.decode(theApp,dibit_buf);
 			SLOT_TYPEres=slottype.isPassErrorCheck();
 			// If the slot type is OK try to decode the rest
 			if (SLOT_TYPEres==true)	{

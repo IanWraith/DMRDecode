@@ -85,6 +85,8 @@ public class FullLinkControl {
 		lab.append(Integer.toString(source));
 		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
 		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
+		// Quick log
+		if (theApp.isQuickLog()==true) theApp.quickLogData("Group Voice Call to Group",group,source);
 	}
 	
 	// Unit to Unit Voice Channel User LC
@@ -124,6 +126,8 @@ public class FullLinkControl {
 		lab.append(Integer.toString(target));
 		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
 		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
+		// Quick log
+		if (theApp.isQuickLog()==true) theApp.quickLogData("Unit to Unit Voice Call",target,source);
 	}
 	
 	// Terminator Data Link Control PDU
@@ -155,6 +159,8 @@ public class FullLinkControl {
 		lab.append(Integer.toString(dllid));
 		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
 		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
+		// Quick log
+		if (theApp.isQuickLog()==true) theApp.quickLogData("Terminator Data Link Control PDU",dllid,sllid);
 	}
 	
 	// Handle unknown Full Link Control types

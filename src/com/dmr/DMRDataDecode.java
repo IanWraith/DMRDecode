@@ -26,7 +26,7 @@ public class DMRDataDecode {
 			line[1]=cline;
 			fonts[1]=theApp.italicFont;
 			colours[1]=Color.BLACK;
-			line[2]=slottype.decode(dibit_buf);
+			line[2]=slottype.decode(theApp,dibit_buf);
 			SLOT_TYPEres=slottype.isPassErrorCheck();
 			// If short LC data is available then display it
 			if (cachdecode.getShortLC()==true)	{
