@@ -140,7 +140,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		// Quick Log
 		if (event_name=="Quick Log")	{
 			if (theApp.isQuickLog()==false)	{
-				if (quickLogDialogBox()==false) return;
+				quickLogDialogBox();
 			}
 			else {
 				closeQuickLogFile();
@@ -153,6 +153,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 				if (saveDialogBox()==false)	{
 					// Restart the audio in thread
 					theApp.lineInThread.startAudio();
+					menuItemUpdate();
 					return;
 				}
 				theApp.setLogging(true);
@@ -215,14 +216,16 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	}
 
 	// Update all the menu items 
-	
-	// TODO : Ensure all menu items are updated
-	
 	public void menuItemUpdate () {
 		inverted_item.setSelected(theApp.inverted);
 		debug_item.setSelected(theApp.isDebug());
 		save_to_file.setSelected(theApp.getLogging());
 		quick_log.setSelected(theApp.isQuickLog());
+		view_cach.setSelected(theApp.isDisplayCACH());
+		view_idle.setSelected(theApp.isDisplayIdlePDU());
+		view_onlygood.setSelected(theApp.isDisplayOnlyGoodFrames());
+		view_display_bar.setSelected(theApp.isEnableDisplayBar());
+		capture_item.setSelected(theApp.isCapture());
 	}
 	
 	// Display a dialog box so the user can select a location and name for a log file
