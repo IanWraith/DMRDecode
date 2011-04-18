@@ -50,6 +50,10 @@ public class CSBK {
 		else if (csbko==61)	{
 			preCSBK(theApp,bits);
 		}
+		// 62- Capacity Plus
+		else if (csbko==62)	{
+			big_m_csbko62(theApp,bits);
+		}
 		else	{
 			unknownCSBK(csbko,fid,bits);
 		}
@@ -152,6 +156,66 @@ public class CSBK {
 	private void nack_rsp (boolean bits[])	{
 		// TODO : Full decoding of NACK_Rsp
 		display[0]="Negative Acknowledge Response";
+	}
+	
+	// Capacity Plus
+	//1110001110000000000000010000000000000000000000000000000000000000
+	//  C  UD G       IIIIIIII 
+	// C - Channel 0 if ch1 and 1 if ch2
+	// U - Set if a unit to unit call
+	// D - If data
+	// G - If a group call
+	// I - Group ident
+	private void big_m_csbko62 (DMRDecode theApp,boolean bits[])	{
+		int group,a;
+		boolean data,channel,groupv,unitv;
+		StringBuilder sb1=new StringBuilder(300);
+		StringBuilder sb2=new StringBuilder(300);
+		display[0]="Capacity Plus CSBK : CSBKO=62";
+		channel=bits[18];
+		unitv=bits[21];
+		data=bits[22];
+		groupv=bits[24];
+		// Group ident
+		if (bits[32]==true) group=127;
+		else group=0;
+		if (bits[33]==true) group=group+64;
+		if (bits[34]==true) group=group+32;
+		if (bits[35]==true) group=group+16;
+		if (bits[36]==true) group=group+8;
+		if (bits[37]==true) group=group+4;
+		if (bits[38]==true) group=group+2;
+		if (bits[39]==true) group++;
+		// Only show more if we have any activity
+		if ((unitv==true)||(data==true)||(groupv==true))	{
+			int ac=0;
+			sb1.append("Activity on ");
+			if (channel==false) sb1.append(" ch 1 : ");
+			else sb1.append(" ch 2 : ");
+			if (unitv==true)	{
+				sb1.append("Unit to Unit");
+				ac++;
+			}
+			if (data==true)	{
+				if (ac>0) sb1.append("/");
+				sb1.append("Data");
+				ac++;
+			}
+			if (groupv==true)	{
+				if (ac>0) sb1.append("/");
+				sb1.append("Group "+Integer.toString(group)+" call");
+				ac++;
+			}
+			
+			display[1]=sb1.toString();
+		}
+		// Display the full binary
+		for (a=16;a<80;a++)	{
+			if (bits[a]==true) sb2.append("1");
+			else sb2.append("0");
+		}
+		display[2]=sb2.toString();
+		
 	}
 
 

@@ -42,6 +42,7 @@ public class FullLinkControl {
 		// PDU types 
 		if (flco==0) group_v_ch_usr(theApp,bits);
 		else if (flco==3) uu_v_ch_usr(theApp,bits);
+		else if (flco==4) big_m_flco4(theApp,bits);
 		else if (flco==48) td_lc(theApp,bits);
 		else unknown_flc(flco,fid,bits);
 		return display;
@@ -161,6 +162,54 @@ public class FullLinkControl {
 		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
 		// Quick log
 		if (theApp.isQuickLog()==true) theApp.quickLogData("Terminator Data Link Control PDU",dllid,sllid);
+	}
+	
+	// CP FLCO=4
+	void big_m_flco4 (DMRDecode theApp,boolean bits[])	{
+		int group,source,a;
+		StringBuilder sb1=new StringBuilder(300);
+		StringBuilder sb2=new StringBuilder(300);
+		display[0]="Capacity Plus Full Link Control LC : FLCO=4";
+        // Group
+		if (bits[40]==true) group=127;
+		else group=0;
+		if (bits[41]==true) group=group+64;
+		if (bits[42]==true) group=group+32;
+		if (bits[43]==true) group=group+16;
+		if (bits[44]==true) group=group+8;
+		if (bits[45]==true) group=group+4;
+		if (bits[46]==true) group=group+2;
+		if (bits[47]==true) group++;
+		// Mystery bits 48 to 60
+		// Source
+		if (bits[61]==true) source=1024;
+		else source=0;
+		if (bits[62]==true) source=source+512;
+		if (bits[63]==true) source=source+256;
+		if (bits[64]==true) source=source+127;
+		if (bits[65]==true) source=source+64;
+		if (bits[66]==true) source=source+32;
+		if (bits[67]==true) source=source+16;
+		if (bits[68]==true) source=source+8;
+		if (bits[69]==true) source=source+4;
+		if (bits[70]==true) source=source+2;
+		if (bits[71]==true) source++;
+ 		// Make up the 2nd line
+		sb1.append("Group Address "+Integer.toString(group)+" Source Address "+Integer.toString(source));
+		sb1.append(" UNID ");
+		for (a=48;a<60;a++)	{
+			if (bits[a]==true) sb1.append("1");
+			else sb1.append("0");
+		}
+		display[1]=sb1.toString();
+		// Display the full binary on the bottom line
+		for (a=16;a<72;a++)	{
+			if (bits[a]==true) sb2.append("1");
+			else sb2.append("0");
+		}
+		display[2]=sb2.toString();	
+		// Quick log
+		if (theApp.isQuickLog()==true) theApp.quickLogData("Capacity Plus Full Link Control LC",group,source);
 	}
 	
 	// Handle unknown Full Link Control types
