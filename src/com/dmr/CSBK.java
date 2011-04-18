@@ -159,6 +159,7 @@ public class CSBK {
 	}
 	
 	// Capacity Plus
+	//678901234567890123456789
 	//1110001110000000000000010000000000000000000000000000000000000000
 	//  C  UD G       IIIIIIII 
 	// C - Channel 0 if ch1 and 1 if ch2
@@ -168,14 +169,9 @@ public class CSBK {
 	// I - Group ident
 	private void big_m_csbko62 (DMRDecode theApp,boolean bits[])	{
 		int group,a;
-		boolean data,channel,groupv,unitv;
 		StringBuilder sb1=new StringBuilder(300);
 		StringBuilder sb2=new StringBuilder(300);
 		display[0]="Capacity Plus CSBK : CSBKO=62";
-		channel=bits[18];
-		unitv=bits[21];
-		data=bits[22];
-		groupv=bits[24];
 		// Group ident
 		if (bits[32]==true) group=127;
 		else group=0;
@@ -187,26 +183,9 @@ public class CSBK {
 		if (bits[38]==true) group=group+2;
 		if (bits[39]==true) group++;
 		// Only show more if we have any activity
-		if ((unitv==true)||(data==true)||(groupv==true))	{
-			int ac=0;
-			sb1.append("Activity on ");
-			if (channel==false) sb1.append(" ch 1 : ");
-			else sb1.append(" ch 2 : ");
-			if (unitv==true)	{
-				sb1.append("Unit to Unit");
-				ac++;
-			}
-			if (data==true)	{
-				if (ac>0) sb1.append("/");
-				sb1.append("Data");
-				ac++;
-			}
-			if (groupv==true)	{
-				if (ac>0) sb1.append("/");
-				sb1.append("Group "+Integer.toString(group)+" call");
-				ac++;
-			}
-			
+		if (group>0)	{
+			sb1.append("Activity Update : ");
+			sb1.append("Group "+Integer.toString(group)+" call");
 			display[1]=sb1.toString();
 		}
 		// Display the full binary
@@ -215,6 +194,7 @@ public class CSBK {
 			else sb2.append("0");
 		}
 		display[2]=sb2.toString();
+		a++;
 		
 	}
 
