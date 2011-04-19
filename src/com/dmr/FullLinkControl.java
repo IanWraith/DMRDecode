@@ -166,7 +166,7 @@ public class FullLinkControl {
 	
 	// CP FLCO=4
 	void big_m_flco4 (DMRDecode theApp,boolean bits[])	{
-		int group,source,a;
+		int group,source,a,lcn;
 		StringBuilder sb1=new StringBuilder(300);
 		StringBuilder sb2=new StringBuilder(300);
 		display[0]="Capacity Plus Full Link Control LC : FLCO=4";
@@ -180,13 +180,27 @@ public class FullLinkControl {
 		if (bits[45]==true) group=group+4;
 		if (bits[46]==true) group=group+2;
 		if (bits[47]==true) group++;
-		// Mystery bits 48 to 60
+		// LCN ?
+		if (bits[48]==true) lcn=128;
+		else lcn=0;
+		if (bits[49]==true) lcn=lcn+64;
+		if (bits[50]==true) lcn=lcn+32;
+		if (bits[51]==true) lcn=lcn+16;
+		if (bits[52]==true) lcn=lcn+8;
+		if (bits[53]==true) lcn=lcn+4;
+		if (bits[54]==true) lcn=lcn+2;
+		if (bits[55]==true) lcn++;
 		// Source
-		if (bits[61]==true) source=1024;
+		if (bits[56]==true) source=32768;
 		else source=0;
+		if (bits[57]==true) source=source+16384;
+		if (bits[58]==true) source=source+8192;
+		if (bits[59]==true) source=source+4096;
+		if (bits[60]==true) source=source+2048;
+		if (bits[61]==true) source=source+1024;
 		if (bits[62]==true) source=source+512;
 		if (bits[63]==true) source=source+256;
-		if (bits[64]==true) source=source+127;
+		if (bits[64]==true) source=source+128;
 		if (bits[65]==true) source=source+64;
 		if (bits[66]==true) source=source+32;
 		if (bits[67]==true) source=source+16;
@@ -195,12 +209,7 @@ public class FullLinkControl {
 		if (bits[70]==true) source=source+2;
 		if (bits[71]==true) source++;
  		// Make up the 2nd line
-		sb1.append("Group Address "+Integer.toString(group)+" Source Address "+Integer.toString(source));
-		sb1.append(" UNID ");
-		for (a=48;a<60;a++)	{
-			if (bits[a]==true) sb1.append("1");
-			else sb1.append("0");
-		}
+		sb1.append("Group Address "+Integer.toString(group)+" Source Address "+Integer.toString(source)+" LCN "+Integer.toString(lcn));
 		display[1]=sb1.toString();
 		// Display the full binary on the bottom line
 		for (a=16;a<72;a++)	{
