@@ -168,12 +168,18 @@ public class CSBK {
 	// G - If a group call
 	// I - Group ident
 	private void big_m_csbko62 (DMRDecode theApp,boolean bits[])	{
-		int group,a;
+		int group,a,lcn;
 		StringBuilder sb1=new StringBuilder(300);
 		StringBuilder sb2=new StringBuilder(300);
 		display[0]="Capacity Plus CSBK : CSBKO=62";
+		// LCN
+		if (bits[20]==true) lcn=8;
+		else lcn=0;
+		if (bits[21]==true) lcn=lcn+4;
+		if (bits[22]==true) lcn=lcn+2;
+		if (bits[23]==true) lcn++;
 		// Group ident
-		if (bits[32]==true) group=127;
+		if (bits[32]==true) group=128;
 		else group=0;
 		if (bits[33]==true) group=group+64;
 		if (bits[34]==true) group=group+32;
@@ -183,11 +189,13 @@ public class CSBK {
 		if (bits[38]==true) group=group+2;
 		if (bits[39]==true) group++;
 		// Only show more if we have any activity
-		if (group>0)	{
+		if (group==0)	{
+			sb1.append("Activity Update : LCN "+Integer.toString(lcn)+" is the Rest Channel");
+		} else {
 			sb1.append("Activity Update : ");
-			sb1.append("Group "+Integer.toString(group)+" call");
-			display[1]=sb1.toString();
+			sb1.append("Group "+Integer.toString(group)+" call on LCN "+Integer.toString(lcn));
 		}
+		display[1]=sb1.toString();
 		// Display the full binary
 		for (a=16;a<80;a++)	{
 			if (bits[a]==true) sb2.append("1");
