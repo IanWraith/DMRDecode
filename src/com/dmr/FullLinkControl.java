@@ -180,13 +180,10 @@ public class FullLinkControl {
 		if (bits[45]==true) group=group+4;
 		if (bits[46]==true) group=group+2;
 		if (bits[47]==true) group++;
-		// LCN ?
-		if (bits[48]==true) lcn=128;
+		// Bits 48 - 51 ??
+		// LCN
+		if (bits[52]==true) lcn=8;
 		else lcn=0;
-		if (bits[49]==true) lcn=lcn+64;
-		if (bits[50]==true) lcn=lcn+32;
-		if (bits[51]==true) lcn=lcn+16;
-		if (bits[52]==true) lcn=lcn+8;
 		if (bits[53]==true) lcn=lcn+4;
 		if (bits[54]==true) lcn=lcn+2;
 		if (bits[55]==true) lcn++;
