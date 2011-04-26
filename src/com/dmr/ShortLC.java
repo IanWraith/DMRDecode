@@ -252,6 +252,16 @@ public class ShortLC {
 				dline.append(" Hashed Addr "+Integer.toString(addr2));
 			}
 		}
+		// Capacity Plus SLCO 15
+		else if (slco==15)	{
+			int lcn;
+			if (db[17]==true) lcn=8;
+			else lcn=0;
+			if (db[18]==true) lcn=lcn+4;
+			if (db[19]==true) lcn=lcn+2;
+			if (db[20]==true) lcn++;
+			dline.append(" Capacity Plus Act_Updt - Rest Channel is LCN "+Integer.toString(lcn));
+		}
 		else	{
 			dline.append("Unknown SLCO="+Integer.toString(slco)+" ");
 			for (a=4;a<28;a++)	{
