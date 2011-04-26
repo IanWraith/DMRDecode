@@ -159,14 +159,6 @@ public class CSBK {
 	}
 	
 	// Capacity Plus
-	//678901234567890123456789
-	//1110001110000000000000010000000000000000000000000000000000000000
-	//  C  UD G       IIIIIIII 
-	// C - Channel 0 if ch1 and 1 if ch2
-	// U - Set if a unit to unit call
-	// D - If data
-	// G - If a group call
-	// I - Group ident
 	private void big_m_csbko62 (DMRDecode theApp,boolean bits[])	{
 		int group,a,lcn;
 		StringBuilder sb1=new StringBuilder(300);
@@ -196,14 +188,14 @@ public class CSBK {
 			sb1.append("Group "+Integer.toString(group)+" call on LCN "+Integer.toString(lcn));
 		}
 		display[1]=sb1.toString();
-		// Display the full binary
-		for (a=16;a<80;a++)	{
-			if (bits[a]==true) sb2.append("1");
-			else sb2.append("0");
+		// Display the full binary if in debug mode
+		if (theApp.isDebug()==true)	{
+			for (a=16;a<80;a++)	{
+				if (bits[a]==true) sb2.append("1");
+				else sb2.append("0");
+			}
+			display[2]=sb2.toString();
 		}
-		display[2]=sb2.toString();
-		a++;
-		
 	}
 
 

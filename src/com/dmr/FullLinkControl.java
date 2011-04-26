@@ -208,12 +208,14 @@ public class FullLinkControl {
  		// Make up the 2nd line
 		sb1.append("Group Address "+Integer.toString(group)+" Source Address "+Integer.toString(source)+" LCN "+Integer.toString(lcn));
 		display[1]=sb1.toString();
-		// Display the full binary on the bottom line
-		for (a=16;a<72;a++)	{
-			if (bits[a]==true) sb2.append("1");
-			else sb2.append("0");
+		// Display the full binary on the bottom line if in debug mode
+		if (theApp.isDebug()==true)	{
+			for (a=16;a<72;a++)	{
+				if (bits[a]==true) sb2.append("1");
+				else sb2.append("0");
+			}
+		display[2]=sb2.toString();
 		}
-		display[2]=sb2.toString();	
 		// Quick log
 		if (theApp.isQuickLog()==true) theApp.quickLogData("Capacity Plus Full Link Control LC",group,source);
 	}
