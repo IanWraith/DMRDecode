@@ -35,7 +35,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 37)";
+	public String program_version="DMR Decoder (Build 38)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -700,8 +700,8 @@ public class DMRDecode {
 	}
 	
 	// Make up a string for the quick log file
-	public void quickLogData(String line,int a,int b)	{
-		String tline=getTimeStamp()+","+Integer.toString(colourCode)+","+line+","+Integer.toString(a)+","+Integer.toString(b);
+	public void quickLogData(String line,int a,int b,int c)	{
+		String tline=getTimeStamp()+","+Integer.toString(colourCode)+","+line+","+Integer.toString(a)+","+Integer.toString(b)+","+Integer.toString(c);
 		quickLogWrite(tline);
 	}
 	
