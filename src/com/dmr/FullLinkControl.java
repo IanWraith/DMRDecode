@@ -87,7 +87,7 @@ public class FullLinkControl {
 		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
 		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
 		// Quick log
-		if (theApp.isQuickLog()==true) theApp.quickLogData("Group Voice Call to Group",group,source,theApp.currentChannel);
+		if (theApp.isQuickLog()==true) theApp.quickLogData("Group Voice Call to Group",group,source,theApp.currentChannel,display[1]);
 	}
 	
 	// Unit to Unit Voice Channel User LC
@@ -128,7 +128,7 @@ public class FullLinkControl {
 		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
 		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
 		// Quick log
-		if (theApp.isQuickLog()==true) theApp.quickLogData("Unit to Unit Voice Call",target,source,theApp.currentChannel);
+		if (theApp.isQuickLog()==true) theApp.quickLogData("Unit to Unit Voice Call",target,source,theApp.currentChannel,display[1]);
 	}
 	
 	// Terminator Data Link Control PDU
@@ -161,7 +161,7 @@ public class FullLinkControl {
 		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
 		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
 		// Quick log
-		if (theApp.isQuickLog()==true) theApp.quickLogData("Terminator Data Link Control PDU",dllid,sllid,theApp.currentChannel);
+		if (theApp.isQuickLog()==true) theApp.quickLogData("Terminator Data Link Control PDU",dllid,sllid,theApp.currentChannel,"");
 	}
 	
 	// CP FLCO=4
@@ -217,7 +217,7 @@ public class FullLinkControl {
 		display[2]=sb2.toString();
 		}
 		// Quick log
-		if (theApp.isQuickLog()==true) theApp.quickLogData("Capacity Plus Full Link Control LC",group,source,theApp.currentChannel);
+		if (theApp.isQuickLog()==true) theApp.quickLogData("Capacity Plus Full Link Control LC",group,source,theApp.currentChannel,"");
 	}
 	
 	// Handle unknown Full Link Control types
