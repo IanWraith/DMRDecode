@@ -34,6 +34,14 @@ public class CSBK {
 		if (csbko==56)	{
 			bs_dwn_act(bits);
 		}
+		// 01 (FID 6) - Connect Plus
+		else if ((csbko==1)&&(fid==6))	{
+			big_m_csbko01(theApp,bits);
+		}
+		// 03 (FID 6) - Connect Plus
+		else if ((csbko==3)&&(fid==6))	{
+			big_m_csbko03(theApp,bits);
+		}
 		// 04 - UU_V_Reg
 		else if (csbko==4)	{
 			uu_v_reg(bits);
@@ -50,10 +58,10 @@ public class CSBK {
 		else if (csbko==61)	{
 			preCSBK(theApp,bits);
 		}
-		// 62- Capacity Plus
+		// 62 - Capacity Plus
 		else if (csbko==62)	{
 			big_m_csbko62(theApp,bits);
-		}
+		}	
 		else	{
 			unknownCSBK(csbko,fid,bits);
 		}
@@ -197,6 +205,55 @@ public class CSBK {
 			display[2]=sb2.toString();
 		}
 	}
+	
+	// Connect Plus - CSBKO 03 FID=6
+	private void big_m_csbko03 (DMRDecode theApp,boolean bits[])	{
+		int a,lcn;
+		StringBuilder sb1=new StringBuilder(300);
+		StringBuilder sb2=new StringBuilder(300);
+		display[0]="Connect Plus CSBK : CSBKO=3";
+		// Source ID
+		int source=retAddress(bits,16);
+		// Group address
+		int group=retAddress(bits,40);
+		// LCN
+		if (bits[64]==true) lcn=8;
+		else lcn=0;
+		if (bits[65]==true) lcn=lcn+4;
+		if (bits[66]==true) lcn=lcn+2;
+		if (bits[67]==true) lcn++;
+		sb1.append("Channel Grant : LCN "+Integer.toString(lcn));
+		sb1.append(" Source "+Integer.toString(source));
+		sb1.append(" Group "+Integer.toString(group));
+		display[1]=sb1.toString();
+		// Display the full binary if in debug mode
+		if (theApp.isDebug()==true)	{
+			for (a=16;a<80;a++)	{
+				if (bits[a]==true) sb2.append("1");
+				else sb2.append("0");
+			}
+			display[2]=sb2.toString();
+		}
+	}
+	
+	// Connect Plus - CSBKO 01 FID=6
+	private void big_m_csbko01 (DMRDecode theApp,boolean bits[])	{
+		int a;
+		StringBuilder sb1=new StringBuilder(300);
+		StringBuilder sb2=new StringBuilder(300);
+		display[0]="Connect Plus CSBK : CSBKO=1";
+		sb1.append("System Message");
+		display[1]=sb1.toString();
+		// Display the full binary if in debug mode
+		if (theApp.isDebug()==true)	{
+			for (a=16;a<80;a++)	{
+				if (bits[a]==true) sb2.append("1");
+				else sb2.append("0");
+			}
+			display[2]=sb2.toString();
+		}
+	}
+
 
 
 }
