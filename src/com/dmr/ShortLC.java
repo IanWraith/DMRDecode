@@ -252,6 +252,22 @@ public class ShortLC {
 				dline.append(" Hashed Addr "+Integer.toString(addr2));
 			}
 		}
+		// Connect Plus SLCO 9
+		else if (slco==9)	{
+			dline.append("Connect Plus Voice Channel SLCO="+Integer.toString(slco)+" ");
+			for (a=4;a<28;a++)	{
+				if (db[a]==true) dline.append("1");
+				else dline.append("0");
+			}
+		}
+		// Connect Plus SLCO 10
+		else if (slco==10)	{
+			dline.append("Connect Plus Control Channel SLCO="+Integer.toString(slco)+" ");
+			for (a=4;a<28;a++)	{
+				if (db[a]==true) dline.append("1");
+				else dline.append("0");
+			}
+		}
 		// Capacity Plus SLCO 15
 		else if (slco==15)	{
 			int lcn;
