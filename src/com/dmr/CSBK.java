@@ -242,7 +242,12 @@ public class CSBK {
 		StringBuilder sb1=new StringBuilder(300);
 		StringBuilder sb2=new StringBuilder(300);
 		display[0]="Connect Plus CSBK : CSBKO=1";
-		sb1.append("System Message");
+		sb1.append("System Message : ");
+		// Can't decode this so show it as raw binary for now
+		for (a=16;a<80;a++)	{
+			if (bits[a]==true) sb1.append("1");
+			else sb1.append("0");
+		}
 		display[1]=sb1.toString();
 		// Display the full binary if in debug mode
 		if (theApp.isDebug()==true)	{
