@@ -254,11 +254,32 @@ public class ShortLC {
 		}
 		// Connect Plus SLCO 9
 		else if (slco==9)	{
-			dline.append("Connect Plus Voice Channel SLCO="+Integer.toString(slco)+" ");
-			for (a=4;a<28;a++)	{
-				if (db[a]==true) dline.append("1");
-				else dline.append("0");
-			}
+			int netID,siteID;
+			dline.append("Connect Plus Voice Channel SLCO="+Integer.toString(slco)+" Network: ");
+			// Network ID
+			if (db[4]==true) netID=2048;
+			else netID=0;
+		    if (db[5]==true) netID=netID+1024;
+		    if (db[6]==true) netID=netID+512;
+		    if (db[7]==true) netID=netID+256;
+		    if (db[8]==true) netID=netID+128;
+		    if (db[9]==true) netID=netID+64;
+		    if (db[10]==true) netID=netID+32;
+			if (db[11]==true) netID=netID+16;
+		    if (db[12]==true) netID=netID+8;
+		    if (db[13]==true) netID=netID+4;
+			if (db[14]==true) netID=netID+2;
+			if (db[15]==true) netID++;
+			// Bits 16,17,18,19,20 have an unknown purpose
+			// Site ID
+			if (db[21]==true) siteID=4;
+			else siteID=0;
+			if (db[22]==true) siteID=siteID+2;
+			if (db[23]==true) siteID++;
+			// Bits 24,25,26,27 have an unknown purpose
+			dline.append(netID);
+			dline.append(" Site: ");
+			dline.append(siteID);
 		}
 		// Connect Plus SLCO 10
 		else if (slco==10)	{
@@ -332,5 +353,6 @@ public class ShortLC {
 	public void setApp (DMRDecode theApp)	{
 		TtheApp=theApp;
 	}
+	
 	
 }
