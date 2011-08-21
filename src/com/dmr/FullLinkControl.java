@@ -166,7 +166,7 @@ public class FullLinkControl {
 	
 	// CP FLCO=4
 	void big_m_flco4 (DMRDecode theApp,boolean bits[])	{
-		int group,source,a,lcn;
+		int group,source,a,lcn,index;
 		StringBuilder sb1=new StringBuilder(300);
 		StringBuilder sb2=new StringBuilder(300);
 		display[0]="Capacity Plus Full Link Control LC : FLCO=4";
@@ -208,6 +208,22 @@ public class FullLinkControl {
  		// Make up the 2nd line
 		sb1.append("Group Address "+Integer.toString(group)+" Source Address "+Integer.toString(source)+" LCN "+Integer.toString(lcn));
 		display[1]=sb1.toString();
+		// Log these users
+		// Group
+		if (theApp.usersLogged.addUser(group)==true)	{
+			index=theApp.usersLogged.findUserIndex(group);
+			if (index!=-1)	{
+				theApp.usersLogged.setAsGroup(index);
+				theApp.usersLogged.setChannel(index,theApp.currentChannel);
+			}
+		}
+		// Source
+		theApp.usersLogged.addUser(source);
+		index=theApp.usersLogged.findUserIndex(source);
+		if (index!=-1)	{
+			theApp.usersLogged.setAsGroupUser(index);
+			theApp.usersLogged.setChannel(index,theApp.currentChannel);
+		}
 		// Display the full binary on the bottom line if in debug mode
 		if (theApp.isDebug()==true)	{
 			for (a=16;a<72;a++)	{
@@ -216,6 +232,14 @@ public class FullLinkControl {
 			}
 		display[2]=sb2.toString();
 		}
+		// Display this in a label on the status bar
+		StringBuilder lab=new StringBuilder(250);
+		lab.append("CP Group Call to Group ");
+		lab.append(Integer.toString(group));
+		lab.append(" from ");
+		lab.append(Integer.toString(source));
+		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
+		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
 		// Quick log
 		if (theApp.isQuickLog()==true) theApp.quickLogData("Capacity Plus Full Link Control LC",group,source,theApp.currentChannel,"");
 	}
