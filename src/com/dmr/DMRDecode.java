@@ -996,5 +996,10 @@ public class DMRDecode {
 		display_view.clearScreen();
 	}
 	
+	// Gets all the text on the screen and returns it as a string
+	public String getAllText()	{
+		return	display_view.getText();
+	}
+	
 
 }

@@ -22,6 +22,7 @@ package com.dmr;
 
 import java.awt.*;
 import javax.swing.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.*;
 import java.text.DecimalFormat;
@@ -33,7 +34,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item,quick_log;
 	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
 	private JMenuItem view_cach,view_idle,view_onlygood;
-	private JMenuItem clear_screen;
+	private JMenuItem clear_screen,copy_screen;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
 	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,2000);
@@ -70,6 +71,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		menuBar.add(infoMenu);
 		// View
 		JMenu viewMenu=new JMenu("View");
+		viewMenu.add(copy_screen=new JMenuItem("Copy All to the Clipboard"));
+		copy_screen.addActionListener(this);
 		viewMenu.add(clear_screen=new JMenuItem("Clear Screen"));
 		clear_screen.addActionListener(this);
 		viewMenu.addSeparator();
@@ -131,6 +134,9 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		
 		// Clear Screen
 		if (event_name=="Clear Screen") theApp.clearScreen();
+		
+		// Copy to the clip board
+		if (event_name=="Copy All to the Clipboard") setClipboard(theApp.getAllText());
 		
 		// Debug Mode
 		if (event_name=="Debug Mode")	{
@@ -434,4 +440,9 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		statusBar.setCh2Label(label,col);
 	}
 	
+	// This sets the clipboard with a string passed to it
+	private void setClipboard(String str) {
+	    StringSelection ss=new StringSelection(str);
+	    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss,null);
+	}
 }

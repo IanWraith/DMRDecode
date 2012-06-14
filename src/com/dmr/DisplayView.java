@@ -89,5 +89,21 @@ public class DisplayView extends JComponent implements Observer  {
 		}
 		repaint();
 	}
+	
+	// Gets all the text on the screen and returns it as a string
+	public String getText()	{
+		StringBuffer buffer=new StringBuffer();
+		int i=displayCounter,count=0;
+		while(count<DISPLAYCOUNT)	{
+			if (display_string[i]!=null)	{
+				buffer.append(display_string[i]);
+				buffer.append("\n");
+			}	
+			i++;
+			if (i>=DISPLAYCOUNT) i=0;
+			count++;
+		}
+		return buffer.toString();
+	}	
 
 }
