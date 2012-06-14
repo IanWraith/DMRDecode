@@ -34,7 +34,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item,quick_log;
 	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
 	private JMenuItem view_cach,view_idle,view_onlygood;
-	private JMenuItem clear_screen,copy_screen;
+	private JMenuItem clear_screen,copy_screen,twitter_item;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
 	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,2000);
@@ -87,6 +87,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		JMenu helpMenu=new JMenu("Help");
 		helpMenu.add(about_item=new JMenuItem("About"));		
 		about_item.addActionListener(this);
+		helpMenu.add(twitter_item=new JMenuItem("Follow DMRDecode Progress on Twitter"));		
+		twitter_item.addActionListener(this);
 		helpMenu.add(help_item=new JMenuItem("Help"));		
 		help_item.addActionListener(this);		
 		menuBar.add(helpMenu);
@@ -178,6 +180,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			// Restart the audio in thread
 			theApp.lineInThread.startAudio();
 		}	
+		
+		// Twitter
+		if (event_name=="Follow DMRDecode Progress on Twitter")	{
+			BareBonesBrowserLaunch.openURL("https://twitter.com/#!/IanWraith");
+		}
 		
 		// Error rate info
 		if (event_name=="Error Check Info")	{
