@@ -33,6 +33,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item,quick_log;
 	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
 	private JMenuItem view_cach,view_idle,view_onlygood;
+	private JMenuItem clear_screen;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
 	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,2000);
@@ -69,6 +70,9 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		menuBar.add(infoMenu);
 		// View
 		JMenu viewMenu=new JMenu("View");
+		viewMenu.add(clear_screen=new JMenuItem("Clear Screen"));
+		clear_screen.addActionListener(this);
+		viewMenu.addSeparator();
 		viewMenu.add(view_cach=new JRadioButtonMenuItem("Display CACH",theApp.isDisplayCACH()));
 		view_cach.addActionListener(this);
 		viewMenu.add(view_onlygood=new JRadioButtonMenuItem("Display Good Frames Only",theApp.isDisplayOnlyGoodFrames()));
@@ -124,6 +128,9 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			if (theApp.isCapture()==false) theApp.setCapture(true);
 			else theApp.setCapture(false);
 		}
+		
+		// Clear Screen
+		if (event_name=="Clear Screen") theApp.clearScreen();
 		
 		// Debug Mode
 		if (event_name=="Debug Mode")	{

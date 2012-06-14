@@ -992,5 +992,9 @@ public class DMRDecode {
 		return colourCode;
 	}
 	
+	public void clearScreen()	{
+		display_view.clearScreen();
+	}
+	
 
 }

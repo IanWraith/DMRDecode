@@ -39,7 +39,7 @@ public class DisplayView extends JComponent implements Observer  {
 	
 	public DisplayView (DMRDecode theApp) {
 		this.theApp=theApp;	
-	}
+		}
 			
 	public void update (Observable o,Object rectangle)	{			
 	}
@@ -77,6 +77,16 @@ public class DisplayView extends JComponent implements Observer  {
 		displayCounter++;
 		// Check it hasn't reached its maximum size
 		if (displayCounter==DISPLAYCOUNT) displayCounter=0;
+		repaint();
+	}
+	
+	// Clear the display screen
+	public void clearScreen	()	{
+		int a;
+		displayCounter=0;
+		for (a=0;a<DISPLAYCOUNT;a++)	{
+			display_string[a]=null;
+		}
 		repaint();
 	}
 
