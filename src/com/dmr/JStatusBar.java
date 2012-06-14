@@ -13,6 +13,7 @@ public class JStatusBar extends JPanel {
 	private JLabel syncLabel=new JLabel();
 	private JLabel ch1Label=new JLabel();
 	private JLabel ch2Label=new JLabel();
+	private JLabel colourCodeLabel=new JLabel();
 	private JProgressBar volumeBar=new JProgressBar(0,100);
 	private Border loweredbevel=BorderFactory.createLoweredBevelBorder();
 	private JButton pauseButton=new JButton("Pause");
@@ -31,6 +32,9 @@ public class JStatusBar extends JPanel {
 		ch2Label.setHorizontalAlignment(SwingConstants.LEFT);
 		ch2Label.setBorder(loweredbevel);
 		ch2Label.updateUI();
+		colourCodeLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		colourCodeLabel.setBorder(loweredbevel);
+		colourCodeLabel.updateUI();
 		pauseButton.addActionListener(new ButtonListener());
 		// Give the volume progress bar a border //
 		volumeBar.setBorder(loweredbevel);
@@ -40,6 +44,7 @@ public class JStatusBar extends JPanel {
 		this.add(volumeBar,BorderLayout.CENTER);
 		this.add(syncLabel,BorderLayout.CENTER);
 		this.add(logMode,BorderLayout.CENTER);
+		this.add(colourCodeLabel,BorderLayout.CENTER);
 		this.add(ch1Label,BorderLayout.CENTER);
 		this.add(ch2Label,BorderLayout.CENTER);
 	}
@@ -102,6 +107,17 @@ public class JStatusBar extends JPanel {
 		label="Ch 2 : "+label;
 		ch2Label.setText(label);
 		ch2Label.setForeground(c);
+	}
+	
+	public void setColourCodeLabel (int cc,Color col)	{
+		if (TtheApp!=null)	{
+			if (TtheApp.isPauseScreen()==true) return;
+		}
+		String label;
+		if (cc==-1) label="Colour Code : Unknown";
+		else label="Colour Code : "+Integer.toString(cc);
+		colourCodeLabel.setText(label);
+		colourCodeLabel.setForeground(col);
 	}
 	
 	public void setApp (DMRDecode theApp)	{

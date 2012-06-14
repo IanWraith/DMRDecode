@@ -433,6 +433,7 @@ public class DMRDecode {
 		window.updateSyncLabel(false);
 		window.setCh1Label("Unused",labelQuiteColour);
 		window.setCh2Label("Unused",labelQuiteColour);
+		window.SetColourCodeLabel(-1,labelQuiteColour);
 	  	}
 	
 	// Given a symbol return a dibit
@@ -984,8 +985,12 @@ public class DMRDecode {
 		return quickLog;
 	}
 
-	public void setColourCode(int colourCode) {
-		this.colourCode = colourCode;
+	public void setColourCode(int cc) {
+		// If the colour code has changed then update the status bar
+		if (colourCode!=cc)	{
+			this.colourCode=cc;
+			window.SetColourCodeLabel(cc,labelBusyColour);
+		}
 	}
 
 	public int getColourCode() {
