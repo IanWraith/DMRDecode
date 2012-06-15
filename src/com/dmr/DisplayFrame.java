@@ -451,6 +451,10 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		statusBar.setColourCodeLabel(cc,col);
 	}
 	
+	public void setSystemLabel (String txt,Color col)	{
+		statusBar.setSystemLabel(txt,col);
+	}
+	
 	// This sets the clipboard with a string passed to it
 	private void setClipboard(String str) {
 	    StringSelection ss=new StringSelection(str);
