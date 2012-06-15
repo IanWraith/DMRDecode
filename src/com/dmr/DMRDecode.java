@@ -987,11 +987,8 @@ public class DMRDecode {
 	}
 
 	public void setColourCode(int cc) {
-		// If the colour code has changed then update the status bar
-		if (colourCode!=cc)	{
-			this.colourCode=cc;
-			window.SetColourCodeLabel(cc,labelBusyColour);
-		}
+		this.colourCode=cc;
+		window.SetColourCodeLabel(cc,labelBusyColour);
 	}
 	
 	public void setSystemLabel(String txt)	{
