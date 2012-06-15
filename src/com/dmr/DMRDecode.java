@@ -35,7 +35,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 44)";
+	public String program_version="DMR Decoder (Build 45)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -434,6 +434,7 @@ public class DMRDecode {
 		window.setCh1Label("Unused",labelQuiteColour);
 		window.setCh2Label("Unused",labelQuiteColour);
 		window.SetColourCodeLabel(-1,labelQuiteColour);
+		window.setSystemLabel("System : Unknown",labelQuiteColour);
 	  	}
 	
 	// Given a symbol return a dibit
@@ -991,6 +992,10 @@ public class DMRDecode {
 			this.colourCode=cc;
 			window.SetColourCodeLabel(cc,labelBusyColour);
 		}
+	}
+	
+	public void setSystemLabel(String txt)	{
+		window.setSystemLabel(txt,labelBusyColour);
 	}
 
 	public int getColourCode() {

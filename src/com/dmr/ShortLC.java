@@ -280,6 +280,8 @@ public class ShortLC {
 			dline.append(netID);
 			dline.append(" Site: ");
 			dline.append(siteID);
+			// Make up a status bar system label display
+			if (TtheApp!=null) TtheApp.setSystemLabel("System : Connect Plus (Network "+Integer.toString(netID)+") (Site "+Integer.toString(siteID)+")");
 		}
 		// Connect Plus SLCO 10
 		else if (slco==10)	{
@@ -309,6 +311,8 @@ public class ShortLC {
 			dline.append(netID);
 			dline.append(" Site: ");
 			dline.append(siteID);
+			// Make up a status bar system label display
+			if (TtheApp!=null) TtheApp.setSystemLabel("System : Connect Plus (Network "+Integer.toString(netID)+") (Site "+Integer.toString(siteID)+")");
 		}
 		// Capacity Plus SLCO 15
 		else if (slco==15)	{

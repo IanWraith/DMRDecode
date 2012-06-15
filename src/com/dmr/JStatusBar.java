@@ -14,6 +14,7 @@ public class JStatusBar extends JPanel {
 	private JLabel ch1Label=new JLabel();
 	private JLabel ch2Label=new JLabel();
 	private JLabel colourCodeLabel=new JLabel();
+	private JLabel systemLabel=new JLabel();
 	private JProgressBar volumeBar=new JProgressBar(0,100);
 	private Border loweredbevel=BorderFactory.createLoweredBevelBorder();
 	private JButton pauseButton=new JButton("Pause");
@@ -35,6 +36,9 @@ public class JStatusBar extends JPanel {
 		colourCodeLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		colourCodeLabel.setBorder(loweredbevel);
 		colourCodeLabel.updateUI();
+		systemLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		systemLabel.setBorder(loweredbevel);
+		systemLabel.updateUI();
 		pauseButton.addActionListener(new ButtonListener());
 		// Give the volume progress bar a border //
 		volumeBar.setBorder(loweredbevel);
@@ -47,6 +51,7 @@ public class JStatusBar extends JPanel {
 		this.add(colourCodeLabel,BorderLayout.CENTER);
 		this.add(ch1Label,BorderLayout.CENTER);
 		this.add(ch2Label,BorderLayout.CENTER);
+		this.add(systemLabel,BorderLayout.CENTER);
 	}
 	
 	// Sets the logging label text
@@ -118,6 +123,11 @@ public class JStatusBar extends JPanel {
 		else label="Colour Code : "+Integer.toString(cc);
 		colourCodeLabel.setText(label);
 		colourCodeLabel.setForeground(col);
+	}
+	
+	public void setSystemLabel (String text,Color col)	{
+		systemLabel.setText(text);
+		systemLabel.setForeground(col);
 	}
 	
 	public void setApp (DMRDecode theApp)	{
