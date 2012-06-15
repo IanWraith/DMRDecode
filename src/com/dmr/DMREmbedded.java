@@ -101,12 +101,14 @@ public class DMREmbedded {
 			line[0]=theApp.getTimeStamp()+" DMR Voice Frame with Embedded Signalling";
 			colours[0]=Color.BLACK;
 			fonts[0]=theApp.boldFont;
-			// Color code
+			// Colour code
 			if (EMDdata[0]==true) cc=8;
 			else cc=0;
 			if (EMDdata[1]==true) cc=cc+4;
 			if (EMDdata[2]==true) cc=cc+2;
 			if (EMDdata[3]==true) cc=cc+1;
+			// Update the colour code display
+			if (theApp!=null) theApp.setColourCode(cc);
 			// PI
 			pi=EMDdata[4];
 			// LCSS
