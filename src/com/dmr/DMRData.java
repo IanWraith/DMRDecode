@@ -160,8 +160,20 @@ public class DMRData {
 	
 	// Proprietary Data Packet
 	void propData (boolean bits[])	{
-		display[0]="Proprietary Data Packet";
+		StringBuilder sa=new StringBuilder(250);
+		int mfid=retEight(bits,8);
+		display[0]="Proprietary Data : MFID="+Integer.toString(mfid);
+		// Get the 8 octets of proprietary data
+		int a,os=16,pdata;
+		for (a=0;a<8;a++)	{
+			pdata=retEight(bits,os);
+			sa.append(Integer.toString(pdata));
+			if (a<7) sa.append(","); 
+			os=os+8;
+		}
+		display[1]=sa.toString();
 	}
+	
 	
 	// Unknown Data
 	void unknownData (boolean bits[],int dpf)	{
@@ -177,6 +189,20 @@ public class DMRData {
 			if (bits[a+offset]==true) addr=addr+c;
 		}
 		return addr;
+	}
+	
+	// Return an 8 bit byte from a boolean array
+	private int retEight (boolean bits[],int offset)	{
+		int b=0;
+		if (bits[offset]==true) b=128;
+		if (bits[offset+1]==true) b=b+64;
+		if (bits[offset+2]==true) b=b+32;
+		if (bits[offset+3]==true) b=b+16;
+		if (bits[offset+4]==true) b=b+8;
+		if (bits[offset+5]==true) b=b+4;
+		if (bits[offset+6]==true) b=b+2;
+		if (bits[offset+7]==true) b++;
+		return b;
 	}
 	
 }
