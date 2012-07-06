@@ -80,7 +80,37 @@ public class DMRData {
 	
 	// Unconfirmed Data
 	void unconfirmedData (boolean bits[])	{
+		int blocks,fsn;
+		StringBuilder sa=new StringBuilder(250);
+		StringBuilder sb=new StringBuilder(250);
 		display[0]="Unconfirmed Data";
+		// Destination LLID
+		int dllid=retAddress(bits,16);
+		// Source LLID
+		int sllid=retAddress(bits,40);
+		sa.append("Destination Logical Link ID : "+Integer.toString(dllid));
+		sa.append(" Source Logical Link ID : "+Integer.toString(sllid));
+		display[1]=sa.toString();
+		// Bit 64 is 0
+		// Blocks to follow
+		if (bits[65]==true) blocks=64;
+		else blocks=0;
+		if (bits[66]==true) blocks=blocks+32;
+		if (bits[67]==true) blocks=blocks+16;
+		if (bits[68]==true) blocks=blocks+8;
+		if (bits[69]==true) blocks=blocks+4;
+		if (bits[70]==true) blocks=blocks+2;
+		if (bits[71]==true) blocks++;
+		// Bits 72,73,74 and 75 are 0
+		// FSN
+		if (bits[76]==true) fsn=8;
+		else fsn=0;
+		if (bits[77]==true) fsn=fsn+4;
+		if (bits[78]==true) fsn=fsn+2;
+		if (bits[79]==true) fsn++;
+		// Display this
+		sb.append(Integer.toString(blocks)+" blocks follow : FSN="+Integer.toString(fsn));
+		display[2]=sb.toString();
 	}
 	
 	// Confirmed Data
