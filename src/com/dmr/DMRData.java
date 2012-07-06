@@ -24,6 +24,36 @@ public class DMRData {
 		return display;
 	}
 	
+	// Decode a half rate packet
+	public String[] decodeHalfRate (boolean bits[])	{
+		int dbsn;
+		StringBuilder sa=new StringBuilder(250);
+		StringBuilder sb=new StringBuilder(250);
+		// First 7 bits are the Data Block Serial Number (DBSN)
+		// then 9 bits C-DATA CRC
+		// then 80 bits user data
+		// DBSN
+		if (bits[0]==true) dbsn=64;
+		else dbsn=0;
+		if (bits[1]==true) dbsn=dbsn+32;
+		if (bits[2]==true) dbsn=dbsn+16;
+		if (bits[3]==true) dbsn=dbsn+8;
+		if (bits[4]==true) dbsn=dbsn+4;
+		if (bits[5]==true) dbsn=dbsn+2;
+		if (bits[6]==true) dbsn++;
+		// Bits 7,8,9,10,11,12,13,14 and 15 are the C-DATA CRC
+		sa.append("Data Block Serial Number "+Integer.toString(dbsn));
+		display[0]=sa.toString();
+		// Bits 16 onwards the payload
+		int a;
+		for (a=16;a<96;a++)	{
+			if (bits[a]==true) sb.append("1");
+			else sb.append("0");
+		}
+		display[1]=sb.toString();
+		return display;
+	}
+	
 	// Unified Data Transport
 	void udt (boolean bits[])	{
 		display[0]="Unified Data Transport";

@@ -142,9 +142,27 @@ public class DMRDataDecode {
 					}
 				}
 				
-				// TODO : Decode Rate ½ Data Continuation frames
 				// Rate ½ Data Continuation
-				if (dataType==7) BPTCres=true;
+				if (dataType==7) {
+					BPTC19696 bptc19696=new BPTC19696();
+					if (bptc19696.decode(dibit_buf)==true)	{
+						boolean bits[]=bptc19696.dataOut();
+						BPTCres=true;
+						String clines[]=new String[3];
+						DMRData data=new DMRData();
+						clines=data.decodeHalfRate(bits);
+						line[3]=clines[0];
+						line[4]=clines[1];
+						line[5]=clines[2];
+						fonts[3]=theApp.boldFont;
+						colours[3]=Color.BLACK;
+						fonts[4]=theApp.boldFont;
+						colours[4]=Color.BLACK;
+						fonts[5]=theApp.boldFont;
+						colours[5]=Color.BLACK;
+					}
+				}
+					
 				// TODO : Decode Rate ¾ Data Continuation frames
 				// Rate ¾ Data Continuation
 				if (dataType==8) BPTCres=true;
