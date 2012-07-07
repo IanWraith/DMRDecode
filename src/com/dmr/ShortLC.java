@@ -311,6 +311,15 @@ public class ShortLC {
 			dline.append(netID);
 			dline.append(" Site: ");
 			dline.append(siteID);
+			
+			int ac;
+			dline.append(" (");
+			for (ac=0;ac<28;ac++)	{
+				if (db[ac]==true) dline.append("1");
+				else dline.append("0");
+			}
+			dline.append(")");
+			
 			// Make up a status bar system label display
 			if (TtheApp!=null) TtheApp.setSystemLabel("System : Connect Plus (Network "+Integer.toString(netID)+") (Site "+Integer.toString(siteID)+")");
 		}
