@@ -301,25 +301,21 @@ public class ShortLC {
 		    if (db[13]==true) netID=netID+4;
 			if (db[14]==true) netID=netID+2;
 			if (db[15]==true) netID++;
-			// Bits 16,17,18,19,20 have an unknown purpose
+			// Bits 16,17,18,19,20,21,22,23 appear to be the site ID
 			// Site ID
-			if (db[21]==true) siteID=4;
+			if (db[16]==true) siteID=128;
 			else siteID=0;
+			if (db[17]==true) siteID=siteID+64;
+			if (db[18]==true) siteID=siteID+32;
+			if (db[19]==true) siteID=siteID+16;
+			if (db[20]==true) siteID=siteID+8;
+			if (db[21]==true) siteID=siteID+4;
 			if (db[22]==true) siteID=siteID+2;
 			if (db[23]==true) siteID++;
 			// Bits 24,25,26,27 have an unknown purpose
 			dline.append(netID);
 			dline.append(" Site: ");
 			dline.append(siteID);
-			
-			int ac;
-			dline.append(" (");
-			for (ac=0;ac<28;ac++)	{
-				if (db[ac]==true) dline.append("1");
-				else dline.append("0");
-			}
-			dline.append(")");
-			
 			// Make up a status bar system label display
 			if (TtheApp!=null) TtheApp.setSystemLabel("System : Connect Plus (Network "+Integer.toString(netID)+") (Site "+Integer.toString(siteID)+")");
 		}
