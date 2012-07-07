@@ -3,7 +3,7 @@ It is Java based so should run under Microsoft Windows , Apple and Linux PC's. T
 only hardware needed will be a radio scanner with a discriminator audio output.
 
 The core of the program is based around the open source DSD program by an unknown
-author. This program was written in C and runs under Linux only so the first job is to
+author. This program was written in C and runs under Linux only so my first job was to
 convert that code to Java and remove all sections that don't relate to DMR.
 
 Milestone 1 - To detect voice and data sync words reached (3rd September 2010)
@@ -24,6 +24,11 @@ Milestone 7 - To fix a memory leak type problem where the heap memory used by th
 
 Milestone 8 - To pass certain data on to other programs via TCP/IP socket. (Reached 1st March 2011)
 
-Ian Wraith (1st March 2011)
+Build 48 - Convert the Connect Plus site ID field in SLCO 10 packets from 3 bits to 8 bits
+           Add the Utilities class to remove duplicated code.
+           Display the manufacturers name in Proprietary Data Headers.
+           Start adding build change details in this README file.
+      
+Ian Wraith (7th July 2012)
 
 
