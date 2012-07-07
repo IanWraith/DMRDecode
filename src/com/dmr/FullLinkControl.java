@@ -51,14 +51,15 @@ public class FullLinkControl {
 	// Group Voice Channer User LC
 	void group_v_ch_usr (DMRDecode theApp,boolean bits[])	{
 		int index;
+		Utilities utils=new Utilities();
 		StringBuilder sb=new StringBuilder(250);
 		display[0]="Group Voice Channel User LC";
 		// Service Options
 		display[1]=decodeServiceOptions(bits,16);
 		// Group address
-		int group=retAddress(bits,24);
+		int group=utils.retAddress(bits,24);
 		// Source address
-		int source=retAddress(bits,48);
+		int source=utils.retAddress(bits,48);
 		sb.append("Group Address : "+Integer.toString(group));
 		sb.append(" Source Address : "+Integer.toString(source));
 		display[2]=sb.toString();
@@ -93,14 +94,15 @@ public class FullLinkControl {
 	// Unit to Unit Voice Channel User LC
 	void uu_v_ch_usr (DMRDecode theApp,boolean bits[])	{
 		int index;
+		Utilities utils=new Utilities();
 		StringBuilder sb=new StringBuilder(250);
 		display[0]="Unit to Unit Voice Channel User LC";
 		// Service Options
 		display[1]=decodeServiceOptions(bits,16);
 		// Target address
-		int target=retAddress(bits,24);
+		int target=utils.retAddress(bits,24);
 		// Source address
-		int source=retAddress(bits,48);
+		int source=utils.retAddress(bits,48);
 		sb.append("Target Address : "+Integer.toString(target));
 		sb.append(" Source Address : "+Integer.toString(source));
 		display[2]=sb.toString();
@@ -134,12 +136,13 @@ public class FullLinkControl {
 	// Terminator Data Link Control PDU
 	void td_lc (DMRDecode theApp,boolean bits[])	{
 		int index;
+		Utilities utils=new Utilities();
 		StringBuilder sb=new StringBuilder(250);
 		display[0]="Terminator Data Link Control PDU";
 		// Destination LLID
-		int dllid=retAddress(bits,16);
+		int dllid=utils.retAddress(bits,16);
 		// Source LLID
-		int sllid=retAddress(bits,40);
+		int sllid=utils.retAddress(bits,40);
 		sb.append("Destination Logical Link ID : "+Integer.toString(dllid));
 		sb.append(" Source Logical Link ID : "+Integer.toString(sllid));
 		display[1]=sb.toString();
@@ -255,17 +258,6 @@ public class FullLinkControl {
 			else sb.append("0");
 		}
 		display[0]=sb.toString();
-	}
-	
-	// Return a 24 bit address 
-	private int retAddress (boolean bits[],int offset)	{
-		int addr=0,a,b,c;
-		for (a=0;a<24;a++)	{
-			b=(24-a)-1;
-			c=(int)Math.pow(2.0,b);
-			if (bits[a+offset]==true) addr=addr+c;
-		}
-		return addr;
 	}
 	
 	// Decode and display Service Options

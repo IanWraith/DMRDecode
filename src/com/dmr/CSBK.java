@@ -86,6 +86,7 @@ public class CSBK {
 		int index;
 		StringBuilder sb=new StringBuilder(250);
 		StringBuilder sc=new StringBuilder(250);
+		Utilities utils=new Utilities();
 		// 0 if CSBK , 1 if Data
 		boolean dc=bits[16];
 		// 0 if target is individual and 1 if group
@@ -102,9 +103,9 @@ public class CSBK {
 		if (bits[30]==true) bfol=bfol+2;
 		if (bits[31]==true) bfol++;
 		// Target address
-		int target=retAddress(bits,32);
+		int target=utils.retAddress(bits,32);
 		// Source address
-		int source=retAddress(bits,56);
+		int source=utils.retAddress(bits,56);
 		// Display this
 		sb.append("Preamble CSBK : ");
 		if (dc==false) sb.append(" CSBK content ");
@@ -130,18 +131,7 @@ public class CSBK {
 			theApp.usersLogged.setChannel(index,theApp.currentChannel);
 		}
 	}
-	
-	// Return a 24 bit address 
-	private int retAddress (boolean bits[],int offset)	{
-		int addr=0,a,b,c;
-		for (a=0;a<24;a++)	{
-			b=(24-a)-1;
-			c=(int)Math.pow(2.0,b);
-			if (bits[a+offset]==true) addr=addr+c;
-		}
-		return addr;
-	}
-	
+		
 	// BS Outbound Activation CSBK
 	private void bs_dwn_act (boolean bits[])	{
 		// TODO : Full decoding of bs_dwn_act
@@ -209,13 +199,14 @@ public class CSBK {
 	// Connect Plus - CSBKO 03 FID=6
 	private void big_m_csbko03 (DMRDecode theApp,boolean bits[])	{
 		int a,lcn;
+		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(300);
 		StringBuilder sb2=new StringBuilder(300);
 		display[0]="Connect Plus CSBK : CSBKO=3";
 		// Source ID
-		int source=retAddress(bits,16);
+		int source=utils.retAddress(bits,16);
 		// Group address
-		int group=retAddress(bits,40);
+		int group=utils.retAddress(bits,40);
 		// LCN
 		if (bits[64]==true) lcn=8;
 		else lcn=0;

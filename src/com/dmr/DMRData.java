@@ -62,13 +62,14 @@ public class DMRData {
 	// Response Packet
 	void responsePacket (boolean bits[])	{
 		int blocks,dclass,status,type;
+		Utilities utils=new Utilities();
 		StringBuilder sa=new StringBuilder(250);
 		StringBuilder sb=new StringBuilder(250);
 		display[0]="Response Packet";
 		// Destination LLID
-		int dllid=retAddress(bits,16);
+		int dllid=utils.retAddress(bits,16);
 		// Source LLID
-		int sllid=retAddress(bits,40);
+		int sllid=utils.retAddress(bits,40);
 		sa.append("Destination Logical Link ID : "+Integer.toString(dllid));
 		sa.append(" Source Logical Link ID : "+Integer.toString(sllid));
 		display[1]=sa.toString();
@@ -111,13 +112,14 @@ public class DMRData {
 	// Unconfirmed Data
 	void unconfirmedData (boolean bits[])	{
 		int blocks,fsn;
+		Utilities utils=new Utilities();
 		StringBuilder sa=new StringBuilder(250);
 		StringBuilder sb=new StringBuilder(250);
 		display[0]="Unconfirmed Data";
 		// Destination LLID
-		int dllid=retAddress(bits,16);
+		int dllid=utils.retAddress(bits,16);
 		// Source LLID
-		int sllid=retAddress(bits,40);
+		int sllid=utils.retAddress(bits,40);
 		sa.append("Destination Logical Link ID : "+Integer.toString(dllid));
 		sa.append(" Source Logical Link ID : "+Integer.toString(sllid));
 		display[1]=sa.toString();
@@ -160,13 +162,14 @@ public class DMRData {
 	
 	// Proprietary Data Packet
 	void propData (boolean bits[])	{
+		Utilities utils=new Utilities();
 		StringBuilder sa=new StringBuilder(250);
-		int mfid=retEight(bits,8);
-		display[0]="Proprietary Data : MFID="+Integer.toString(mfid);
+		int mfid=utils.retEight(bits,8);
+		display[0]="Proprietary Data : MFID="+Integer.toString(mfid)+" ("+utils.returnMFIDName(mfid)+")";
 		// Get the 8 octets of proprietary data
 		int a,os=16,pdata;
 		for (a=0;a<8;a++)	{
-			pdata=retEight(bits,os);
+			pdata=utils.retEight(bits,os);
 			sa.append(Integer.toString(pdata));
 			if (a<7) sa.append(","); 
 			os=os+8;
@@ -179,30 +182,5 @@ public class DMRData {
 	void unknownData (boolean bits[],int dpf)	{
 		display[0]="Unknown Data : DPF="+Integer.toString(dpf);
 	}
-	
-	// Return a 24 bit address 
-	private int retAddress (boolean bits[],int offset)	{
-		int addr=0,a,b,c;
-		for (a=0;a<24;a++)	{
-			b=(24-a)-1;
-			c=(int)Math.pow(2.0,b);
-			if (bits[a+offset]==true) addr=addr+c;
-		}
-		return addr;
-	}
-	
-	// Return an 8 bit byte from a boolean array
-	private int retEight (boolean bits[],int offset)	{
-		int b=0;
-		if (bits[offset]==true) b=128;
-		if (bits[offset+1]==true) b=b+64;
-		if (bits[offset+2]==true) b=b+32;
-		if (bits[offset+3]==true) b=b+16;
-		if (bits[offset+4]==true) b=b+8;
-		if (bits[offset+5]==true) b=b+4;
-		if (bits[offset+6]==true) b=b+2;
-		if (bits[offset+7]==true) b++;
-		return b;
-	}
-	
+		
 }
