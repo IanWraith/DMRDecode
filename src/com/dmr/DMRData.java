@@ -166,13 +166,11 @@ public class DMRData {
 		StringBuilder sa=new StringBuilder(250);
 		int mfid=utils.retEight(bits,8);
 		display[0]="Proprietary Data : MFID="+Integer.toString(mfid)+" ("+utils.returnMFIDName(mfid)+")";
-		// Get the 8 octets of proprietary data
-		int a,os=16,pdata;
-		for (a=0;a<8;a++)	{
-			pdata=utils.retEight(bits,os);
-			sa.append(Integer.toString(pdata));
-			if (a<7) sa.append(","); 
-			os=os+8;
+		// Display proprietary data as binary
+		int a;
+		for (a=16;a<64;a++)	{
+			if (bits[a]==true) sa.append("1");
+			else sa.append("0");
 		}
 		display[1]=sa.toString();
 	}
