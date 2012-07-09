@@ -26,31 +26,14 @@ public class DMRData {
 	
 	// Decode a half rate packet
 	public String[] decodeHalfRate (boolean bits[])	{
-		int dbsn;
 		StringBuilder sa=new StringBuilder(250);
-		StringBuilder sb=new StringBuilder(250);
-		// First 7 bits are the Data Block Serial Number (DBSN)
-		// then 9 bits C-DATA CRC
-		// then 80 bits user data
-		// DBSN
-		if (bits[0]==true) dbsn=64;
-		else dbsn=0;
-		if (bits[1]==true) dbsn=dbsn+32;
-		if (bits[2]==true) dbsn=dbsn+16;
-		if (bits[3]==true) dbsn=dbsn+8;
-		if (bits[4]==true) dbsn=dbsn+4;
-		if (bits[5]==true) dbsn=dbsn+2;
-		if (bits[6]==true) dbsn++;
-		// Bits 7,8,9,10,11,12,13,14 and 15 are the C-DATA CRC
-		sa.append("Data Block Serial Number "+Integer.toString(dbsn));
-		display[0]=sa.toString();
-		// Bits 16 onwards the payload
 		int a;
-		for (a=16;a<96;a++)	{
-			if (bits[a]==true) sb.append("1");
-			else sb.append("0");
+		for (a=0;a<96;a++)	{
+			if (bits[a]==true) sa.append("1");
+			else sa.append("0");
 		}
-		display[1]=sb.toString();
+		display[0]=sa.toString();
+		display[1]=binaryAsASCII(bits);
 		return display;
 	}
 	
@@ -179,6 +162,19 @@ public class DMRData {
 	// Unknown Data
 	void unknownData (boolean bits[],int dpf)	{
 		display[0]="Unknown Data : DPF="+Integer.toString(dpf);
+	}
+	
+	// Display a boolean array as ASCII
+	private String binaryAsASCII (boolean bits[])	{
+		StringBuffer sb=new StringBuffer();
+		Utilities utils=new Utilities();
+		int a;
+		for (a=0;a<bits.length;a=a+8)	{
+			int td=utils.retEight(bits,a);
+			if ((td>31)&&(td<127)) sb.append((char)td);
+			else if (td>0) sb.append("("+Integer.toString(td)+")");
+		}
+		return sb.toString();
 	}
 		
 }
