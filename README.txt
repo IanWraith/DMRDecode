@@ -28,7 +28,9 @@ Build 48 - Convert the Connect Plus site ID field in SLCO 10 packets from 3 bits
            Add the Utilities class to remove duplicated code.
            Display the manufacturers name in Proprietary Data Headers.
            Start adding build change details in this README file.
+           
+Build 49 - Display the payload in half rate data packets both as binary and ASCII.
       
-Ian Wraith (7th July 2012)
+Ian Wraith (9th July 2012)
 
 
