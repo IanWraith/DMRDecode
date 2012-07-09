@@ -30,6 +30,8 @@ Build 48 - Convert the Connect Plus site ID field in SLCO 10 packets from 3 bits
            Start adding build change details in this README file.
            
 Build 49 - Display the payload in half rate data packets both as binary and ASCII.
+
+Build 50 - Correctly display an 8 bit Site ID in Connect Plus SLCO 9 packets.
       
 Ian Wraith (9th July 2012)
 

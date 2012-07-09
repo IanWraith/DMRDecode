@@ -270,12 +270,17 @@ public class ShortLC {
 		    if (db[13]==true) netID=netID+4;
 			if (db[14]==true) netID=netID+2;
 			if (db[15]==true) netID++;
-			// Bits 16,17,18,19,20 have an unknown purpose
+			// Bits 16,17,18,19,20,21,22,23 appear to be the site ID
 			// Site ID
-			if (db[21]==true) siteID=4;
+			if (db[16]==true) siteID=128;
 			else siteID=0;
+			if (db[17]==true) siteID=siteID+64;
+			if (db[18]==true) siteID=siteID+32;
+			if (db[19]==true) siteID=siteID+16;
+			if (db[20]==true) siteID=siteID+8;
+			if (db[21]==true) siteID=siteID+4;
 			if (db[22]==true) siteID=siteID+2;
-			if (db[23]==true) siteID++;
+			if (db[23]==true) siteID++;			
 			// Bits 24,25,26,27 have an unknown purpose
 			dline.append(netID);
 			dline.append(" Site: ");
