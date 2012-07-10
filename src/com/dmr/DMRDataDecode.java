@@ -127,7 +127,7 @@ public class DMRDataDecode {
 						if (tCRC.crcDataHeader(bits)==true)	{
 							String clines[]=new String[3];
 							BPTCres=true;
-							DMRData data=new DMRData();
+							DMRData data=new DMRData(theApp);
 							clines=data.decodeHeader(bits);
 							line[3]=clines[0];
 							line[4]=clines[1];
@@ -149,7 +149,7 @@ public class DMRDataDecode {
 						boolean bits[]=bptc19696.dataOut();
 						BPTCres=true;
 						String clines[]=new String[3];
-						DMRData data=new DMRData();
+						DMRData data=new DMRData(theApp);
 						clines=data.decodeHalfRate(bits);
 						line[3]=clines[0];
 						line[4]=clines[1];

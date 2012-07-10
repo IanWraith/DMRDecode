@@ -231,7 +231,7 @@ public class DMREmbedded {
 						if (tCRC.crcDataHeader(bits)==true)	{
 							String clines[]=new String[3];
 							BPTCres=true;
-							DMRData data=new DMRData();
+							DMRData data=new DMRData(theApp);
 							clines=data.decodeHeader(bits);
 							line[3]=clines[0];
 							line[4]=clines[1];

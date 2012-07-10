@@ -29,13 +29,14 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.io.DataInputStream;
 import java.io.PipedInputStream;
+import java.util.ArrayList;
 
 public class DMRDecode {
 	private DisplayModel display_model;
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 50)";
+	public String program_version="DMR Decoder (Build 51)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -110,6 +111,7 @@ public class DMRDecode {
 	private boolean quickLog=false;
 	public FileWriter quickLogFile;
 	private int colourCode=0;
+	private ArrayList<Integer> incomingDataList=new ArrayList<Integer>();  
 	
 	public static void main(String[] args) {
 		theApp=new DMRDecode();
@@ -1006,6 +1008,26 @@ public class DMRDecode {
 	// Gets all the text on the screen and returns it as a string
 	public String getAllText()	{
 		return	display_view.getText();
+	}
+	
+	// Clear the data list
+	public void clearIncomingDataList()	{
+		incomingDataList.clear();
+	}
+	
+	// Add an int to the data list
+	public void addToIncomingDataList (int in)	{
+		incomingDataList.add(in);
+	}
+	
+	// Return the list length
+	public int incomingDataListLengh()	{
+		return incomingDataList.size();
+	}
+	
+	// Return a copy of the list
+	public ArrayList<Integer> getIncomingDataList()	{
+		return incomingDataList;
 	}
 	
 

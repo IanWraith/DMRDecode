@@ -2,6 +2,11 @@ package com.dmr;
 
 public class DMRData {
 	private String display[]=new String[3];
+	private DMRDecode theApp;
+	
+	public DMRData (DMRDecode tapp)	{
+		theApp=tapp;
+	}
 	
 	// The header decode method
 	public String[] decodeHeader (boolean bits[])	{
@@ -21,29 +26,30 @@ public class DMRData {
 		else if (dpf==14) rawShortData(bits);
 		else if (dpf==15) propData(bits);
 		else unknownData(bits,dpf);
+		// Clear the data list
+		theApp.clearIncomingDataList();
 		return display;
 	}
 	
 	// Decode a half rate packet
 	public String[] decodeHalfRate (boolean bits[])	{
-		StringBuilder sa=new StringBuilder(250);
+		Utilities utils=new Utilities();
 		int a;
-		for (a=0;a<96;a++)	{
-			if (bits[a]==true) sa.append("1");
-			else sa.append("0");
+		for (a=0;a<bits.length;a=a+8)	{
+			int td=utils.retEight(bits,a);
+			theApp.addToIncomingDataList(td);
 		}
-		display[0]=sa.toString();
-		display[1]=binaryAsASCII(bits);
+		decodeList();
 		return display;
 	}
 	
 	// Unified Data Transport
-	void udt (boolean bits[])	{
+	private void udt (boolean bits[])	{
 		display[0]="Unified Data Transport";
 	}
 	
 	// Response Packet
-	void responsePacket (boolean bits[])	{
+	private void responsePacket (boolean bits[])	{
 		int blocks,dclass,status,type;
 		Utilities utils=new Utilities();
 		StringBuilder sa=new StringBuilder(250);
@@ -93,7 +99,7 @@ public class DMRData {
 	}
 	
 	// Unconfirmed Data
-	void unconfirmedData (boolean bits[])	{
+	private void unconfirmedData (boolean bits[])	{
 		int blocks,fsn;
 		Utilities utils=new Utilities();
 		StringBuilder sa=new StringBuilder(250);
@@ -129,22 +135,22 @@ public class DMRData {
 	}
 	
 	// Confirmed Data
-	void confirmedData (boolean bits[])	{
+	private void confirmedData (boolean bits[])	{
 		display[0]="Confirmed Data";
 	}
 	
 	// Defined Short Data
-	void definedShortData (boolean bits[])	{
+	private void definedShortData (boolean bits[])	{
 		display[0]="Defined Short Data";
 	}
 	
 	// Raw Short Data
-	void rawShortData (boolean bits[])	{
+	private void rawShortData (boolean bits[])	{
 		display[0]="Raw or Status Short Data";
 	}
 	
 	// Proprietary Data Packet
-	void propData (boolean bits[])	{
+	private void propData (boolean bits[])	{
 		Utilities utils=new Utilities();
 		StringBuilder sa=new StringBuilder(250);
 		int mfid=utils.retEight(bits,8);
@@ -160,21 +166,13 @@ public class DMRData {
 	
 	
 	// Unknown Data
-	void unknownData (boolean bits[],int dpf)	{
+	private void unknownData (boolean bits[],int dpf)	{
 		display[0]="Unknown Data : DPF="+Integer.toString(dpf);
 	}
 	
-	// Display a boolean array as ASCII
-	private String binaryAsASCII (boolean bits[])	{
-		StringBuffer sb=new StringBuffer();
-		Utilities utils=new Utilities();
-		int a;
-		for (a=0;a<bits.length;a=a+8)	{
-			int td=utils.retEight(bits,a);
-			if ((td>31)&&(td<127)) sb.append((char)td);
-			else if (td>0) sb.append("("+Integer.toString(td)+")");
-		}
-		return sb.toString();
+	// Try to recognise the incoming data and decode it if possible 
+	private void decodeList()	{
+		
 	}
 		
 }
