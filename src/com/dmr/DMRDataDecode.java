@@ -46,6 +46,7 @@ public class DMRDataDecode {
 				dataType=slottype.returnDataType();
 				// Main section decode
 				// PI
+				// TODO : Display the payload of PI PDUs
 				if (dataType==0) BPTCres=true;
 				
 				// Voice LC Header
