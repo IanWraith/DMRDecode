@@ -32,7 +32,9 @@ Build 48 - Convert the Connect Plus site ID field in SLCO 10 packets from 3 bits
 Build 49 - Display the payload in half rate data packets both as binary and ASCII.
 
 Build 50 - Correctly display an 8 bit Site ID in Connect Plus SLCO 9 packets.
+
+Build 51 - Display Privacy Header PDUs as aw binary
       
-Ian Wraith (9th July 2012)
+Ian Wraith (17th July 2012)
 
 
