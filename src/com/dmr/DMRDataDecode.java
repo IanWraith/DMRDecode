@@ -51,9 +51,6 @@ public class DMRDataDecode {
 					if (bptc19696.decode(dibit_buf)==true)	{
 						BPTCres=true;
 						boolean bits[]=bptc19696.dataOut();
-						line[3]="PI Header";
-						fonts[3]=theApp.boldFont;
-						colours[3]=Color.BLACK;
 						// Display the PI header bits as raw binary
 						StringBuffer sb=new StringBuffer();
 						int ai;
@@ -61,9 +58,9 @@ public class DMRDataDecode {
 							if (bits[ai]==true) sb.append("1");
 							else sb.append("0");
 						}
-						line[4]=sb.toString();
-						fonts[4]=theApp.boldFont;
-						colours[4]=Color.BLACK;
+						line[3]=sb.toString();
+						fonts[3]=theApp.boldFont;
+						colours[3]=Color.BLACK;
 					}
 				}
 				

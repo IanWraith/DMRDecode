@@ -152,8 +152,24 @@ public class DMREmbedded {
 			// If the slot type is OK try to decode the rest
 			if (SLOT_TYPEres==true)	{
 				int dataType=slottype.returnDataType();
-				// PI
-				if (dataType==0) BPTCres=true;
+				// PI Header
+				if (dataType==0)	{
+					BPTC19696 bptc19696=new BPTC19696();
+					if (bptc19696.decode(dibit_buf)==true)	{
+						BPTCres=true;
+						boolean bits[]=bptc19696.dataOut();
+						// Display the PI header bits as raw binary
+						StringBuffer sb=new StringBuffer();
+						int ai;
+						for (ai=0;ai<bits.length;ai++)	{
+							if (bits[ai]==true) sb.append("1");
+							else sb.append("0");
+						}
+						line[3]=sb.toString();
+						fonts[3]=theApp.boldFont;
+						colours[3]=Color.BLACK;
+					}
+				}				
 				
 				// Voice LC Header
 				if (dataType==1)	{
