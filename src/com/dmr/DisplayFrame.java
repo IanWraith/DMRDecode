@@ -31,7 +31,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
 	private DMRDecode theApp;
 	public static final long serialVersionUID=1;
-	private JMenuItem save_to_file,inverted_item,debug_item,capture_item,quick_log;
+	private JMenuItem save_to_file,inverted_item,debug_item,capture_item,quick_log,save_settings;
 	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
 	private JMenuItem view_cach,view_idle,view_onlygood;
 	private JMenuItem clear_screen,copy_screen,twitter_item;
@@ -57,6 +57,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		inverted_item.addActionListener(this);
 		mainMenu.add(quick_log=new JRadioButtonMenuItem("Quick Log",theApp.isQuickLog()));
 		quick_log.addActionListener(this);
+		mainMenu.add(save_settings=new JMenuItem("Save Settings"));
+		save_settings.addActionListener(this);
 		mainMenu.add(save_to_file=new JRadioButtonMenuItem("Save to File",theApp.getLogging()));
 		save_to_file.addActionListener(this);
 		mainMenu.add(exit_item=new JMenuItem("Exit"));		
@@ -180,6 +182,9 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			// Restart the audio in thread
 			theApp.lineInThread.startAudio();
 		}	
+		
+		// Save the current settings
+		if (event_name=="Save Settings") theApp.saveCurrentSettings();
 		
 		// Twitter
 		if (event_name=="Follow DMRDecode Progress on Twitter")	{

@@ -36,7 +36,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 52)";
+	public String program_version="DMR Decoder (Build 53)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -1028,6 +1028,65 @@ public class DMRDecode {
 	// Return a copy of the list
 	public ArrayList<Integer> getIncomingDataList()	{
 		return incomingDataList;
+	}
+	
+	// Save the current settings as DMRDecode_settings.xml
+	public boolean saveCurrentSettings ()	{
+		FileWriter xmlfile;
+		String line;
+		// Open the default file settings //
+		try {
+			xmlfile=new FileWriter("DMRDecode_settings.xml");
+			// Start the XML file //
+			line="<?xml version='1.0' encoding='utf-8' standalone='yes'?><settings>";
+			xmlfile.write(line);
+			// Debug mode
+			line="<debug val='";
+			if (debug==true) line=line+"TRUE";
+			else line=line+"FALSE";
+			line=line+"'/>";
+			xmlfile.write(line);
+			// Invert
+			line="<invert val='";
+			if (inverted==true) line=line+"TRUE";
+			else line=line+"FALSE";
+			line=line+"'/>";
+			xmlfile.write(line);		
+			// Enable Symbol Display
+			line="<symbolDisplay val='";
+			if (enableDisplayBar==true) line=line+"TRUE";
+			else line=line+"FALSE";
+			line=line+"'/>";
+			xmlfile.write(line);			
+			// Display CACH
+			line="<displayCACH val='";
+			if (displayCACH==true) line=line+"TRUE";
+			else line=line+"FALSE";
+			line=line+"'/>";
+			xmlfile.write(line);
+			// Only display good frames
+			line="<goodFramesOnly val='";
+			if (displayOnlyGoodFrames==true) line=line+"TRUE";
+			else line=line+"FALSE";
+			line=line+"'/>";
+			xmlfile.write(line);
+			// Display IDLE PDUs
+			line="<idlePDU val='";
+			if (displayIdlePDU==true) line=line+"TRUE";
+			else line=line+"FALSE";
+			line=line+"'/>";
+			xmlfile.write(line);			
+			// All done so close the root item //
+			line="</settings>";
+			xmlfile.write(line);
+			// Flush and close the file //
+			xmlfile.flush();
+			xmlfile.close();
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null,"Error : Unable to create the file DMRDecode_settings.xml\n"+e.toString(),"Rivet", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}	
+		return true;
 	}
 	
 
