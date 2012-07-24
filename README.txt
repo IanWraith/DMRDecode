@@ -36,7 +36,9 @@ Build 50 - Correctly display an 8 bit Site ID in Connect Plus SLCO 9 packets.
 Build 51 - Display Privacy Header PDUs as raw binary
 
 Build 52 - Fix a bug which meant that PI Header PDUs in embedded frames weren't being displayed
+
+Build 53 - Allows the users settings to be saved in DMRDecode_settings.xml and reloaded on start up.
       
-Ian Wraith (18th July 2012)
+Ian Wraith (24th July 2012)
 
 
