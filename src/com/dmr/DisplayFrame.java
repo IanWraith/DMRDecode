@@ -104,6 +104,18 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		add(vscrollbar,BorderLayout.EAST);
 		// Add a listener for this
 		vscrollbar.addAdjustmentListener(new MyAdjustmentListener());
+		// Read in the default settings file
+		try	{
+			theApp.readDefaultSettings();
+			// Update the menus
+			menuItemUpdate();
+		}
+		catch (Exception e)	{
+			String err=e.toString();
+			// Can't find the default settings file //
+			System.out.println("\nInformative : Unable to read the file DMRDecode_settings.xml "+err);
+		}
+			
 		}
 
 	
