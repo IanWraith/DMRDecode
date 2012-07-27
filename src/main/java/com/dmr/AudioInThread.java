@@ -20,10 +20,11 @@ public class AudioInThread extends Thread {
 	private int volumeBuffer[]=new int[VOLUMEBUFFERSIZE];
 	private int volumeBufferCounter=0;
 	private static int ISIZE=4096;
+    private static int QUEUE_SIZE=4096;
 	private byte buffer[]=new byte[ISIZE+1];
 //	private PipedOutputStream ps=new PipedOutputStream();
 //	private DataOutputStream outPipe=new DataOutputStream(ps);
-    private volatile BlockingQueue<Integer> outQueue = new ArrayBlockingQueue<Integer>(ISIZE, true);
+    private volatile BlockingQueue<Integer> outQueue = new ArrayBlockingQueue<Integer>(QUEUE_SIZE, true);
 	
 	// Filter details ..
 	// filtertype	 =	 Raised Cosine
