@@ -7,6 +7,8 @@ import javax.sound.sampled.TargetDataLine;
 import javax.swing.JOptionPane;
 import java.io.DataOutputStream;
 import java.io.PipedOutputStream;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class AudioInThread extends Thread {
 	private boolean run;
@@ -19,8 +21,9 @@ public class AudioInThread extends Thread {
 	private int volumeBufferCounter=0;
 	private static int ISIZE=4096;
 	private byte buffer[]=new byte[ISIZE+1];
-	private PipedOutputStream ps=new PipedOutputStream();
-	private DataOutputStream outPipe=new DataOutputStream(ps);
+//	private PipedOutputStream ps=new PipedOutputStream();
+//	private DataOutputStream outPipe=new DataOutputStream(ps);
+    private volatile BlockingQueue<Integer> outQueue = new ArrayBlockingQueue<Integer>(ISIZE, true);
 	
 	// Filter details ..
 	// filtertype	 =	 Raised Cosine
@@ -121,15 +124,16 @@ public class AudioInThread extends Thread {
 			sample=(buffer[a]<<8)+buffer[a+1];
 			// Add this sample to the circular volume buffer
 			addToVolumeBuffer(sample);
-			try		{
+			try	{
 				// Put this through a root raised filter
 				// and then put the result into the output pipe
-				outPipe.writeInt(rootRaisedFilter(sample));
-				}
-				catch (Exception e)	{
-					String err=e.getMessage();
-					JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
-				}
+				//outPipe.writeInt(rootRaisedFilter(sample));
+                outQueue.put(rootRaisedFilter(sample));
+            }
+            catch (Exception e)	{
+                String err=e.getMessage();
+                JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+            }
 		}
 		// The the main thread we have stopped fetching audio
 		gettingAudio=false;	
@@ -192,9 +196,12 @@ public class AudioInThread extends Thread {
     	return volumeAverage;
     }
     
+    public BlockingQueue<Integer> getDataQueue(){
+        return this.outQueue;
+    }
     // Return the PipedOutputSteam object so it can be connected to
-    public PipedOutputStream getPipedWriter() {
-        return ps;
-      }
+//    public PipedOutputStream getPipedWriter() {
+//        return ps;
+//      }
     
 }

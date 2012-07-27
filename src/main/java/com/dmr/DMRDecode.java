@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
 
 public class DMRDecode {
 	private DisplayModel display_model;
@@ -92,8 +93,9 @@ public class DMRDecode {
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
 	private int jitter=-1;
-	private DataInputStream inPipeData;
-	private PipedInputStream inPipe;
+//	private DataInputStream inPipeData;
+//	private PipedInputStream inPipe;
+    private BlockingQueue<Integer> inPipeData;
 	private int lastSample=0;
 	private final int JITTERFRAMEADJUST=1;
 	private final int JITTERCOUNTERSIZE=(JITTERFRAMEADJUST*144);
@@ -137,9 +139,10 @@ public class DMRDecode {
 			// Start the audio thread
 			theApp.lineInThread.startAudio();
 			// Connected a piped input stream to the piped output stream in the thread
-			theApp.inPipe=new PipedInputStream(theApp.lineInThread.getPipedWriter());
+//			theApp.inPipe=new PipedInputStream(theApp.lineInThread.getPipedWriter());
 			// Now connect a data input stream to the piped input stream
-			theApp.inPipeData=new DataInputStream(theApp.inPipe);
+//			theApp.inPipeData=new DataInputStream(theApp.inPipe);
+            theApp.inPipeData = theApp.lineInThread.getDataQueue();
 			}
 		catch (Exception e)	{
 			JOptionPane.showMessageDialog(null,"Error in main()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
@@ -901,7 +904,7 @@ public class DMRDecode {
 		int sample=0;
 		// Get the sample from the sound card via the sound thread
 		try	{
-			sample=inPipeData.readInt();
+			sample=inPipeData.take();
 			}
 		catch (Exception e)	{
 			JOptionPane.showMessageDialog(null,"Error in getSample()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
