@@ -7,10 +7,8 @@ import javax.sound.sampled.TargetDataLine;
 import javax.swing.JOptionPane;
 import java.io.DataOutputStream;
 import java.io.PipedOutputStream;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ArrayBlockingQueue;
 
-public class AudioInThread extends Thread {
+public class AudioInThread implements Runnable {
 	private boolean run;
 	private boolean audioReady;
 	private TargetDataLine Line;
@@ -19,12 +17,11 @@ public class AudioInThread extends Thread {
 	private static int VOLUMEBUFFERSIZE=100;
 	private int volumeBuffer[]=new int[VOLUMEBUFFERSIZE];
 	private int volumeBufferCounter=0;
-	private static int ISIZE=4096;
+	private static int ISIZE=256;
     private static int QUEUE_SIZE=4096;
 	private byte buffer[]=new byte[ISIZE+1];
-//	private PipedOutputStream ps=new PipedOutputStream();
-//	private DataOutputStream outPipe=new DataOutputStream(ps);
-    private volatile BlockingQueue<Integer> outQueue = new ArrayBlockingQueue<Integer>(QUEUE_SIZE, true);
+	private PipedOutputStream ps=new PipedOutputStream();
+	private DataOutputStream outPipe=new DataOutputStream(ps);
 	
 	// Filter details ..
 	// filtertype	 =	 Raised Cosine
@@ -69,14 +66,13 @@ public class AudioInThread extends Thread {
     	run=false;
     	audioReady=false;
     	gettingAudio=false;
-    	setPriority(Thread.MIN_PRIORITY);
-        start();
-        Thread.yield();
+        setupAudio();
       }
     
     // Main
     public void run()	{
     	// Run continously
+        int i = 0;
     	for (;;)	{
     		// If it hasn't been already then setup the audio device
     		if (audioReady==false) setupAudio();
@@ -128,8 +124,7 @@ public class AudioInThread extends Thread {
 			try	{
 				// Put this through a root raised filter
 				// and then put the result into the output pipe
-				//outPipe.writeInt(rootRaisedFilter(sample));
-                outQueue.put(rootRaisedFilter(sample));
+				outPipe.writeInt(rootRaisedFilter(sample));
             }
             catch (Exception e)	{
                 String err=e.getMessage();
@@ -197,12 +192,9 @@ public class AudioInThread extends Thread {
     	return volumeAverage;
     }
     
-    public BlockingQueue<Integer> getDataQueue(){
-        return this.outQueue;
-    }
     // Return the PipedOutputSteam object so it can be connected to
-//    public PipedOutputStream getPipedWriter() {
-//        return ps;
-//      }
+    public PipedOutputStream getPipedWriter() {
+        return ps;
+      }
     
 }

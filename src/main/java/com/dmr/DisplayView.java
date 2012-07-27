@@ -39,7 +39,7 @@ public class DisplayView extends JComponent implements Observer  {
 	
 	public DisplayView (DMRDecode theApp) {
 		this.theApp=theApp;	
-		}
+    }
 			
 	public void update (Observable o,Object rectangle)	{			
 	}

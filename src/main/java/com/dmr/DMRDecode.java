@@ -38,7 +38,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 public class DMRDecode {
 	private DisplayModel display_model;
@@ -93,9 +95,8 @@ public class DMRDecode {
 	private int samplesAheadBuffer[]=new int[SAMPLESAHEADSIZE];
 	private int samplesAheadCounter=0;
 	private int jitter=-1;
-//	private DataInputStream inPipeData;
-//	private PipedInputStream inPipe;
-    private BlockingQueue<Integer> inPipeData;
+	private DataInputStream inPipeData;
+	private PipedInputStream inPipe;
 	private int lastSample=0;
 	private final int JITTERFRAMEADJUST=1;
 	private final int JITTERCOUNTERSIZE=(JITTERFRAMEADJUST*144);
@@ -122,13 +123,54 @@ public class DMRDecode {
 	public FileWriter quickLogFile;
 	private int colourCode=0;
 	private ArrayList<Integer> incomingDataList=new ArrayList<Integer>();  
+    
+    private int socketThreadPriority = 3;
+    private int audioInputPriority = 3;
+    private int mainThreadPriority = 5;
+    
+    private ExecutorService socketExecutor = Executors.newSingleThreadExecutor(
+        new ThreadFactory(){
+            public Thread newThread(Runnable r){
+                Thread thread = new Thread(r);
+                thread.setName("DMRDecode Socket Thread");
+                thread.setPriority(socketThreadPriority);
+                return thread;
+            }
+        }
+    );
+
+    private ExecutorService mainExecutor = Executors.newSingleThreadExecutor(
+        new ThreadFactory(){
+            public Thread newThread(Runnable r){
+                Thread thread = new Thread(r);
+                thread.setName("DMRDecode Main Thread");
+                thread.setPriority(mainThreadPriority);
+                return thread;
+            }
+        }
+    );
+
+    private ExecutorService audioInputExecutor = Executors.newSingleThreadExecutor(
+        new ThreadFactory(){
+            public Thread newThread(Runnable r){
+                Thread thread = new Thread(r);
+                thread.setName("DMRDecode Audio Input Thread");
+                thread.setPriority(audioInputPriority);
+                return thread;
+            }
+        }
+    );
+
 	
 	public static void main(String[] args) {
-		theApp=new DMRDecode();
-		SwingUtilities.invokeLater(new Runnable(){public void run(){theApp.createGUI();}});
-		theApp.short_lc.setApp(theApp);
 		// Setup the TCP/IP socket code
 		try	{
+            theApp=new DMRDecode();
+            SwingUtilities.invokeAndWait(new Runnable(){public void run(){theApp.createGUI();}});
+            theApp.short_lc.setApp(theApp);
+            theApp.socketExecutor.submit(theApp.socketThread);
+
+            //this returns a boolean...
 			theApp.socketThread.setupSocket();			
 		} catch (Exception e)	{
 			JOptionPane.showMessageDialog(null,"Error in socket setup during main()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
@@ -139,20 +181,26 @@ public class DMRDecode {
 			// Start the audio thread
 			theApp.lineInThread.startAudio();
 			// Connected a piped input stream to the piped output stream in the thread
-//			theApp.inPipe=new PipedInputStream(theApp.lineInThread.getPipedWriter());
+			theApp.inPipe=new PipedInputStream(theApp.lineInThread.getPipedWriter(), 16384);
 			// Now connect a data input stream to the piped input stream
-//			theApp.inPipeData=new DataInputStream(theApp.inPipe);
-            theApp.inPipeData = theApp.lineInThread.getDataQueue();
-			}
+			theApp.inPipeData=new DataInputStream(theApp.inPipe);
+        }
 		catch (Exception e)	{
 			JOptionPane.showMessageDialog(null,"Error in main()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 			System.exit(0);
-			}
-		// The main routine
-		while (RUNNING)	{
-			if ((theApp.lineInThread.getAudioReady()==true)&&(theApp.pReady==true)) theApp.decode();
-		}
-		}
+        }
+
+        theApp.audioInputExecutor.submit(theApp.lineInThread);
+        
+        theApp.mainExecutor.submit(new Runnable(){
+            public void run(){
+                while (RUNNING)	{
+                    if ((theApp.lineInThread.getAudioReady()==true)&&(theApp.pReady==true)) theApp.decode();
+                }
+            }
+        });
+
+    }
 	
 	// Setup the window //
 	public void createGUI() {
@@ -168,26 +216,25 @@ public class DMRDecode {
 		window.setVisible(true);
 		// Make certain the program knows the GUI is ready
 		pReady=true;
-		}
+    }
 
 	class WindowHandler extends WindowAdapter {
 		public void windowClosing(WindowEvent e) {	
-			}
-		}
+        }
+    }
 
 	public DisplayFrame getWindow()	{
 		return window;	
-		}
+    }
 
 	public DisplayModel getModel() {
 		return display_model;
-		}
+    }
 
 	public DisplayView getView() {
 		return display_view;	
-		}
+    }
 	
-  
 	// The main routine for decoding DMR data
 	public void decode()	{
 		  noCarrier();
@@ -220,7 +267,7 @@ public class DMRDecode {
 			}
 	    
 	    // Pass these settings to the display bar
-	    window.displayBarParams(max,min,umid,lmid);
+        window.displayBarParams(max,min,umid,lmid);
 	}
 	
 	// This code lifted straight from the DSD source code converted to Java 
@@ -529,7 +576,7 @@ public class DMRDecode {
 	}
 	  
 	// Adds a line to the display as long as pause isn't enabled
-	public void addLine(String line,Color col,Font font) {
+	public void addLine(final String line, final Color col, final Font font) {
 		if (pauseScreen==true) return;
 		else display_view.add_line(line,col,font);
 	}
@@ -904,7 +951,7 @@ public class DMRDecode {
 		int sample=0;
 		// Get the sample from the sound card via the sound thread
 		try	{
-			sample=inPipeData.take();
+			sample=inPipeData.readInt();
 			}
 		catch (Exception e)	{
 			JOptionPane.showMessageDialog(null,"Error in getSample()","DMRDecode", JOptionPane.INFORMATION_MESSAGE);

@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class SocketOut extends Thread {
+public class SocketOut implements Runnable {
 	private boolean ready;
 	private static int PORT=17887;
 	private static int MAXCONNS=10;
@@ -16,9 +16,6 @@ public class SocketOut extends Thread {
 
 	public SocketOut (DMRDecode theApp) {
     	ready=false;
-    	setPriority(Thread.MIN_PRIORITY);
-        start();
-        Thread.yield();
       }
 	
 	// Main
@@ -28,6 +25,13 @@ public class SocketOut extends Thread {
     	for (;;)	{
     		// Wait for a socket connection if the listening socket has been setup
     		// and there is a free socket available
+            if(ready == false){
+                try{
+                    Thread.sleep(1000);
+                }catch(InterruptedException ie){
+                }
+                continue;
+            }
     		if ((ready==true)&&(checkForFreeSockets()==true))	{
     			// Get the index of the next available socket
     			next=nextFreeSocket();
