@@ -1,6 +1,7 @@
-package com.dmr;
+package test.java.com.dmr;
 
 import java.util.Arrays;
+import main.java.com.dmr.BPTC19696;
 import junit.framework.TestCase;
 
 public class BPTC19696Test extends TestCase {

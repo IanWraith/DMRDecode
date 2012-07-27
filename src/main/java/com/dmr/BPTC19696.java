@@ -1,4 +1,4 @@
-package com.dmr;
+package main.java.com.dmr;
 
 public class BPTC19696 {
 	private boolean rawData[]=new boolean[196];

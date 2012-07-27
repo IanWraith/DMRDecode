@@ -18,7 +18,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 //
 
-package com.dmr;
+package main.java.com.dmr;
 
 import java.util.Observable;
 

@@ -1,4 +1,4 @@
-package com.dmr;
+package main.java.com.dmr;
 
 public class crc {
 	private int crc8Value,crc16Value;

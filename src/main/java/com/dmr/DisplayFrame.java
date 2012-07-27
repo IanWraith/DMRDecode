@@ -18,7 +18,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 //
 
-package com.dmr;
+package main.java.com.dmr;
 
 import java.awt.*;
 import javax.swing.*;
@@ -138,7 +138,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		
 		// About
 		if (event_name=="About")	{
-			String line=theApp.program_version+"\r\n"+"by Ian Wraith (ianwraith@gmail.com)\r\nwith code taken from the DSD program.";
+			String line=theApp.program_version+"\r\n"+"Ian Wraith (ianwraith@gmail.com)\r\nalso big thanks to Chris Sams for the CPU utilization fix\r\nand with code taken from the DSD program.";
 			JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 		}
 		

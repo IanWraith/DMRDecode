@@ -1,4 +1,4 @@
-package com.dmr;
+package main.java.com.dmr;
 
 public class DMRData {
 	private String display[]=new String[3];

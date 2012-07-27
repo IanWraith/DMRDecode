@@ -1,4 +1,4 @@
-package com.dmr;
+package main.java.com.dmr;
 
 public class FullLinkControl {
 	boolean pf;

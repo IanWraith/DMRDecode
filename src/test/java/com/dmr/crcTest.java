@@ -1,5 +1,6 @@
-package com.dmr;
+package test.java.com.dmr;
 
+import main.java.com.dmr.crc;
 import junit.framework.TestCase;
 
 public class crcTest extends TestCase {
