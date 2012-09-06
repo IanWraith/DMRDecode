@@ -52,7 +52,7 @@ public class DMRDataDecode {
 						BPTCres=true;
 						boolean bits[]=bptc19696.dataOut();
 						// Display the PI header bits as raw binary
-						StringBuffer sb=new StringBuffer();
+						StringBuilder sb=new StringBuilder();
 						int ai;
 						for (ai=0;ai<bits.length;ai++)	{
 							if (bits[ai]==true) sb.append("1");
