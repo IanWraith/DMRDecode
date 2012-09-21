@@ -47,7 +47,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 54)";
+	public String program_version="DMR Decoder (Build 55)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -116,6 +116,7 @@ public class DMRDecode {
 	private boolean displayCACH=true;
 	private boolean displayIdlePDU=true;
 	private boolean displayOnlyGoodFrames=false;
+	private boolean displayVoiceFrames=true;
 	public final Color labelBusyColour=Color.BLACK;
 	public final Color labelQuiteColour=Color.GRAY;
 	private boolean pauseScreen=false;
@@ -123,15 +124,14 @@ public class DMRDecode {
 	public FileWriter quickLogFile;
 	private int colourCode=0;
 	private ArrayList<Integer> incomingDataList=new ArrayList<Integer>();  
-    
-    private int socketThreadPriority = 3;
-    private int audioInputPriority = 3;
-    private int mainThreadPriority = 5;
+    private int socketThreadPriority=3;
+    private int audioInputPriority=3;
+    private int mainThreadPriority=5;
     
     private ExecutorService socketExecutor = Executors.newSingleThreadExecutor(
         new ThreadFactory(){
             public Thread newThread(Runnable r){
-                Thread thread = new Thread(r);
+                Thread thread=new Thread(r);
                 thread.setName("DMRDecode Socket Thread");
                 thread.setPriority(socketThreadPriority);
                 return thread;
@@ -142,7 +142,7 @@ public class DMRDecode {
     private ExecutorService mainExecutor = Executors.newSingleThreadExecutor(
         new ThreadFactory(){
             public Thread newThread(Runnable r){
-                Thread thread = new Thread(r);
+                Thread thread=new Thread(r);
                 thread.setName("DMRDecode Main Thread");
                 thread.setPriority(mainThreadPriority);
                 return thread;
@@ -153,7 +153,7 @@ public class DMRDecode {
     private ExecutorService audioInputExecutor = Executors.newSingleThreadExecutor(
         new ThreadFactory(){
             public Thread newThread(Runnable r){
-                Thread thread = new Thread(r);
+                Thread thread=new Thread(r);
                 thread.setName("DMRDecode Audio Input Thread");
                 thread.setPriority(audioInputPriority);
                 return thread;
@@ -643,7 +643,7 @@ public class DMRDecode {
 		// then stop them being shown
 		if ((DMRvoice.isError()==false)&&(displayOnlyGoodFrames==true)) DMRvoice.setShouldDisplay(false);
 		// Display the info
-		if (DMRvoice.getShouldDisplay()==true) displayLines(line,lcol,font);
+		if ((DMRvoice.getShouldDisplay()==true)&&(displayVoiceFrames==true)) displayLines(line,lcol,font);
 	}
 	
 	// Handle a DMR Data Frame
@@ -1133,7 +1133,13 @@ public class DMRDecode {
 			if (displayIdlePDU==true) line=line+"TRUE";
 			else line=line+"FALSE";
 			line=line+"'/>";
-			xmlfile.write(line);			
+			xmlfile.write(line);	
+			// Display Voice Frames
+			line="<voiceFrames val='";
+			if (displayVoiceFrames==true) line=line+"TRUE";
+			else line=line+"FALSE";
+			line=line+"'/>";
+			xmlfile.write(line);	
 			// All done so close the root item //
 			line="</settings>";
 			xmlfile.write(line);
@@ -1160,6 +1166,14 @@ public class DMRDecode {
 			parser.parse(new File(filename),handler);
 		}
 	
+	public boolean isDisplayVoiceFrames() {
+		return displayVoiceFrames;
+	}
+
+	public void setDisplayVoiceFrames(boolean displayVoiceFrames) {
+		this.displayVoiceFrames = displayVoiceFrames;
+	}
+
 	// This class handles the SAX events
 	public class saxHandler extends DefaultHandler {
 			String value;
@@ -1208,8 +1222,12 @@ public class DMRDecode {
 					if (qName.equals("idlePDU")) {
 						if (aval.equals("TRUE")) displayIdlePDU=true;
 						else displayIdlePDU=false;	
-					}		
-					
+					}	
+					// Display Voice Frames
+					if (qName.equals("voiceFrames")) {
+						if (aval.equals("TRUE")) displayVoiceFrames=true;
+						else displayVoiceFrames=false;	
+					}	
 				}	
 			}
 		}

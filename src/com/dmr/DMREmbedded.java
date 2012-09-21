@@ -136,6 +136,8 @@ public class DMREmbedded {
 			// Pass on voice data
 			VoiceData voicedata=new VoiceData();
 			voicedata.handleVoice(theApp,dibit_buf);
+			// If the user doesn't want to see voice frames set shouldDisplay to false
+			if (theApp.isDisplayVoiceFrames()==false) shouldDisplay=false;
 			// Return all done
 			return true;
 		}
