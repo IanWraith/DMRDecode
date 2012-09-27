@@ -33,7 +33,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public static final long serialVersionUID=1;
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item,quick_log,save_settings;
 	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
-	private JMenuItem view_cach,view_idle,view_onlygood;
+	private JMenuItem view_cach,view_idle,view_onlygood,view_voice;
 	private JMenuItem clear_screen,copy_screen,twitter_item;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
@@ -84,6 +84,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		view_onlygood.addActionListener(this);
 		viewMenu.add(view_idle=new JRadioButtonMenuItem("Display Idle PDU",theApp.isDisplayIdlePDU()));
 		view_idle.addActionListener(this);
+		viewMenu.add(view_voice=new JRadioButtonMenuItem("Display Voice Frames",theApp.isDisplayVoiceFrames()));
+		view_voice.addActionListener(this);
 		menuBar.add(viewMenu);
 		// Help
 		JMenu helpMenu=new JMenu("Help");
@@ -249,6 +251,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			else theApp.setDisplayOnlyGoodFrames(true);
 		}
 		
+		// Display Voice Frames
+		if (event_name=="Display Voice Frames")	{
+			if (theApp.isDisplayVoiceFrames()==true) theApp.setDisplayVoiceFrames(false) ;
+			else theApp.setDisplayVoiceFrames(true);
+		}
+
 		menuItemUpdate();
 	}
 
@@ -260,6 +268,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		quick_log.setSelected(theApp.isQuickLog());
 		view_cach.setSelected(theApp.isDisplayCACH());
 		view_idle.setSelected(theApp.isDisplayIdlePDU());
+		view_voice.setSelected(theApp.isDisplayVoiceFrames());
 		view_onlygood.setSelected(theApp.isDisplayOnlyGoodFrames());
 		view_display_bar.setSelected(theApp.isEnableDisplayBar());
 		capture_item.setSelected(theApp.isCapture());
