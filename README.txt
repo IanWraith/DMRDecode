@@ -43,7 +43,9 @@ Build 54 - Adds a CPU utilization fix contributed by Chris Sams
 
 Build 55 - Adds an option to not view voice frames and also replaces all instances of StringBuffer
            with StringBuilder
+           
+Build 56 - Adds the date to the quick log.
       
-Ian Wraith (21st September 2012)
+Ian Wraith ( September 2012)
 
 
