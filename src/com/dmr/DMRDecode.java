@@ -169,7 +169,6 @@ public class DMRDecode {
             SwingUtilities.invokeAndWait(new Runnable(){public void run(){theApp.createGUI();}});
             theApp.short_lc.setApp(theApp);
             theApp.socketExecutor.submit(theApp.socketThread);
-
             //this returns a boolean...
 			theApp.socketThread.setupSocket();			
 		} catch (Exception e)	{
@@ -588,6 +587,13 @@ public class DMRDecode {
 		return df.format(now);
 	}	
 	
+	// Return a date stamp
+	public String getDateStamp()	{
+		Date now=new Date();
+		DateFormat df=DateFormat.getDateInstance();
+		return df.format(now);
+	}
+	
 	// Handle an incoming DMR Frame
 	void processFrame ()	{
 		if (firstframe==true)	{
@@ -763,7 +769,7 @@ public class DMRDecode {
 	
 	// Make up a string for the quick log file
 	public void quickLogData(String line,int a,int b,int c,String extra)	{
-		String tline=getTimeStamp()+","+Integer.toString(colourCode)+","+line+","+Integer.toString(a)+","+Integer.toString(b)+","+Integer.toString(c)+","+extra;
+		String tline=getDateStamp()+","+getTimeStamp()+","+Integer.toString(colourCode)+","+line+","+Integer.toString(a)+","+Integer.toString(b)+","+Integer.toString(c)+","+extra;
 		quickLogWrite(tline);
 	}
 	
