@@ -45,7 +45,8 @@ Build 55 - Adds an option to not view voice frames and also replaces all instanc
            with StringBuilder
            
 Build 56 - Adds the date to the quick log.
+           Displays the data filters at the start of each log and shows any filter changes in the log file.
       
-Ian Wraith ( September 2012)
+Ian Wraith (28th September 2012)
 
 

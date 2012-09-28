@@ -237,24 +237,46 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		if (event_name=="Display CACH")	{
 			if (theApp.isDisplayCACH()==true) theApp.setDisplayCACH(false);
 			else theApp.setDisplayCACH(true);
+			// If logging update the log of this change in filter settings
+			if (theApp.getLogging()==true)	{
+				if (theApp.isDisplayCACH()==false) theApp.fileWrite("Filter settings changed so CACH data isn't displayed");
+				else theApp.fileWrite("Filter settings changed so that CACH data is displayed");
+			}
 		}
 		
 		// Display Idle PDU
 		if (event_name=="Display Idle PDU")	{
 			if (theApp.isDisplayIdlePDU()==true) theApp.setDisplayIdlePDU(false);
 			else theApp.setDisplayIdlePDU(true);
+			// If logging update the log of this change in filter settings
+			if (theApp.getLogging()==true)	{
+				if (theApp.isDisplayIdlePDU()==false) theApp.fileWrite("Filter settings changed so Idle PDUs aren't displayed");
+				else theApp.fileWrite("Filter settings changed so that Idle PDUs are displayed");
+			}
 		}
 		
 		// Display only good frames
 		if (event_name=="Display Good Frames Only")	{
 			if (theApp.isDisplayOnlyGoodFrames()==true) theApp.setDisplayOnlyGoodFrames(false);
 			else theApp.setDisplayOnlyGoodFrames(true);
+			// If logging update the log of this change in filter settings
+			if (theApp.getLogging()==true)	{
+				if (theApp.isDisplayOnlyGoodFrames()==false) theApp.fileWrite("Filter settings changed so that frames with errors are displayed");
+				else theApp.fileWrite("Filter settings changed so that only frames without errors are displayed");
+			}
+
 		}
 		
 		// Display Voice Frames
 		if (event_name=="Display Voice Frames")	{
 			if (theApp.isDisplayVoiceFrames()==true) theApp.setDisplayVoiceFrames(false) ;
 			else theApp.setDisplayVoiceFrames(true);
+			// If logging update the log of this change in filter settings
+			if (theApp.getLogging()==true)	{
+				if (theApp.isDisplayVoiceFrames()==false) theApp.fileWrite("Filter settings changed so voice frames aren't displayed");
+				else theApp.fileWrite("Filter settings changed so that voice frames are displayed");
+			}
+
 		}
 
 		menuItemUpdate();
@@ -308,7 +330,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 					"Overwrite existing file?", "Confirm Overwrite",
 					JOptionPane.OK_CANCEL_OPTION,
 					JOptionPane.QUESTION_MESSAGE);
-			if (response == JOptionPane.CANCEL_OPTION) return false;
+			if (response==JOptionPane.CANCEL_OPTION) return false;
 		}
 		// Open the file
 		try {
@@ -318,6 +340,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 			// Write the program version as the first line of the log
 			String fline=theApp.program_version+"\r\n";
 			theApp.file.write(fline);
+			// Display the state of the filters at the start of the log
+			if (theApp.isDisplayCACH()==false) theApp.file.write("You have selected not to display CACH data\r\n");
+			if (theApp.isDisplayOnlyGoodFrames()==true) theApp.file.write("You have selected only to display frames without errors\r\n");
+			if (theApp.isDisplayIdlePDU()==false) theApp.file.write("You have selected not to display Idle PDUs\r\n");
+			if (theApp.isDisplayVoiceFrames()==false) theApp.file.write("You have selected not to display voice frames\r\n");
 			
 		} catch (Exception e) {
 			System.out.println("\nError opening the logging file");
