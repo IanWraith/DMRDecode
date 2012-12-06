@@ -229,16 +229,41 @@ public class CSBK {
 	
 	// Connect Plus - CSBKO 01 FID=6
 	private void big_m_csbko01 (DMRDecode theApp,boolean bits[])	{
-		int a;
+		int a,nb1,nb2,nb3,nb4,nb5;
+		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(300);
 		StringBuilder sb2=new StringBuilder(300);
 		display[0]="Connect Plus CSBK : CSBKO=1";
-		sb1.append("System Message : ");
-		// Can't decode this so show it as raw binary for now
+		sb1.append("Control Channel Neighbour List : ");
+		// The information to decode these packets was kindly provided by inigo88 on the Radioreference forums
+		// see http://forums.radioreference.com/digital-voice-decoding-software/213131-understanding-connect-plus-trunking-6.html#post1866950
+		//                 67 890123 45 678901 23 456789 01 234567 89 012345 6789 0123 4567 8901 2345 6789
+		// CSBKO=1 + FID=6 00 000001 00 000011 00 000100 00 000101 00 000110 0000 0000 0000 0000 0000 1110
+		//                         1         3         4	     5         6	                      
+		// bits 16,17 have an unknown purpose
+		// bits 18,19,20,21,22,23 make up the first neighbour site ID
+		nb1=utils.retSix(bits,18);
+		// bits 24,25 have an unknown purpose
+		// bits 26,27,28,29,30,31 make up the second neighbour site ID
+		nb2=utils.retSix(bits,26);
+		// bits 32,33 have an unknown purpose
+		// bits 34,35,36,37,38,39 make up the third neighbour site ID
+		nb3=utils.retSix(bits,34);
+		// bits 40,41 have an unknown purpose
+		// bits 42,43,44,45,46,47 make up the fourth neighbour site ID
+		nb4=utils.retSix(bits,42);
+		// bits 48,49 have an unknown purpose
+		// bits 50,51,52,53,54,55 make up the fifth neighbour site ID
+		nb5=utils.retSix(bits,50);
+		// bits 56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79 have an unknown purpose
+		// Display this info
+		sb1.append(Integer.toString(nb1)+","+Integer.toString(nb2)+","+Integer.toString(nb3)+","+Integer.toString(nb4)+","+Integer.toString(nb5)+" (");
+		// Also display as raw binary for now
 		for (a=16;a<80;a++)	{
 			if (bits[a]==true) sb1.append("1");
 			else sb1.append("0");
 		}
+		sb1.append(")");
 		display[1]=sb1.toString();
 		// Display the full binary if in debug mode
 		if (theApp.isDebug()==true)	{

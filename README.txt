@@ -46,7 +46,11 @@ Build 55 - Adds an option to not view voice frames and also replaces all instanc
            
 Build 56 - Adds the date to the quick log.
            Displays the data filters at the start of each log and shows any filter changes in the log file.
+           
+From build 57 onwards Java 7 is required to run DMRDecode.
+           
+Build 57 - Decode Connect Plus CSBKO 01 FID=6 PDUs
       
-Ian Wraith (28th September 2012)
+Ian Wraith (6th December 2012)
 
 
