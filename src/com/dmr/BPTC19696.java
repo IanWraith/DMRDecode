@@ -21,7 +21,7 @@ public class BPTC19696 {
 	}
 	
 	// Extract the binary from the dibit data
-	private	void extractBinary (byte[] dibit_buf)	{
+	private void extractBinary (byte[] dibit_buf)	{
 		int a,r=0;
 		// First block
 		for (a=12;a<61;a++)	{
@@ -176,5 +176,12 @@ public class BPTC19696 {
 	public boolean[] dataOut()	{
 		return outData;
 	}
+	
+	// Extract the raw binary as output without doing anything else to it
+	public boolean[] rawOut(byte[] di_buf)	{
+		extractBinary(di_buf);
+		return rawData;
+	}
+	
 	
 }

@@ -2,6 +2,10 @@ The aim of this project is to provide a user friendly DMR data decoder for hobby
 It is Java based so should run under Microsoft Windows , Apple and Linux PC's. The
 only hardware needed will be a radio scanner with a discriminator audio output.
 
+A binary version of this program which will run without being compiled is available from ..
+
+http://borg.shef.ac.uk/dmrdecode/
+
 The core of the program is based around the open source DSD program by an unknown
 author. This program was written in C and runs under Linux only so my first job was to
 convert that code to Java and remove all sections that don't relate to DMR.
@@ -50,7 +54,9 @@ Build 56 - Adds the date to the quick log.
 From build 57 onwards Java 7 is required to run DMRDecode.
            
 Build 57 - Decode Connect Plus CSBKO 01 FID=6 PDUs
+
+Build 58 - Add a link to the new download page. Also decode Rate ¾ Data Continuation PDUs as raw binary.
       
-Ian Wraith (6th December 2012)
+Ian Wraith (12th December 2012)
 
 

@@ -172,9 +172,8 @@ public class DMREmbedded {
 						colours[3]=Color.BLACK;
 					}
 				}				
-				
 				// Voice LC Header
-				if (dataType==1)	{
+				else if (dataType==1)	{
 					BPTC19696 bptc19696=new BPTC19696();
 					if (bptc19696.decode(dibit_buf)==true)	{
 						BPTCres=true;
@@ -195,7 +194,7 @@ public class DMREmbedded {
 						}
 				}
 				// Terminator with LC
-				if (dataType==2)	{
+				else if (dataType==2)	{
 					BPTC19696 bptc19696=new BPTC19696();
 					if (bptc19696.decode(dibit_buf)==true)	{
 						BPTCres=true;
@@ -216,7 +215,7 @@ public class DMREmbedded {
 						}
 				}		
 				// CSBK
-				if (dataType==3)	{
+				else if (dataType==3)	{
 					BPTC19696 bptc19696=new BPTC19696();
 					if (bptc19696.decode(dibit_buf)==true)	{
 						crc tCRC=new crc();
@@ -240,7 +239,7 @@ public class DMREmbedded {
 					}
 				}
 				// Data Header
-				if (dataType==6)	{
+				else if (dataType==6)	{
 					BPTC19696 bptc19696=new BPTC19696();
 					if (bptc19696.decode(dibit_buf)==true)	{
 						crc tCRC=new crc();
@@ -264,12 +263,47 @@ public class DMREmbedded {
 					}
 				}
 				// Rate ½ Data Continuation
-				if (dataType==7) BPTCres=true;
+				else if (dataType==7) {
+					BPTC19696 bptc19696=new BPTC19696();
+					if (bptc19696.decode(dibit_buf)==true)	{
+						boolean bits[]=bptc19696.dataOut();
+						BPTCres=true;
+						String clines[]=new String[3];
+						DMRData data=new DMRData(theApp);
+						clines=data.decodeHalfRate(bits);
+						line[3]=clines[0];
+						line[4]=clines[1];
+						line[5]=clines[2];
+						fonts[3]=theApp.boldFont;
+						colours[3]=Color.BLACK;
+						fonts[4]=theApp.boldFont;
+						colours[4]=Color.BLACK;
+						fonts[5]=theApp.boldFont;
+						colours[5]=Color.BLACK;
+					}
+				}
+				// TODO : Decode Rate ¾ Data Continuation frames properly
 				// Rate ¾ Data Continuation
-				if (dataType==8) BPTCres=true;
+				else if (dataType==8)	{
+					// We can't error correct this yet so for now just mark it as OK
+					BPTCres=true;
+					// Just use the BPTC19696 class to extract the raw binary from the dibit buffer
+					BPTC19696 bptc19696=new BPTC19696();
+					boolean bits[]=bptc19696.rawOut(dibit_buf);
+					// Display the bits as raw binary
+					StringBuilder sb=new StringBuilder();
+					int ai;
+					for (ai=0;ai<bits.length;ai++)	{
+						if (bits[ai]==true) sb.append("1");
+						else sb.append("0");
+					}
+					line[3]=sb.toString();
+					fonts[3]=theApp.boldFont;
+					colours[3]=Color.BLACK;
+				}
 				// Idle
 				// Error check this to detect problems with the data stream
-				if (dataType==9)	{
+				else if (dataType==9)	{
 					BPTC19696 bptc19696=new BPTC19696();
 					BPTCres=bptc19696.decode(dibit_buf);
 					// If we don't want to display these then clear the lines
