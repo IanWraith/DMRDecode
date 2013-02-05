@@ -56,7 +56,10 @@ From build 57 onwards Java 7 is required to run DMRDecode.
 Build 57 - Decode Connect Plus CSBKO 01 FID=6 PDUs
 
 Build 58 - Add a link to the new download page. Also decode Rate ¾ Data Continuation PDUs as raw binary.
+
+Build 59 - Display the Time Slot in Connect Plus Channel Grants (CSBKO 03 FID=6). This information was kindly
+           provided by W8EMX on the Radioreference forums. 
       
-Ian Wraith (12th December 2012)
+Ian Wraith (5th February 2013)
 
 

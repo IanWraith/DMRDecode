@@ -213,7 +213,14 @@ public class CSBK {
 		if (bits[65]==true) lcn=lcn+4;
 		if (bits[66]==true) lcn=lcn+2;
 		if (bits[67]==true) lcn++;
+		// Time Slot
+	    // The information on the time slot bit was kindly provided by W8EMX on the Radioreference forums
+		// see http://forums.radioreference.com/digital-voice-decoding-software/213131-understanding-connect-plus-trunking-7.html#post1909226
+		boolean timeSlot=bits[68];
+		// Display this
 		sb1.append("Channel Grant : LCN "+Integer.toString(lcn));
+		if (timeSlot==false) sb1.append(" TS1");
+		else sb1.append(" TS2");
 		sb1.append(" Source "+Integer.toString(source));
 		sb1.append(" Group "+Integer.toString(group));
 		display[1]=sb1.toString();
