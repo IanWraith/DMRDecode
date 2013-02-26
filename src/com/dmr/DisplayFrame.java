@@ -154,7 +154,9 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		
 		// About
 		if (event_name=="About")	{
-			String line=theApp.program_version+"\r\n"+"Ian Wraith (ianwraith@gmail.com)\r\nalso big thanks to Chris Sams for the CPU utilization fix\r\nand with code taken from the DSD program.";
+			String line=theApp.program_version+"\r\n"+"Ian Wraith (ianwraith@gmail.com)\r\nalso big thanks to Chris Sams for the CPU utilization fix " +
+					"\r\nplus thanks to Andy W for the mixer and audio code" +
+					"\r\nalso to the author of DSD from whom I took most of the demodulation code.";
 			JOptionPane.showMessageDialog(null,line,"DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
