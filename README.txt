@@ -59,7 +59,9 @@ Build 58 - Add a link to the new download page. Also decode Rate ¾ Data Continua
 
 Build 59 - Display the Time Slot in Connect Plus Channel Grants (CSBKO 03 FID=6). This information was kindly
            provided by W8EMX on the Radioreference forums. 
+           
+Build 60 - Allows the user to select their audio source.
       
-Ian Wraith (5th February 2013)
+Ian Wraith (26th February 2013)
 
 
