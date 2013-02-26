@@ -318,6 +318,18 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		view_onlygood.setSelected(theApp.isDisplayOnlyGoodFrames());
 		view_display_bar.setSelected(theApp.isEnableDisplayBar());
 		capture_item.setSelected(theApp.isCapture());
+		
+		// Audio sources
+		MenuElement[] devs=audioDevicesMenu.getSubElements();
+		if (devs.length>0){
+				for (MenuElement m : devs[0].getSubElements()){
+					if (((JRadioButtonMenuItem)m).getText().equals(theApp.lineInThread.getMixerName())){
+						((JRadioButtonMenuItem)m).setSelected(true);
+						break;
+					}
+				}
+			}
+		
 	}
 	
 	// Display a dialog box so the user can select a location and name for a log file
@@ -579,7 +591,9 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	
 	// Signal to the main program to change its audio mixer
 	private void changeMixer(String mixerName){
-		theApp.changeMixer(mixerName);
+		if (theApp.changeMixer(mixerName)==false)	{
+			JOptionPane.showMessageDialog(null,"Error changing mixer","DMRDecode", JOptionPane.ERROR_MESSAGE);
+		}
 	}	
 	
 }

@@ -47,7 +47,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 59)";
+	public String program_version="DMR Decoder (Build 60)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -1181,9 +1181,9 @@ public class DMRDecode {
 	}
 	
 	// Change the audio mixer
-	public void changeMixer(String mixerName)	{
+	public boolean changeMixer(String mixerName)	{
 		// Tell the audio in thread to change its mixer
-		lineInThread.changeMixer(mixerName);
+		return lineInThread.changeMixer(mixerName);
 	}
 
 	// This class handles the SAX events

@@ -14,21 +14,20 @@ import javax.sound.sampled.TargetDataLine;
  *
  */
 class AudioMixer{
-	private DMRDecode theApp;
+	//private DMRDecode theApp;
 	public String description;
 	public Mixer mixer;
 	public TargetDataLine line;
 	public Line.Info lineInfo;
 	public AudioFormat format = null;
-	public static final int NUM_CHANNELS = 1;
 	
 	public AudioMixer(DMRDecode theApp){
-		this.theApp = theApp;
+		//this.theApp = theApp;
 		format = setAudioFormat();		
 	}
 	
 	public AudioMixer(DMRDecode theApp, String x, Mixer m, Line.Info l){
-		this.theApp = theApp;
+		//this.theApp = theApp;
 		this.description = x;
 		this.mixer = m;
 		this.lineInfo = l;
@@ -59,14 +58,8 @@ class AudioMixer{
 	 * @return
 	 */
 	private AudioFormat setAudioFormat(){
-		return new AudioFormat(
-				AudioFormat.Encoding.PCM_SIGNED,	//encoding
-				48000.0F, //11025.0F,							//sample rate (10800) - 44100 shows less resolution?
-				16,									//sample size in bits
-				NUM_CHANNELS,						//number of channels (stereo=2)
-				2,									//framesize
-				48000.F,							//frame reate
-				true);								//big endian
+		// Sample at 48000 Hz , 16 bit samples , 1 channel , signed with bigendian numbers
+		return new AudioFormat(48000,16,1,true,true);
 	}
 	
 	/**
@@ -130,20 +123,26 @@ class AudioMixer{
 	 * Change the mixer and restart the TargetDataLine
 	 * @param mixerName
 	 */
-	public void changeMixer(String mixerName){
-		//stop current line
-	    this.line.stop();
-		this.line.close();
-	    this.line.flush();
+	public boolean changeMixer(String mixerName) {
+		try	{
+			//stop current line
+			this.line.stop();
+			this.line.close();
+			this.line.flush();
 	    
-	    //set the new mixer and line
-	    Mixer mx = AudioSystem.getMixer(getMixerInfo(mixerName));
-	    this.setMixer(mx);
-	    this.line = (TargetDataLine) getDataLineForMixer();
+			//set the new mixer and line
+			Mixer mx = AudioSystem.getMixer(getMixerInfo(mixerName));
+			this.setMixer(mx);
+			this.line = (TargetDataLine) getDataLineForMixer();
 	    
-	    //restart
-	    openLine();
-	    this.line.start();
+			//restart
+			openLine();
+			this.line.start();
+		}
+		catch (Exception e)	{
+			return false;
+		}
+		return true;
 	}
 	
 	/**

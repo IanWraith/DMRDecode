@@ -1,11 +1,5 @@
 package com.dmr;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.Mixer;
-import javax.sound.sampled.TargetDataLine;
 import javax.swing.JOptionPane;
 import java.io.DataOutputStream;
 import java.io.PipedOutputStream;
@@ -13,19 +7,16 @@ import java.io.PipedOutputStream;
 public class AudioInThread implements Runnable {
 	private boolean run;
 	private boolean audioReady;
-	private TargetDataLine Line;
-	private AudioFormat format;
 	private boolean gettingAudio;
 	private static int VOLUMEBUFFERSIZE=100;
 	private int volumeBuffer[]=new int[VOLUMEBUFFERSIZE];
 	private int volumeBufferCounter=0;
 	private static int ISIZE=256;
-    private static int QUEUE_SIZE=4096;
 	private byte buffer[]=new byte[ISIZE+1];
 	private PipedOutputStream ps=new PipedOutputStream();
 	private DataOutputStream outPipe=new DataOutputStream(ps);
-	private Mixer mixer;
-	private DMRDecode theApp;
+	private AudioMixer audioMixer;
+	
 	
 	// Filter details ..
 	// filtertype	 =	 Raised Cosine
@@ -66,43 +57,37 @@ public class AudioInThread implements Runnable {
 	    +0.0273676736};
 	
 
-    public AudioInThread (DMRDecode TtheApp) {
-    	theApp=TtheApp;
+    public AudioInThread (DMRDecode theApp) {
+    	audioMixer=new AudioMixer(theApp);
     	run=false;
-    	audioReady=false;
     	gettingAudio=false;
-        setupAudio();
+    	setupAudio();
       }
     
     // Main
     public void run()	{
     	// Run continiously
     	for (;;)	{
-    		// If it hasn't been already then setup the audio device
-    		if (audioReady==false) setupAudio();
     		// If the audio device is ready , the program wants to and we aren't already then
     		// get data from the audio device.
     		if ((audioReady==true)&&(run==true)&&(gettingAudio==false)) getSample();
      	}
     }
-	
-    // Prepare the input audio device
-    private void setupAudio ()	{
-		  try {
-			  // Sample at 48000 Hz , 16 bit samples , 1 channel , signed with big endian numbers
-			  format=new AudioFormat(48000,16,1,true,true);
-			  DataLine.Info info=new DataLine.Info(TargetDataLine.class,format);
-			  Line=(TargetDataLine) AudioSystem.getLine(info);
-			  Line.open(format);
-			  Line.start();
-			  audioReady=true;
-		  } catch (Exception e) {
-			  String err="Fatal error in setupAudio()\n"+e.getMessage();
-			  JOptionPane.showMessageDialog(null,err,"DMRDecode",JOptionPane.ERROR_MESSAGE);
-			  System.exit(0);
-	   		}
-    }
     
+    private void setupAudio()	{
+    	try	{
+    		audioMixer.setDefaultLine();
+			audioMixer.openLine();
+			audioMixer.line.start();
+			audioReady=true;
+    	}
+    	catch (Exception e)	{
+    		audioReady=false;
+    		String err="setupAudio() : "+e.toString();
+    		JOptionPane.showMessageDialog(null,err,"DMRDecode",JOptionPane.ERROR_MESSAGE);
+    	}
+    }
+	 
     // Read in 2 bytes from the audio source combine them together into a single integer
     // then write that into the sound buffer
     private void getSample ()	{
@@ -113,7 +98,7 @@ public class AudioInThread implements Runnable {
     	// Doing it this way reduces CPU loading
 		try	{
 				while (total<ISIZE)	{
-					count=Line.read(buffer,0,ISIZE);
+					count=audioMixer.line.read(buffer,0,ISIZE);
 					total=total+count;
 			  		}
 			  	} catch (Exception e)	{
@@ -153,7 +138,7 @@ public class AudioInThread implements Runnable {
     // When called this closes the audio device
     public void shutDownAudio ()	{
     	run=false;
-    	Line.close();
+    	audioMixer.line.close();
     }
     
     // A root raised cosine pulse shaping filter
@@ -202,43 +187,12 @@ public class AudioInThread implements Runnable {
       }
     
 	public boolean changeMixer(String mixerName)	{
-		AudioMixer audioMixer=new AudioMixer(theApp);
-		try	{
-			//stop current line
-			Line.stop();
-			Line.close();
-			Line.flush();
-			//set the new mixer and line
-			mixer=AudioSystem.getMixer(audioMixer.getMixerInfo(mixerName));
-			Line=(TargetDataLine) getDataLineForMixer();
-			//restart
-			Line.open(format);
-			Line.start();
-		}
-		catch (Exception e)	{
-			String err=e.getMessage();
-            JOptionPane.showMessageDialog(null,err,"DMRDecode",JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-		return true;
+		return audioMixer.changeMixer(mixerName);
 	}   
     
-	private TargetDataLine getDataLineForMixer(){
-		TargetDataLine line=null;
-		try {
-			line=(TargetDataLine) this.mixer.getLine(getDataLineInfo());
-		} catch (LineUnavailableException e) {
-			String err="Error getting mix line:"+e.getMessage();
-			JOptionPane.showMessageDialog(null,err,"DMRDecode",JOptionPane.ERROR_MESSAGE);
-			System.exit(0);
-		}
-		return line;
-	}	
-	
-	private DataLine.Info getDataLineInfo(){
-		DataLine.Info info=new DataLine.Info(TargetDataLine.class,this.format); 
-		return info;
-	}	
+	public String getMixerName()	{
+		return audioMixer.getMixer().getMixerInfo().getName();
+	}
 	
     
 }
