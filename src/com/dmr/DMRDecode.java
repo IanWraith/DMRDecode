@@ -47,7 +47,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 60)";
+	public String program_version="DMR Decoder (Build 61)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -1146,6 +1146,9 @@ public class DMRDecode {
 			else line=line+"FALSE";
 			line=line+"'/>";
 			xmlfile.write(line);	
+			// Save the current audio source
+			line="<audioDevice val='"+lineInThread.getMixerName()+"'/>";
+			xmlfile.write(line);
 			// All done so close the root item //
 			line="</settings>";
 			xmlfile.write(line);
@@ -1240,7 +1243,12 @@ public class DMRDecode {
 						if (aval.equals("TRUE")) displayVoiceFrames=true;
 						else displayVoiceFrames=false;	
 					}	
+					if (qName.equals("audioDevice"))	{
+						// TODO : Set the audio input source from the saved settings in the XML file
+					}
+				
 				}	
+				
 			}
 		}
 	
