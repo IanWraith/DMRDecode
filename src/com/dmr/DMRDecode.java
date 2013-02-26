@@ -1179,6 +1179,12 @@ public class DMRDecode {
 	public void setDisplayVoiceFrames(boolean displayVoiceFrames) {
 		this.displayVoiceFrames = displayVoiceFrames;
 	}
+	
+	// Change the audio mixer
+	public void changeMixer(String mixerName)	{
+		// Tell the audio in thread to change its mixer
+		lineInThread.changeMixer(mixerName);
+	}
 
 	// This class handles the SAX events
 	public class saxHandler extends DefaultHandler {

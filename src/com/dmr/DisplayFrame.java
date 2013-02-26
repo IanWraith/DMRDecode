@@ -26,6 +26,10 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.*;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Mixer;
 
 public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuBar menuBar=new JMenuBar();
@@ -38,6 +42,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
 	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,2000);
+	private JMenu audioDevicesMenu;
+	private static ArrayList<AudioMixer> devices;
 
 	// Constructor
 	public DisplayFrame(String title,DMRDecode theApp) {
@@ -64,6 +70,12 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		mainMenu.add(exit_item=new JMenuItem("Exit"));		
 		exit_item.addActionListener(this);
 		menuBar.add(mainMenu);
+		// Audio 
+		JMenu audioMenu=new JMenu("Audio");
+		audioDevicesMenu=buildAudioDevices();
+		audioMenu.add(audioDevicesMenu);
+		audioDevicesMenu.updateUI();
+		menuBar.add(audioMenu);
 		// Info
 		JMenu infoMenu=new JMenu("Info");
 		infoMenu.add(view_display_bar=new JRadioButtonMenuItem("Enable Symbol Display",theApp.isEnableDisplayBar()));
@@ -284,6 +296,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 				else theApp.fileWrite("Filter settings changed so that voice frames are displayed");
 			}
 
+		}
+		
+		// Change mixer
+		if (event_name.equalsIgnoreCase("mixer")){
+			changeMixer(((JRadioButtonMenuItem)event.getSource()).getText());
 		}
 
 		menuItemUpdate();
@@ -520,4 +537,49 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	    StringSelection ss=new StringSelection(str);
 	    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss,null);
 	}
+	
+	private JMenu buildAudioDevices(){
+		JMenu ret=new JMenu("Audio Devices");
+		ButtonGroup group=new ButtonGroup();
+		ArrayList<AudioMixer> deviceList=getCompatibleDevices();
+		int i;
+		for (i=0; i<deviceList.size(); i++){
+			Line.Info l[]=AudioSystem.getTargetLineInfo(deviceList.get(i).lineInfo);
+			JRadioButtonMenuItem dev=new JRadioButtonMenuItem(deviceList.get(i).description);
+			dev.setActionCommand("mixer");
+			dev.addActionListener(this);
+			if (i==0) dev.setSelected(true);
+			group.add(dev);
+			ret.add(dev);
+		}
+		return ret;
+	}
+	
+	private ArrayList<AudioMixer> getCompatibleDevices(){
+		devices=new ArrayList<AudioMixer>();
+		//list the available mixers
+		Mixer.Info mixers[]=AudioSystem.getMixerInfo();
+		int i;
+		//iterate the mixers and display TargetLines
+		for (i=0;i<mixers.length;i++){
+			Mixer m = AudioSystem.getMixer(mixers[i]);
+			Line.Info l[]=m.getTargetLineInfo();
+			if(l.length>0){
+				int x;
+				for (x=0;x<l.length;x++){
+					if (l[0].getLineClass().getName().equals("javax.sound.sampled.TargetDataLine")){
+						AudioMixer mc=new AudioMixer(this.theApp,mixers[i].getName(),m,l[x]);
+						devices.add(mc);			
+					}
+				}
+			}
+		}
+		return devices;
+	}
+	
+	// Signal to the main program to change its audio mixer
+	private void changeMixer(String mixerName){
+		theApp.changeMixer(mixerName);
+	}	
+	
 }

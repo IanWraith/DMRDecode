@@ -3,6 +3,8 @@ package com.dmr;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 import javax.swing.JOptionPane;
 import java.io.DataOutputStream;
@@ -22,6 +24,8 @@ public class AudioInThread implements Runnable {
 	private byte buffer[]=new byte[ISIZE+1];
 	private PipedOutputStream ps=new PipedOutputStream();
 	private DataOutputStream outPipe=new DataOutputStream(ps);
+	private Mixer mixer;
+	private DMRDecode theApp;
 	
 	// Filter details ..
 	// filtertype	 =	 Raised Cosine
@@ -62,7 +66,8 @@ public class AudioInThread implements Runnable {
 	    +0.0273676736};
 	
 
-    public AudioInThread (DMRDecode theApp) {
+    public AudioInThread (DMRDecode TtheApp) {
+    	theApp=TtheApp;
     	run=false;
     	audioReady=false;
     	gettingAudio=false;
@@ -71,8 +76,7 @@ public class AudioInThread implements Runnable {
     
     // Main
     public void run()	{
-    	// Run continously
-        int i = 0;
+    	// Run continiously
     	for (;;)	{
     		// If it hasn't been already then setup the audio device
     		if (audioReady==false) setupAudio();
@@ -85,7 +89,7 @@ public class AudioInThread implements Runnable {
     // Prepare the input audio device
     private void setupAudio ()	{
 		  try {
-			  // Sample at 48000 Hz , 16 bit samples , 1 channel , signed with bigendian numbers
+			  // Sample at 48000 Hz , 16 bit samples , 1 channel , signed with big endian numbers
 			  format=new AudioFormat(48000,16,1,true,true);
 			  DataLine.Info info=new DataLine.Info(TargetDataLine.class,format);
 			  Line=(TargetDataLine) AudioSystem.getLine(info);
@@ -94,7 +98,7 @@ public class AudioInThread implements Runnable {
 			  audioReady=true;
 		  } catch (Exception e) {
 			  String err="Fatal error in setupAudio()\n"+e.getMessage();
-			  JOptionPane.showMessageDialog(null,err,"DMRdecoder",JOptionPane.ERROR_MESSAGE);
+			  JOptionPane.showMessageDialog(null,err,"DMRDecode",JOptionPane.ERROR_MESSAGE);
 			  System.exit(0);
 	   		}
     }
@@ -114,7 +118,7 @@ public class AudioInThread implements Runnable {
 			  		}
 			  	} catch (Exception e)	{
 			  		String err=e.getMessage();
-			  		JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+			  		JOptionPane.showMessageDialog(null,err,"DMRDecode",JOptionPane.ERROR_MESSAGE);
 			  	}
 		// Get the required number of samples
 		for (a=0;a<ISIZE;a=a+2)	{
@@ -128,7 +132,7 @@ public class AudioInThread implements Runnable {
             }
             catch (Exception e)	{
                 String err=e.getMessage();
-                JOptionPane.showMessageDialog(null,err,"DMRDecode", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null,err,"DMRDecode",JOptionPane.ERROR_MESSAGE);
             }
 		}
 		// The the main thread we have stopped fetching audio
@@ -196,5 +200,45 @@ public class AudioInThread implements Runnable {
     public PipedOutputStream getPipedWriter() {
         return ps;
       }
+    
+	public boolean changeMixer(String mixerName)	{
+		AudioMixer audioMixer=new AudioMixer(theApp);
+		try	{
+			//stop current line
+			Line.stop();
+			Line.close();
+			Line.flush();
+			//set the new mixer and line
+			mixer=AudioSystem.getMixer(audioMixer.getMixerInfo(mixerName));
+			Line=(TargetDataLine) getDataLineForMixer();
+			//restart
+			Line.open(format);
+			Line.start();
+		}
+		catch (Exception e)	{
+			String err=e.getMessage();
+            JOptionPane.showMessageDialog(null,err,"DMRDecode",JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		return true;
+	}   
+    
+	private TargetDataLine getDataLineForMixer(){
+		TargetDataLine line=null;
+		try {
+			line=(TargetDataLine) this.mixer.getLine(getDataLineInfo());
+		} catch (LineUnavailableException e) {
+			String err="Error getting mix line:"+e.getMessage();
+			JOptionPane.showMessageDialog(null,err,"DMRDecode",JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
+		}
+		return line;
+	}	
+	
+	private DataLine.Info getDataLineInfo(){
+		DataLine.Info info=new DataLine.Info(TargetDataLine.class,this.format); 
+		return info;
+	}	
+	
     
 }
