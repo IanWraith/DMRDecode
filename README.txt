@@ -61,6 +61,8 @@ Build 59 - Display the Time Slot in Connect Plus Channel Grants (CSBKO 03 FID=6)
            provided by W8EMX on the Radioreference forums. 
            
 Build 60 - Allows the user to select their audio source.
+
+Build 61 - Now saves the selected audio source in the settings file
       
 Ian Wraith (26th February 2013)
 

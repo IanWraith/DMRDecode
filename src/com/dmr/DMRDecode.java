@@ -1243,8 +1243,9 @@ public class DMRDecode {
 						if (aval.equals("TRUE")) displayVoiceFrames=true;
 						else displayVoiceFrames=false;	
 					}	
+					// The audio input source
 					if (qName.equals("audioDevice"))	{
-						// TODO : Set the audio input source from the saved settings in the XML file
+						lineInThread.changeMixer(aval);
 					}
 				
 				}	
