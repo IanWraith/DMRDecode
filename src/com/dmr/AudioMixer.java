@@ -129,14 +129,10 @@ class AudioMixer{
 			this.line.stop();
 			this.line.close();
 			this.line.flush();
-	    
 			//set the new mixer and line
-			Mixer mx = AudioSystem.getMixer(getMixerInfo(mixerName));
+			Mixer mx=AudioSystem.getMixer(getMixerInfo(mixerName));
 			this.setMixer(mx);
-			
-			// TODO : Work out if the line below is need as it is causing problem with the virtual audio cable
-			//this.line = (TargetDataLine) getDataLineForMixer();
-	    
+			this.line=(TargetDataLine) getDataLineForMixer();
 			//restart
 			openLine();
 			this.line.start();

@@ -55,10 +55,10 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		setJMenuBar(menuBar);
 		// Main
 		JMenu mainMenu=new JMenu("Main");
-		mainMenu.add(capture_item=new JRadioButtonMenuItem("Capture",theApp.isCapture()));
-		capture_item.addActionListener(this);
-		mainMenu.add(debug_item=new JRadioButtonMenuItem("Debug Mode",theApp.isDebug()));
-		debug_item.addActionListener(this);
+		//mainMenu.add(capture_item=new JRadioButtonMenuItem("Capture",theApp.isCapture()));
+		//capture_item.addActionListener(this);
+		//mainMenu.add(debug_item=new JRadioButtonMenuItem("Debug Mode",theApp.isDebug()));
+		//debug_item.addActionListener(this);
 		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted));
 		inverted_item.addActionListener(this);
 		mainMenu.add(quick_log=new JRadioButtonMenuItem("Quick Log",theApp.isQuickLog()));
@@ -311,7 +311,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	// Update all the menu items 
 	public void menuItemUpdate () {
 		inverted_item.setSelected(theApp.inverted);
-		debug_item.setSelected(theApp.isDebug());
+		//debug_item.setSelected(theApp.isDebug());
 		save_to_file.setSelected(theApp.getLogging());
 		quick_log.setSelected(theApp.isQuickLog());
 		view_cach.setSelected(theApp.isDisplayCACH());
@@ -319,7 +319,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		view_voice.setSelected(theApp.isDisplayVoiceFrames());
 		view_onlygood.setSelected(theApp.isDisplayOnlyGoodFrames());
 		view_display_bar.setSelected(theApp.isEnableDisplayBar());
-		capture_item.setSelected(theApp.isCapture());
+		//capture_item.setSelected(theApp.isCapture());
 		
 		// Audio sources
 		MenuElement[] devs=audioDevicesMenu.getSubElements();

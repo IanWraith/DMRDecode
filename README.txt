@@ -63,7 +63,9 @@ Build 59 - Display the Time Slot in Connect Plus Channel Grants (CSBKO 03 FID=6)
 Build 60 - Allows the user to select their audio source.
 
 Build 61 - Now saves the selected audio source in the settings file
+
+Build 62 - Disable the capture and debug menu items. Also change some code so virtual audio cables can be selected.
       
-Ian Wraith (26th February 2013)
+Ian Wraith (4th March 2013)
 
 
