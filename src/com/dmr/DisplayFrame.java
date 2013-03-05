@@ -55,10 +55,14 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		setJMenuBar(menuBar);
 		// Main
 		JMenu mainMenu=new JMenu("Main");
-		//mainMenu.add(capture_item=new JRadioButtonMenuItem("Capture",theApp.isCapture()));
-		//capture_item.addActionListener(this);
-		//mainMenu.add(debug_item=new JRadioButtonMenuItem("Debug Mode",theApp.isDebug()));
-		//debug_item.addActionListener(this);
+		mainMenu.add(capture_item=new JRadioButtonMenuItem("Capture",theApp.isCapture()));
+		// Disable the capture radio button
+		capture_item.setEnabled(false);
+		capture_item.addActionListener(this);
+		mainMenu.add(debug_item=new JRadioButtonMenuItem("Debug Mode",theApp.isDebug()));
+		// Disable the debug radio button
+		debug_item.setEnabled(false);
+		debug_item.addActionListener(this);
 		mainMenu.add(inverted_item=new JRadioButtonMenuItem("Invert Signal",theApp.inverted));
 		inverted_item.addActionListener(this);
 		mainMenu.add(quick_log=new JRadioButtonMenuItem("Quick Log",theApp.isQuickLog()));
@@ -594,7 +598,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	// Signal to the main program to change its audio mixer
 	private void changeMixer(String mixerName){
 		if (theApp.changeMixer(mixerName)==false)	{
-			JOptionPane.showMessageDialog(null,"Error changing mixer","DMRDecode", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null,"Error changing mixer\n"+theApp.lineInThread.getMixerErrorMessage(),"DMRDecode",JOptionPane.ERROR_MESSAGE);
 		}
 	}	
 	

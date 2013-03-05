@@ -194,5 +194,8 @@ public class AudioInThread implements Runnable {
 		return audioMixer.getMixer().getMixerInfo().getName();
 	}
 	
+	public String getMixerErrorMessage() {
+		return audioMixer.getErrorMsg();
+	}
     
 }

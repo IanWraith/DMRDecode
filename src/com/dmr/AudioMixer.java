@@ -20,6 +20,7 @@ class AudioMixer{
 	public TargetDataLine line;
 	public Line.Info lineInfo;
 	public AudioFormat format = null;
+	private String errorMsg;
 	
 	public AudioMixer(DMRDecode theApp){
 		//this.theApp = theApp;
@@ -138,6 +139,7 @@ class AudioMixer{
 			this.line.start();
 		}
 		catch (Exception e)	{
+			errorMsg=e.getMessage();
 			return false;
 		}
 		return true;
@@ -162,9 +164,10 @@ class AudioMixer{
 		//if no mixer found, returns null which is the default mixer on the machine
 		return null;
 	}
-	
-	
-	
-	
+
+	public String getErrorMsg() {
+		return errorMsg;
+	}
+
 }
 

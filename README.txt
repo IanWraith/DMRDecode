@@ -65,7 +65,10 @@ Build 60 - Allows the user to select their audio source.
 Build 61 - Now saves the selected audio source in the settings file
 
 Build 62 - Disable the capture and debug menu items. Also change some code so virtual audio cables can be selected.
+
+Build 63 - Grey out the capture and debug items. Catch errors when the audio source is set from the settings file and
+           better display errors when changing audio sources.
       
-Ian Wraith (4th March 2013)
+Ian Wraith (5th March 2013)
 
 
