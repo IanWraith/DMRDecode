@@ -68,7 +68,10 @@ Build 62 - Disable the capture and debug menu items. Also change some code so vi
 
 Build 63 - Grey out the capture and debug items. Catch errors when the audio source is set from the settings file and
            better display errors when changing audio sources.
+           
+Build 64 - Ensure that only sound capture devices can be selected when choosing a mixer. Also better display information
+           from any errors during mixer selection.
       
-Ian Wraith (5th March 2013)
+Ian Wraith (6th March 2013)
 
 
