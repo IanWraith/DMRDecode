@@ -163,6 +163,9 @@ class AudioMixer{
 		//iterate the mixers and display TargetLines
 		for (int i=0; i< mixers.length; i++){
 			Mixer m = AudioSystem.getMixer(mixers[i]);
+			
+			// TODO : Code must be added here to ensure that only sound capture devices can be selected
+			
 			if (m.getMixerInfo().getName().equals(mixerName)){
 				return m.getMixerInfo();
 			}
