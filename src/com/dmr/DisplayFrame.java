@@ -562,7 +562,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		ArrayList<AudioMixer> deviceList=getCompatibleDevices();
 		int i;
 		for (i=0; i<deviceList.size(); i++){
-			Line.Info l[]=AudioSystem.getTargetLineInfo(deviceList.get(i).lineInfo);
+			//Line.Info l[]=AudioSystem.getTargetLineInfo(deviceList.get(i).lineInfo);
 			JRadioButtonMenuItem dev=new JRadioButtonMenuItem(deviceList.get(i).description);
 			dev.setActionCommand("mixer");
 			dev.addActionListener(this);
