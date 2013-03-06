@@ -125,13 +125,14 @@ class AudioMixer{
 	 * @param mixerName
 	 */
 	public boolean changeMixer(String mixerName) {
+		Mixer mx=null;
 		try	{
 			//stop current line
 			this.line.stop();
 			this.line.close();
 			this.line.flush();
 			//set the new mixer and line
-			Mixer mx=AudioSystem.getMixer(getMixerInfo(mixerName));
+			mx=AudioSystem.getMixer(getMixerInfo(mixerName));
 			this.setMixer(mx);
 			this.line=(TargetDataLine) getDataLineForMixer();
 			//restart
@@ -139,7 +140,13 @@ class AudioMixer{
 			this.line.start();
 		}
 		catch (Exception e)	{
+			// Record the exception
 			errorMsg=e.getMessage();
+			// then if a mixer has been obtained then display some information about it
+			if (mx!=null)	{
+				Mixer.Info mInfo=mx.getMixerInfo();
+				errorMsg=errorMsg+"\nMixer Name : "+mInfo.getName()+"\nMixer Description : "+mInfo.getDescription();
+			}
 			return false;
 		}
 		return true;
