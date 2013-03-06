@@ -58,7 +58,7 @@ public class AudioInThread implements Runnable {
 	
 
     public AudioInThread (DMRDecode theApp) {
-    	audioMixer=new AudioMixer(theApp);
+    	audioMixer=new AudioMixer();
     	run=false;
     	gettingAudio=false;
     	setupAudio();

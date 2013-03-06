@@ -14,7 +14,6 @@ import javax.sound.sampled.TargetDataLine;
  *
  */
 class AudioMixer{
-	//private DMRDecode theApp;
 	public String description;
 	public Mixer mixer;
 	public TargetDataLine line;
@@ -22,9 +21,8 @@ class AudioMixer{
 	public AudioFormat format = null;
 	private String errorMsg;
 	
-	public AudioMixer(DMRDecode theApp){
-		//this.theApp = theApp;
-		format = setAudioFormat();		
+	public AudioMixer(){
+		format=setAudioFormat();		
 	}
 	
 	public AudioMixer(DMRDecode theApp, String x, Mixer m, Line.Info l){
@@ -158,23 +156,21 @@ class AudioMixer{
 	 * @return
 	 */
 	public Mixer.Info getMixerInfo(String mixerName){
-		Mixer.Info mixers[] = AudioSystem.getMixerInfo();
-		
+		Mixer.Info mixers[]=AudioSystem.getMixerInfo();
 		//iterate the mixers and display TargetLines
 		for (int i=0; i< mixers.length; i++){
-			Mixer m = AudioSystem.getMixer(mixers[i]);
-			
-			// TODO : Code must be added here to ensure that only sound capture devices can be selected
-			
-			if (m.getMixerInfo().getName().equals(mixerName)){
+			Mixer m=AudioSystem.getMixer(mixers[i]);
+			// Ensure that only sound capture devices can be selected
+			boolean isCaptureDevice=m.getMixerInfo().getDescription().endsWith("Capture");
+			if ((m.getMixerInfo().getName().equals(mixerName))&&(isCaptureDevice==true)){
 				return m.getMixerInfo();
 			}
 		}
-		
 		//if no mixer found, returns null which is the default mixer on the machine
 		return null;
 	}
 
+	// Return any error message
 	public String getErrorMsg() {
 		return errorMsg;
 	}
