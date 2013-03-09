@@ -71,7 +71,9 @@ Build 63 - Grey out the capture and debug items. Catch errors when the audio sou
            
 Build 64 - Ensure that only sound capture devices can be selected when choosing a mixer. Also better display information
            from any errors during mixer selection.
+           
+Build 65 - Saves half rate to data to debug.csv for later analysis
       
-Ian Wraith (6th March 2013)
+Ian Wraith (9th March 2013)
 
 

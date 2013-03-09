@@ -1,5 +1,7 @@
 package com.dmr;
 
+import java.util.List;
+
 public class DMRData {
 	private String display[]=new String[3];
 	private DMRDecode theApp;
@@ -173,6 +175,18 @@ public class DMRData {
 	// Try to recognise the incoming data and decode it if possible 
 	private void decodeList()	{
 		
+		// TODO : Find a way of detecting incoming text messages so they can be decoded
+		
+		// For now simply save the half rate data into debug.csv
+		int a;
+		StringBuilder sb=new StringBuilder();
+		List<Integer> halfRateDataIn=theApp.getIncomingDataList();
+		sb.append(theApp.getTimeStamp()+"1/2 Rate");
+		for (a=0;a<halfRateDataIn.size();a++)	{
+			sb.append(","+Integer.toHexString(halfRateDataIn.get(a)));
+		}
+		theApp.debugDump(sb.toString());
+		theApp.clearIncomingDataList();
 	}
 		
 }
