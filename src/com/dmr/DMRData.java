@@ -181,7 +181,7 @@ public class DMRData {
 		int a;
 		StringBuilder sb=new StringBuilder();
 		List<Integer> halfRateDataIn=theApp.getIncomingDataList();
-		sb.append(theApp.getTimeStamp()+"1/2 Rate");
+		sb.append(theApp.getTimeStamp()+",1/2 Rate");
 		for (a=0;a<halfRateDataIn.size();a++)	{
 			sb.append(","+Integer.toHexString(halfRateDataIn.get(a)));
 		}
