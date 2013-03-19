@@ -45,6 +45,26 @@ public class DMRData {
 		return display;
 	}
 	
+	// Decode a three quarter rate packet
+	// TODO : Decode Rate ¾ Data Continuation frames properly
+	public String[] decodeThreeQuarterRate (boolean bits[])	{
+		
+		// Just display these as binary for now
+		StringBuilder sb=new StringBuilder(250);
+		int a;
+		for (a=0;a<bits.length;a++)	{
+			if (bits[a]==true) sb.append("1");
+			else sb.append("0");
+		}
+		display[0]=sb.toString();
+		
+		// Save into debug.txt as well
+		String line=theApp.getTimeStamp()+",3/4 Rate,"+sb.toString();
+		theApp.debugDump(line);
+		
+		return display;
+	}
+	
 	// Unified Data Transport
 	private void udt (boolean bits[])	{
 		display[0]="Unified Data Transport";

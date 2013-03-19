@@ -282,7 +282,7 @@ public class DMREmbedded {
 						colours[5]=Color.BLACK;
 					}
 				}
-				// TODO : Decode Rate ¾ Data Continuation frames properly
+				
 				// Rate ¾ Data Continuation
 				else if (dataType==8)	{
 					// We can't error correct this yet so for now just mark it as OK
@@ -290,16 +290,18 @@ public class DMREmbedded {
 					// Just use the BPTC19696 class to extract the raw binary from the dibit buffer
 					BPTC19696 bptc19696=new BPTC19696();
 					boolean bits[]=bptc19696.rawOut(dibit_buf);
-					// Display the bits as raw binary
-					StringBuilder sb=new StringBuilder();
-					int ai;
-					for (ai=0;ai<bits.length;ai++)	{
-						if (bits[ai]==true) sb.append("1");
-						else sb.append("0");
-					}
-					line[3]=sb.toString();
+					String clines[]=new String[3];
+					DMRData data=new DMRData(theApp);
+					clines=data.decodeThreeQuarterRate(bits);
+					line[3]=clines[0];
+					line[4]=clines[1];
+					line[5]=clines[2];
 					fonts[3]=theApp.boldFont;
 					colours[3]=Color.BLACK;
+					fonts[4]=theApp.boldFont;
+					colours[4]=Color.BLACK;
+					fonts[5]=theApp.boldFont;
+					colours[5]=Color.BLACK;
 				}
 				// Idle
 				// Error check this to detect problems with the data stream
