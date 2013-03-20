@@ -53,13 +53,13 @@ public class DMRData {
 		StringBuilder sb=new StringBuilder(250);
 		int a;
 		for (a=0;a<bits.length;a++)	{
-			if (bits[a]==true) sb.append("1");
-			else sb.append("0");
+			if (bits[a]==true) sb.append(",1");
+			else sb.append(",0");
 		}
 		display[0]=sb.toString();
 		
 		// Save into debug.txt as well
-		String line=theApp.getTimeStamp()+",3/4 Rate,"+sb.toString();
+		String line=theApp.getDateStamp()+","+theApp.getTimeStamp()+",3/4 Rate"+sb.toString();
 		theApp.debugDump(line);
 		
 		return display;
@@ -201,7 +201,7 @@ public class DMRData {
 		int a;
 		StringBuilder sb=new StringBuilder();
 		List<Integer> halfRateDataIn=theApp.getIncomingDataList();
-		sb.append(theApp.getTimeStamp()+",1/2 Rate");
+		sb.append(theApp.getDateStamp()+","+theApp.getTimeStamp()+",1/2 Rate");
 		for (a=0;a<halfRateDataIn.size();a++)	{
 			sb.append(","+Integer.toHexString(halfRateDataIn.get(a)));
 		}
