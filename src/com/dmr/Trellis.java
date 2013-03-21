@@ -9,6 +9,17 @@ public class Trellis {
 			6,7,14,15,22,23,30,31,38,39,46,47,54,55,62,63,70,71,78,79,86,87,94,95};
 	
 	
+	// 
+	public boolean[] decode (boolean r[])	{
+		boolean out[]=new boolean[144];
+		
+		byte dibits[]=extractDibits(r);
+		byte cons[]=constellationOut(dibits);
+		
+		
+		return out;
+	}
+	
 	// Extract and deinterleave the dibits
 	private byte[] extractDibits (boolean[] raw)	{
 		int a,index=97;
@@ -16,18 +27,51 @@ public class Trellis {
 		byte dibits[]=new byte[98];
 		for (a=0;a<196;a=a+2)	{
 			// Set the dibits
-			if (raw[a]==true) rawDibits[index]=2;
-			else rawDibits[index]=0;
-			if (raw[a+1]==true) rawDibits[index]++;
+			// 01 = +3
+			// 00 = +1
+			// 10 = -1
+			// 11 = -3
+			if ((raw[a]==false)&&(raw[a+1]==true)) rawDibits[index]=+3;
+			else if ((raw[a]==false)&&(raw[a+1]==false)) rawDibits[index]=+1;
+			else if ((raw[a]==true)&&(raw[a+1]==false)) rawDibits[index]=-1;
+			else if ((raw[a]==true)&&(raw[a+1]==true)) rawDibits[index]=-3;
 			// Reduce the index
 			index--;
 		}
 		// Now deinterleave the dibits
 		for (a=0;a<98;a++)	{
 			index=INTERLEAVE[a];
-			dibits[a]=rawDibits[index];
+			dibits[index]=rawDibits[a];
 		}
 		return dibits;
+	}
+	
+	// Extract the constellation points
+	private byte[] constellationOut (byte[] diBits)	{
+		byte constellationPoints[]=new byte[49];
+		int a,i=0;
+		for (a=0;a<98;a=a+2)	{
+			if ((diBits[a]==+1)&&(diBits[a+1]==-1)) constellationPoints[i]=0;
+			else if ((diBits[a]==-1)&&(diBits[a+1]==-1)) constellationPoints[i]=1;
+			else if ((diBits[a]==+3)&&(diBits[a+1]==-3)) constellationPoints[i]=2;
+			else if ((diBits[a]==-3)&&(diBits[a+1]==-3)) constellationPoints[i]=3;
+			else if ((diBits[a]==-3)&&(diBits[a+1]==-1)) constellationPoints[i]=4;
+			else if ((diBits[a]==+3)&&(diBits[a+1]==-1)) constellationPoints[i]=5;
+			else if ((diBits[a]==-1)&&(diBits[a+1]==-3)) constellationPoints[i]=6;
+			else if ((diBits[a]==+1)&&(diBits[a+1]==-3)) constellationPoints[i]=7;
+			else if ((diBits[a]==-3)&&(diBits[a+1]==+3)) constellationPoints[i]=8;
+			else if ((diBits[a]==+3)&&(diBits[a+1]==+3)) constellationPoints[i]=9;
+			else if ((diBits[a]==-1)&&(diBits[a+1]==+1)) constellationPoints[i]=10;
+			else if ((diBits[a]==+1)&&(diBits[a+1]==+1)) constellationPoints[i]=11;
+			else if ((diBits[a]==+1)&&(diBits[a+1]==+3)) constellationPoints[i]=12;
+			else if ((diBits[a]==-1)&&(diBits[a+1]==+3)) constellationPoints[i]=13;
+			else if ((diBits[a]==+3)&&(diBits[a+1]==+1)) constellationPoints[i]=14;
+			else if ((diBits[a]==-3)&&(diBits[a+1]==+1)) constellationPoints[i]=15;
+			else constellationPoints[i]=-1;
+			i++;
+		}
+		
+		return constellationPoints;
 	}
 	
 
