@@ -1,5 +1,7 @@
 package com.dmr;
 
+import javax.swing.JOptionPane;
+
 public class Trellis {
 	
 	private final int INTERLEAVE[]={
@@ -46,54 +48,54 @@ public class Trellis {
 	}
 	
 	// Extract and deinterleave the dibits
-	private byte[] extractDibits (boolean[] raw)	{
+	private byte[] extractDibits (boolean[] rawBits)	{
 		int a,index=97;
-		byte rawDibits[]=new byte[98];
-		byte dibits[]=new byte[98];
+		byte trellisDibit[]=new byte[98];
+		byte encDibit[]=new byte[98];
 		for (a=0;a<196;a=a+2)	{
 			// Set the dibits
 			// 01 = +3
 			// 00 = +1
 			// 10 = -1
 			// 11 = -3
-			if ((raw[a]==false)&&(raw[a+1]==true)) rawDibits[index]=+3;
-			else if ((raw[a]==false)&&(raw[a+1]==false)) rawDibits[index]=+1;
-			else if ((raw[a]==true)&&(raw[a+1]==false)) rawDibits[index]=-1;
-			else if ((raw[a]==true)&&(raw[a+1]==true)) rawDibits[index]=-3;
+			if ((rawBits[a]==false)&&(rawBits[a+1]==true)) trellisDibit[index]=+3;
+			else if ((rawBits[a]==false)&&(rawBits[a+1]==false)) trellisDibit[index]=+1;
+			else if ((rawBits[a]==true)&&(rawBits[a+1]==false)) trellisDibit[index]=-1;
+			else if ((rawBits[a]==true)&&(rawBits[a+1]==true)) trellisDibit[index]=-3;
 			// Reduce the index
 			index--;
 		}
 		// Now deinterleave the dibits
 		for (a=0;a<98;a++)	{
 			index=INTERLEAVE[a];
-			dibits[index]=rawDibits[a];
+			encDibit[index]=trellisDibit[a];
 		}
-		return dibits;
+		return encDibit;
 	}
 	
 	// Extract the constellation points
-	private byte[] constellationOut (byte[] diBits)	{
+	private byte[] constellationOut (byte[] encDibit)	{
 		byte constellationPoints[]=new byte[49];
-		int a,i=0;
+		int a,index=0;
 		for (a=0;a<98;a=a+2)	{
-			if ((diBits[a]==+1)&&(diBits[a+1]==-1)) constellationPoints[i]=0;
-			else if ((diBits[a]==-1)&&(diBits[a+1]==-1)) constellationPoints[i]=1;
-			else if ((diBits[a]==+3)&&(diBits[a+1]==-3)) constellationPoints[i]=2;
-			else if ((diBits[a]==-3)&&(diBits[a+1]==-3)) constellationPoints[i]=3;
-			else if ((diBits[a]==-3)&&(diBits[a+1]==-1)) constellationPoints[i]=4;
-			else if ((diBits[a]==+3)&&(diBits[a+1]==-1)) constellationPoints[i]=5;
-			else if ((diBits[a]==-1)&&(diBits[a+1]==-3)) constellationPoints[i]=6;
-			else if ((diBits[a]==+1)&&(diBits[a+1]==-3)) constellationPoints[i]=7;
-			else if ((diBits[a]==-3)&&(diBits[a+1]==+3)) constellationPoints[i]=8;
-			else if ((diBits[a]==+3)&&(diBits[a+1]==+3)) constellationPoints[i]=9;
-			else if ((diBits[a]==-1)&&(diBits[a+1]==+1)) constellationPoints[i]=10;
-			else if ((diBits[a]==+1)&&(diBits[a+1]==+1)) constellationPoints[i]=11;
-			else if ((diBits[a]==+1)&&(diBits[a+1]==+3)) constellationPoints[i]=12;
-			else if ((diBits[a]==-1)&&(diBits[a+1]==+3)) constellationPoints[i]=13;
-			else if ((diBits[a]==+3)&&(diBits[a+1]==+1)) constellationPoints[i]=14;
-			else if ((diBits[a]==-3)&&(diBits[a+1]==+1)) constellationPoints[i]=15;
-			else constellationPoints[i]=-1;
-			i++;
+			if ((encDibit[a]==+1)&&(encDibit[a+1]==-1)) constellationPoints[index]=0;
+			else if ((encDibit[a]==-1)&&(encDibit[a+1]==-1)) constellationPoints[index]=1;
+			else if ((encDibit[a]==+3)&&(encDibit[a+1]==-3)) constellationPoints[index]=2;
+			else if ((encDibit[a]==-3)&&(encDibit[a+1]==-3)) constellationPoints[index]=3;
+			else if ((encDibit[a]==-3)&&(encDibit[a+1]==-1)) constellationPoints[index]=4;
+			else if ((encDibit[a]==+3)&&(encDibit[a+1]==-1)) constellationPoints[index]=5;
+			else if ((encDibit[a]==-1)&&(encDibit[a+1]==-3)) constellationPoints[index]=6;
+			else if ((encDibit[a]==+1)&&(encDibit[a+1]==-3)) constellationPoints[index]=7;
+			else if ((encDibit[a]==-3)&&(encDibit[a+1]==+3)) constellationPoints[index]=8;
+			else if ((encDibit[a]==+3)&&(encDibit[a+1]==+3)) constellationPoints[index]=9;
+			else if ((encDibit[a]==-1)&&(encDibit[a+1]==+1)) constellationPoints[index]=10;
+			else if ((encDibit[a]==+1)&&(encDibit[a+1]==+1)) constellationPoints[index]=11;
+			else if ((encDibit[a]==+1)&&(encDibit[a+1]==+3)) constellationPoints[index]=12;
+			else if ((encDibit[a]==-1)&&(encDibit[a+1]==+3)) constellationPoints[index]=13;
+			else if ((encDibit[a]==+3)&&(encDibit[a+1]==+1)) constellationPoints[index]=14;
+			else if ((encDibit[a]==-3)&&(encDibit[a+1]==+1)) constellationPoints[index]=15;
+			else JOptionPane.showMessageDialog(null,"Invalid encDibit state","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
+			index++;
 		}
 		
 		return constellationPoints;
