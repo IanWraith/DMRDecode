@@ -1,7 +1,5 @@
 package com.dmr;
 
-import javax.swing.JOptionPane;
-
 public class Trellis {
 	
 	private final int INTERLEAVE[]={
@@ -19,30 +17,16 @@ public class Trellis {
 			7,15,1,9,5,13,3,11,
 			2,10,6,14,0,8,4,12,
 			6,14,0,8,4,12,2,10};
-	
-	private byte trellisTable[][]=new byte[8][8];
-	
-	private boolean errorState=false;
-	
-	public Trellis()	{
-		// Load the trellis table from the state table
-		int a,b,c=0;
-		for (a=0;a<8;a++)	{
-			for (b=0;b<8;b++)	{
-				trellisTable[a][b]=STATETABLE[c];
-				c++;
-			}
-		}
-	}
-	
-	
-	// 
+			
+	// Converts the 3/4 rate trellis encoded bits to plain binary
 	public boolean[] decode (boolean r[])	{
 		boolean out[]=new boolean[144];
 		
 		byte dibits[]=extractDibits(r);
 		byte cons[]=constellationOut(dibits);
-		
+		int tri[]=tribitExtract(cons);
+		// If the output of tribitExtract() is null then we have an error so return null
+		if (tri==null) return null;
 		
 		return out;
 	}
@@ -92,16 +76,29 @@ public class Trellis {
 			else if ((encDibit[a]==-1)&&(encDibit[a+1]==+3)) constellationPoints[index]=13;
 			else if ((encDibit[a]==+3)&&(encDibit[a+1]==+1)) constellationPoints[index]=14;
 			else if ((encDibit[a]==-3)&&(encDibit[a+1]==+1)) constellationPoints[index]=15;
-			else JOptionPane.showMessageDialog(null,"Invalid encDibit state","DMRDecode", JOptionPane.INFORMATION_MESSAGE);
 			index++;
 		}
-		
 		return constellationPoints;
 	}
 
-
-	public boolean isErrorState() {
-		return errorState;
+	// Extract tribits (as ints) from the constellation points
+	private int[] tribitExtract (byte cons[])	{
+		int a,b,rowStart,lastState=0;
+		int tribit[]=new int[49];
+		for (a=0;a<cons.length;a++)	{
+			rowStart=lastState*8;
+			boolean match=false;
+			for (b=rowStart;b<(rowStart+8);b++)	{
+				if (cons[a]==STATETABLE[b])	{
+					match=true;
+					lastState=b-rowStart;
+					tribit[a]=lastState;
+				}
+			}
+			// If no match found then we have a problem
+			if (match==false) return null;
+		}
+		return tribit;
 	}
 
 
