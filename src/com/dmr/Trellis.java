@@ -20,14 +20,12 @@ public class Trellis {
 			
 	// Converts the 3/4 rate trellis encoded bits to plain binary
 	public boolean[] decode (boolean r[])	{
-		boolean out[]=new boolean[144];
-		
 		byte dibits[]=extractDibits(r);
 		byte cons[]=constellationOut(dibits);
 		int tri[]=tribitExtract(cons);
 		// If the output of tribitExtract() is null then we have an error so return null
 		if (tri==null) return null;
-		
+		boolean out[]=binaryConvert(tri);
 		return out;
 	}
 	
@@ -86,10 +84,13 @@ public class Trellis {
 		int a,b,rowStart,lastState=0;
 		int tribit[]=new int[49];
 		for (a=0;a<cons.length;a++)	{
+			// The lastState variable decides which row of STATETABLE we should use
 			rowStart=lastState*8;
 			boolean match=false;
 			for (b=rowStart;b<(rowStart+8);b++)	{
+				// Check if this constellation point matches an element of this row of STATETABLE
 				if (cons[a]==STATETABLE[b])	{
+					// Yes it does
 					match=true;
 					lastState=b-rowStart;
 					tribit[a]=lastState;
@@ -99,6 +100,24 @@ public class Trellis {
 			if (match==false) return null;
 		}
 		return tribit;
+	}
+	
+	// Extract the 144 binary bits from the dibits
+	private boolean[] binaryConvert (int tribit[])	{
+		int a,b=0;
+		boolean out[]=new boolean[144];
+		for (a=0;a<144;a=a+3)	{
+			// Convert three bits at a time
+			if ((tribit[b]&4)>0) out[a]=true;
+			else  out[a]=false;
+			if ((tribit[b]&2)>0) out[a+1]=true;
+			else  out[a+1]=false;
+			if ((tribit[b]&1)>0) out[a+2]=true;
+			else  out[a+2]=false;
+			// Increment the bit counter
+			b++;
+		}
+		return out;
 	}
 
 
