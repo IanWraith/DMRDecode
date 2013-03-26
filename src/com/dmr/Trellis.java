@@ -49,8 +49,8 @@ public class Trellis {
 	
 	// Extract and deinterleave the dibits
 	private byte[] extractDibits (boolean[] rawBits)	{
-		int a,index=97;
-		byte trellisDibit[]=new byte[98];
+		int a,index=0,deinterleave;
+		byte trellisDibit=0;
 		byte encDibit[]=new byte[98];
 		for (a=0;a<196;a=a+2)	{
 			// Set the dibits
@@ -58,17 +58,15 @@ public class Trellis {
 			// 00 = +1
 			// 10 = -1
 			// 11 = -3
-			if ((rawBits[a]==false)&&(rawBits[a+1]==true)) trellisDibit[index]=+3;
-			else if ((rawBits[a]==false)&&(rawBits[a+1]==false)) trellisDibit[index]=+1;
-			else if ((rawBits[a]==true)&&(rawBits[a+1]==false)) trellisDibit[index]=-1;
-			else if ((rawBits[a]==true)&&(rawBits[a+1]==true)) trellisDibit[index]=-3;
-			// Reduce the index
-			index--;
-		}
-		// Now deinterleave the dibits
-		for (a=0;a<98;a++)	{
-			index=INTERLEAVE[a];
-			encDibit[index]=trellisDibit[a];
+			if ((rawBits[a]==false)&&(rawBits[a+1]==true)) trellisDibit=+3;
+			else if ((rawBits[a]==false)&&(rawBits[a+1]==false)) trellisDibit=+1;
+			else if ((rawBits[a]==true)&&(rawBits[a+1]==false)) trellisDibit=-1;
+			else if ((rawBits[a]==true)&&(rawBits[a+1]==true)) trellisDibit=-3;
+			// Deinterleave
+			deinterleave=INTERLEAVE[index];
+			encDibit[deinterleave]=trellisDibit;
+			// Increase the index
+			index++;
 		}
 		return encDibit;
 	}
