@@ -77,6 +77,28 @@ public class TrellisTest extends TestCase {
 				true,false,false,true,true,true,false,true,false,false,
 				true,false,false,false,true,false};
 		
+		final boolean threequarterBadData1[]={
+				false,false,true,false,false,false,false,false,false,true, 
+				true,false,true,true,true,false,false,false,true,false,
+				false,false,true,false,true,false,false,true,true,true,
+				false,true,false,false,true,false,true,true,false,false,
+				true,true,true,false,false,false,true,false,false,false,
+				true,false,false,false,true,false,true,true,true,true,
+				false,false,true,false,true,true,true,true,false,false,
+				true,false,false,false,true,false,false,false,true,false,
+				true,true,true,true,false,false,true,false,true,true,
+				true,true,false,false,true,false,false,false,true,false,
+				false,false,true,false,true,true,false,true,false,false,
+				true,false,true,true,true,true,true,true,true,false,
+				false,false,true,false,false,false,false,true,true,true,
+				true,true,true,true,true,false,false,true,true,true,
+				false,false,true,false,false,false,true,false,false,false,
+				true,false,false,true,false,true,false,false,true,false,
+				false,false,true,false,true,false,true,false,false,false,
+				false,true,true,false,false,false,false,false,true,false,
+				true,false,false,true,true,true,false,true,false,false,
+				true,false,false,false,true,false};
+		
 		Trellis trellis=new Trellis();
 		
 		trellis.decode(threequarterData1);
@@ -84,6 +106,8 @@ public class TrellisTest extends TestCase {
 		trellis.decode(threequarterData2);
 		
 		trellis.decode(threequarterData3);
+		
+		trellis.decode(threequarterBadData1);
 		
 	}
 	
