@@ -46,20 +46,28 @@ public class DMRData {
 	}
 	
 	// Decode a three quarter rate packet
-	// TODO : Decode Rate ¾ Data Continuation frames properly
 	public String[] decodeThreeQuarterRate (boolean bits[])	{
+		
+		// Create a Trellis object
+		Trellis trellis=new Trellis();
+		boolean threeQuarterOut[]=trellis.decode(bits);
+		// If this is null then there is an error so return null
+		if (threeQuarterOut==null) return null;
+		
+		
+		// TODO : Decode the contents of Rate ¾ Data Continuation frames
 		
 		// Just display these as binary for now
 		StringBuilder sb=new StringBuilder(250);
 		int a;
-		for (a=0;a<bits.length;a++)	{
-			if (bits[a]==true) sb.append(",1");
-			else sb.append(",0");
+		for (a=0;a<threeQuarterOut.length;a++)	{
+			if (threeQuarterOut[a]==true) sb.append("1");
+			else sb.append("0");
 		}
 		display[0]=sb.toString();
 		
 		// Save into debug.txt as well
-		String line=theApp.getDateStamp()+","+theApp.getTimeStamp()+",3/4 Rate"+sb.toString();
+		String line=theApp.getDateStamp()+","+theApp.getTimeStamp()+",3/4 Rate,"+sb.toString();
 		theApp.debugDump(line);
 		
 		return display;
