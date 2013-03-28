@@ -37,7 +37,6 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
-import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -47,7 +46,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 67)";
+	public String program_version="DMR Decoder (Build 68)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -123,10 +122,12 @@ public class DMRDecode {
 	private boolean quickLog=false;
 	public FileWriter quickLogFile;
 	private int colourCode=0;
-	private ArrayList<Integer> incomingDataList=new ArrayList<Integer>();  
     private int socketThreadPriority=3;
     private int audioInputPriority=3;
     private int mainThreadPriority=5;
+    private int incomingDataType[]=new int[2];
+    private int dataBlocksToFollow[]=new int[2];
+    private int dataBlocksReceived[]=new int[2];
     
     private ExecutorService socketExecutor = Executors.newSingleThreadExecutor(
         new ThreadFactory(){
@@ -1074,26 +1075,6 @@ public class DMRDecode {
 		return	display_view.getText();
 	}
 	
-	// Clear the data list
-	public void clearIncomingDataList()	{
-		incomingDataList.clear();
-	}
-	
-	// Add an int to the data list
-	public void addToIncomingDataList (int in)	{
-		incomingDataList.add(in);
-	}
-	
-	// Return the list length
-	public int incomingDataListLengh()	{
-		return incomingDataList.size();
-	}
-	
-	// Return a copy of the list
-	public ArrayList<Integer> getIncomingDataList()	{
-		return incomingDataList;
-	}
-	
 	// Save the current settings as DMRDecode_settings.xml
 	public boolean saveCurrentSettings ()	{
 		FileWriter xmlfile;
@@ -1255,6 +1236,57 @@ public class DMRDecode {
 			}
 		}
 	
+	// Data types are as follows ..
+	// 01 - Unconfirmed
+	// 02 - Confirmed
+	// 03 - Response
+	// 04 - Proprietary
+	// 05 - Status/Precoded
+	// 06 - Raw Short
+	// 07 - Defined Short
+	// 08 - Unified Data Transport
 	
-
+	// Set the current channels incoming data type
+	// also clear the current channels data block counter
+	public void setCurrentIncomingDataType (int type)	{
+		if (currentChannel==1)	{
+			incomingDataType[0]=type;
+			dataBlocksReceived[0]=0;
+		}
+		else	{
+			incomingDataType[1]=type;
+			dataBlocksReceived[1]=0;
+		}
+	}
+	
+	// Get the current channels incoming data type
+	public int getCurrentIncomingDataType ()	{
+		if (currentChannel==1) return incomingDataType[0];
+		else return incomingDataType[1];
+	}
+	
+	// Set the current channels data blocks to follow
+	public void setCurrentDataBlocksToFollow (int blocks)	{
+		if (currentChannel==1) dataBlocksToFollow[0]=blocks;
+		else dataBlocksToFollow[1]=blocks;
+	}
+	
+	// Get the current channels data blocks to follow
+	public int getCurrentDataBlocksToFollow ()	{
+		if (currentChannel==1) return dataBlocksToFollow[0];
+		else return dataBlocksToFollow[1];
+	}	
+	
+	// Get the current channels received data blocks counter
+	public int getCurrentDataBlocksReceived ()	{
+		if (currentChannel==1) return dataBlocksReceived[0];
+		else return dataBlocksReceived[1];
+	}	
+	
+	// Increment the current channels data block counter
+	public void incrementCurrentDataBlocksReceived ()	{
+		if (currentChannel==1) dataBlocksReceived[0]++;
+		else dataBlocksReceived[1]++;
+	}
+	
 }

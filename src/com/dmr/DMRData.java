@@ -28,36 +28,51 @@ public class DMRData {
 		else if (dpf==14) rawShortData(bits);
 		else if (dpf==15) propData(bits);
 		else unknownData(bits,dpf);
-		// Clear the data list
-		theApp.clearIncomingDataList();
 		return display;
 	}
 	
 	// Decode a half rate packet
 	public String[] decodeHalfRate (boolean bits[])	{
-		Utilities utils=new Utilities();
-		int a;
-		for (a=0;a<bits.length;a=a+8)	{
-			int td=utils.retEight(bits,a);
-			theApp.addToIncomingDataList(td);
+		// Increment the blocks received counter
+		theApp.incrementCurrentDataBlocksReceived();
+		// Depending on the data type handle this in different ways
+		if (theApp.getCurrentIncomingDataType()==2)	{
+			handleConfirmedData(bits);
+			return display;
 		}
-		decodeList();
+		
+		// TODO : Handle other types of rate 1/2 data
+		
+		// Just display the rest as binary for now
+		StringBuilder sb=new StringBuilder(250);
+		int a;
+		for (a=0;a<bits.length;a++)	{
+			if (bits[a]==true) sb.append("1");
+			else sb.append("0");
+		}
+		display[0]=sb.toString();
+		
 		return display;
 	}
 	
 	// Decode a three quarter rate packet
 	public String[] decodeThreeQuarterRate (boolean bits[])	{
-		
 		// Create a Trellis object
 		Trellis trellis=new Trellis();
 		boolean threeQuarterOut[]=trellis.decode(bits);
+		// Increment the blocks received counter
+		theApp.incrementCurrentDataBlocksReceived();
 		// If this is null then there is an error so return null
 		if (threeQuarterOut==null) return null;
+		// Depending on the data type handle this in different ways
+		if (theApp.getCurrentIncomingDataType()==2)	{
+			handleConfirmedData(bits);
+			return display;
+		}
 		
+		// TODO : Handle other types of rate 3/4 data
 		
-		// TODO : Decode the contents of Rate ¾ Data Continuation frames
-		
-		// Just display these as binary for now
+		// Just display the rest as binary for now
 		StringBuilder sb=new StringBuilder(250);
 		int a;
 		for (a=0;a<threeQuarterOut.length;a++)	{
@@ -65,17 +80,14 @@ public class DMRData {
 			else sb.append("0");
 		}
 		display[0]=sb.toString();
-		
-		// Save into debug.txt as well
-		String line=theApp.getDateStamp()+","+theApp.getTimeStamp()+",3/4 Rate,"+sb.toString();
-		theApp.debugDump(line);
-		
 		return display;
 	}
 	
 	// Unified Data Transport
 	private void udt (boolean bits[])	{
 		display[0]="Unified Data Transport";
+		// Set the data type
+		theApp.setCurrentIncomingDataType(8);
 	}
 	
 	// Response Packet
@@ -116,6 +128,10 @@ public class DMRData {
 		else status=0;
 		if (bits[78]==true) status=status+2;
 		if (bits[79]==true) status++;
+		// Set the data type
+		theApp.setCurrentIncomingDataType(3);
+		// Set the number of blocks to follow
+		theApp.setCurrentDataBlocksToFollow(blocks);
 		// Display this
 		sb.append(Integer.toString(blocks)+" blocks follow : ");
 		if ((dclass==0)&&(type==1)) sb.append("ACK");
@@ -159,6 +175,10 @@ public class DMRData {
 		if (bits[77]==true) fsn=fsn+4;
 		if (bits[78]==true) fsn=fsn+2;
 		if (bits[79]==true) fsn++;
+		// Set the data type
+		theApp.setCurrentIncomingDataType(1);
+		// Set the blocks to follow
+		theApp.setCurrentDataBlocksToFollow(blocks);
 		// Display this
 		sb.append(Integer.toString(blocks)+" blocks follow : FSN="+Integer.toString(fsn));
 		display[2]=sb.toString();
@@ -166,17 +186,61 @@ public class DMRData {
 	
 	// Confirmed Data
 	private void confirmedData (boolean bits[])	{
+		int blocks,fsn,ns;
+		Utilities utils=new Utilities();
+		StringBuilder sa=new StringBuilder(250);
+		StringBuilder sb=new StringBuilder(250);
 		display[0]="Confirmed Data";
+		// Destination LLID
+		int dllid=utils.retAddress(bits,16);
+		// Source LLID
+		int sllid=utils.retAddress(bits,40);
+		sa.append("Destination Logical Link ID : "+Integer.toString(dllid));
+		sa.append(" Source Logical Link ID : "+Integer.toString(sllid));
+		display[1]=sa.toString();
+		// Bit 64 is F
+		// Blocks to follow
+		if (bits[65]==true) blocks=64;
+		else blocks=0;
+		if (bits[66]==true) blocks=blocks+32;
+		if (bits[67]==true) blocks=blocks+16;
+		if (bits[68]==true) blocks=blocks+8;
+		if (bits[69]==true) blocks=blocks+4;
+		if (bits[70]==true) blocks=blocks+2;
+		if (bits[71]==true) blocks++;
+		// Bits 72 is S
+		// Bits 73,74,75 are N(S)
+		if (bits[73]==true) ns=4;
+		else ns=0;
+		if (bits[74]==true) ns=ns+2;
+		if (bits[75]==true) ns++;
+		// FSN
+		if (bits[76]==true) fsn=8;
+		else fsn=0;
+		if (bits[77]==true) fsn=fsn+4;
+		if (bits[78]==true) fsn=fsn+2;
+		if (bits[79]==true) fsn++;
+		// Set the data type
+		theApp.setCurrentIncomingDataType(2);
+		// Set the blocks to follow
+		theApp.setCurrentDataBlocksToFollow(blocks);
+		// Display this
+		sb.append(Integer.toString(blocks)+" blocks follow : FSN="+Integer.toString(fsn)+" N(S)="+Integer.toString(ns));
+		display[2]=sb.toString();		
 	}
 	
 	// Defined Short Data
 	private void definedShortData (boolean bits[])	{
 		display[0]="Defined Short Data";
+		// Set the data type
+		theApp.setCurrentIncomingDataType(7);
 	}
 	
 	// Raw Short Data
 	private void rawShortData (boolean bits[])	{
 		display[0]="Raw or Status Short Data";
+		// Set the data type
+		theApp.setCurrentIncomingDataType(6);
 	}
 	
 	// Proprietary Data Packet
@@ -187,11 +251,13 @@ public class DMRData {
 		display[0]="Proprietary Data : MFID="+Integer.toString(mfid)+" ("+utils.returnMFIDName(mfid)+")";
 		// Display proprietary data as binary
 		int a;
-		for (a=16;a<64;a++)	{
+		for (a=16;a<80;a++)	{
 			if (bits[a]==true) sa.append("1");
 			else sa.append("0");
 		}
 		display[1]=sa.toString();
+		// Set the data type
+		theApp.setCurrentIncomingDataType(4);	
 	}
 	
 	
@@ -200,21 +266,42 @@ public class DMRData {
 		display[0]="Unknown Data : DPF="+Integer.toString(dpf);
 	}
 	
-	// Try to recognise the incoming data and decode it if possible 
-	private void decodeList()	{
-		
-		// TODO : Find a way of detecting incoming text messages so they can be decoded
-		
-		// For now simply save the half rate data into debug.csv
+	// Handle confirmed data 
+	private void handleConfirmedData (boolean bits[])	{
+		int dbsn,crc;
+		// Data block serial number 
+		// bits 0,1,2,3,4,5,6
+		if (bits[0]==true) dbsn=64;
+		else dbsn=0;
+		if (bits[1]==true) dbsn=dbsn+32;
+		if (bits[2]==true) dbsn=dbsn+16;
+		if (bits[3]==true) dbsn=dbsn+8;
+		if (bits[4]==true) dbsn=dbsn+4;
+		if (bits[5]==true) dbsn=dbsn+2;
+		if (bits[6]==true) dbsn++;
+		// 9 bit CRC
+		// bits 7,8,9,10,11,12,13,14,15
+		if (bits[7]==true) crc=256;
+		else crc=0;
+		if (bits[8]==true) crc=crc+128;
+		if (bits[9]==true) crc=crc+64;
+		if (bits[10]==true) crc=crc+32;
+		if (bits[11]==true) crc=crc+16;
+		if (bits[12]==true) crc=crc+8;
+		if (bits[13]==true) crc=crc+4;
+		if (bits[14]==true) crc=crc+2;
+		if (bits[15]==true) crc++;
+		// If 96 bits this is R_1_2_DATA
+		if (bits.length==96) display[0]="R_1_2_DATA (data block serial number="+Integer.toString(dbsn)+")";
+		else if (bits.length==144) display[0]="R_3_4_DATA (data block serial number="+Integer.toString(dbsn)+")";
+		// Display the payload as hex for now
+		Utilities utils=new Utilities();
 		int a;
-		StringBuilder sb=new StringBuilder();
-		List<Integer> halfRateDataIn=theApp.getIncomingDataList();
-		sb.append(theApp.getDateStamp()+","+theApp.getTimeStamp()+",1/2 Rate");
-		for (a=0;a<halfRateDataIn.size();a++)	{
-			sb.append(","+Integer.toHexString(halfRateDataIn.get(a)));
+		for (a=16;a<bits.length;a=a+8)	{
+			int td=utils.retEight(bits,a);
+			if (a==16) display[1]="0x"+Integer.toHexString(td);
+			else display[1]=display[1]+",0x"+Integer.toHexString(td);
 		}
-		theApp.debugDump(sb.toString());
-		theApp.clearIncomingDataList();
 	}
 		
 }
