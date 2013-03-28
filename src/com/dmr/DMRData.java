@@ -1,7 +1,5 @@
 package com.dmr;
 
-import java.util.List;
-
 public class DMRData {
 	private String display[]=new String[3];
 	private DMRDecode theApp;
@@ -66,7 +64,7 @@ public class DMRData {
 		if (threeQuarterOut==null) return null;
 		// Depending on the data type handle this in different ways
 		if (theApp.getCurrentIncomingDataType()==2)	{
-			handleConfirmedData(bits);
+			handleConfirmedData(threeQuarterOut);
 			return display;
 		}
 		
