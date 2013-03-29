@@ -292,14 +292,14 @@ public class DMRData {
 		// If 96 bits this is R_1_2_DATA
 		if (bits.length==96) display[0]="R_1_2_DATA (data block serial number="+Integer.toString(dbsn)+")";
 		else if (bits.length==144) display[0]="R_3_4_DATA (data block serial number="+Integer.toString(dbsn)+")";
-		// Display the payload as hex for now
-		Utilities utils=new Utilities();
+		// Display the payload as binary for now
 		int a;
-		for (a=16;a<bits.length;a=a+8)	{
-			int td=utils.retEight(bits,a);
-			if (a==16) display[1]="0x"+Integer.toHexString(td);
-			else display[1]=display[1]+",0x"+Integer.toHexString(td);
+		StringBuilder sb=new StringBuilder(150);
+		for (a=16;a<bits.length;a++)	{
+			if (bits[a]==true) sb.append("1");
+			else sb.append("0");
 		}
+		display[1]=sb.toString();
 	}
 		
 }
