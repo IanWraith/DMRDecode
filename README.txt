@@ -73,7 +73,9 @@ Build 64 - Ensure that only sound capture devices can be selected when choosing 
            from any errors during mixer selection.
            
 Build 65 - Saves half rate to data to debug.csv for later analysis
+
+Build 68 - Decodes rate 3/4 data and has a unified method of handling data.
       
-Ian Wraith (9th March 2013)
+Ian Wraith (29th March 2013)
 
 
