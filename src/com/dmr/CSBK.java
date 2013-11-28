@@ -157,6 +157,24 @@ public class CSBK {
 	}
 	
 	// Capacity Plus
+    // A great deal of information on this type of packet was kindly provided by Eric Cottrell on the Radioreference forums	
+	// see http://forums.radioreference.com/digital-voice-decoding-software/209318-understanding-capacity-plus-trunking-6.html#post2078924
+
+	// csbko 62 FID 16
+	// bits 20 - 23  Rest Channel
+	// bit  24       Channel 1 Active
+	// bit  25       Channel 2 Active
+	// bit  26       Channel 3 Active
+	// bit  27       Channel 4 Active
+	// bit  28       Channel 5 Active
+	// bit  29       Channel 6 Active
+	// bits 32 - 39  Talkgroup on lowest active channel number
+	// bits 40 - 47  Talkgroup on second lowest active channel number
+    // bits 48 - 55  Talkgroup on third lowest active channel number
+	// bits 56 - 63  Talkgroup on fourth lowest active channel number
+	// bits 64 - 71  Talkgroup on fifth lowest active channel number
+	// bits 72 - 79  Talkgroup on sixth lowest active channel number
+	
 	private void big_m_csbko62 (DMRDecode theApp,boolean bits[])	{
 		int group,a,lcn;
 		StringBuilder sb1=new StringBuilder(300);
