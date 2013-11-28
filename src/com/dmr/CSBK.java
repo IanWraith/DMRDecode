@@ -176,7 +176,7 @@ public class CSBK {
 	// bits 72 - 79  Talkgroup on sixth lowest active channel number
 	
 	private void big_m_csbko62 (DMRDecode theApp,boolean bits[])	{
-		int group,a,lcn;
+		int group1,group2,group3,group4,group5,group6,a,lcn;
 		StringBuilder sb1=new StringBuilder(300);
 		StringBuilder sb2=new StringBuilder(300);
 		display[0]="Capacity Plus CSBK : CSBKO=62";
@@ -186,22 +186,105 @@ public class CSBK {
 		if (bits[21]==true) lcn=lcn+4;
 		if (bits[22]==true) lcn=lcn+2;
 		if (bits[23]==true) lcn++;
-		// Group ident
-		if (bits[32]==true) group=128;
-		else group=0;
-		if (bits[33]==true) group=group+64;
-		if (bits[34]==true) group=group+32;
-		if (bits[35]==true) group=group+16;
-		if (bits[36]==true) group=group+8;
-		if (bits[37]==true) group=group+4;
-		if (bits[38]==true) group=group+2;
-		if (bits[39]==true) group++;
+		// Group idents
+		// Low group
+		if (bits[32]==true) group1=128;
+		else group1=0;
+		if (bits[33]==true) group1=group1+64;
+		if (bits[34]==true) group1=group1+32;
+		if (bits[35]==true) group1=group1+16;
+		if (bits[36]==true) group1=group1+8;
+		if (bits[37]==true) group1=group1+4;
+		if (bits[38]==true) group1=group1+2;
+		if (bits[39]==true) group1++;
+		// Group 2
+		if (bits[40]==true) group2=128;
+		else group2=0;
+		if (bits[41]==true) group2=group2+64;
+		if (bits[42]==true) group2=group2+32;
+		if (bits[43]==true) group2=group2+16;
+		if (bits[44]==true) group2=group2+8;
+		if (bits[45]==true) group2=group2+4;
+		if (bits[46]==true) group2=group2+2;
+		if (bits[47]==true) group2++;
+		// Group 3
+		if (bits[48]==true) group3=128;
+		else group3=0;
+		if (bits[49]==true) group3=group3+64;
+		if (bits[50]==true) group3=group3+32;
+		if (bits[51]==true) group3=group3+16;
+		if (bits[52]==true) group3=group3+8;
+		if (bits[53]==true) group3=group3+4;
+		if (bits[54]==true) group3=group3+2;
+		if (bits[55]==true) group3++;
+		// Group 4
+		if (bits[56]==true) group4=128;
+		else group4=0;
+		if (bits[57]==true) group4=group4+64;
+		if (bits[58]==true) group4=group4+32;
+		if (bits[59]==true) group4=group4+16;
+		if (bits[60]==true) group4=group4+8;
+		if (bits[61]==true) group4=group4+4;
+		if (bits[62]==true) group4=group4+2;
+		if (bits[63]==true) group4++;
+		// Group 5
+		if (bits[64]==true) group5=128;
+		else group5=0;
+		if (bits[65]==true) group5=group5+64;
+		if (bits[66]==true) group5=group5+32;
+		if (bits[67]==true) group5=group5+16;
+		if (bits[68]==true) group5=group5+8;
+		if (bits[69]==true) group5=group5+4;
+		if (bits[70]==true) group5=group5+2;
+		if (bits[71]==true) group5++;		
+		// Group 6
+		if (bits[72]==true) group6=128;
+		else group6=0;
+		if (bits[73]==true) group6=group6+64;
+		if (bits[74]==true) group6=group6+32;
+		if (bits[75]==true) group6=group6+16;
+		if (bits[76]==true) group6=group6+8;
+		if (bits[77]==true) group6=group6+4;
+		if (bits[78]==true) group6=group6+2;
+		if (bits[79]==true) group6++;
+		// Display all this 
 		// Only show more if we have any activity
-		if (group==0)	{
+		if ((bits[24]==false)&&(bits[25]==false)&&(bits[26]==false)&&(bits[27]==false)&&(bits[28]==false)&&(bits[29]==false))	{
 			sb1.append("Activity Update : LCN "+Integer.toString(lcn)+" is the Rest Channel");
 		} else {
-			sb1.append("Activity Update : ");
-			sb1.append("Group "+Integer.toString(group)+" call on LCN "+Integer.toString(lcn));
+			StringBuilder sb3=new StringBuilder(300);
+			boolean nf=false;
+			sb1.append("Activity Update : LCN is "+Integer.toString(lcn));
+			if (bits[24]==true)	{
+				sb3.append("Group "+Integer.toString(group1)+" on ch1");
+				nf=true;
+			}
+			if (bits[25]==true)	{
+				if (nf==true) sb3.append(",");
+				sb3.append("Group "+Integer.toString(group2)+" on ch2");
+				nf=true;
+			}
+			if (bits[26]==true)	{
+				if (nf==true) sb3.append(",");
+				sb3.append("Group "+Integer.toString(group3)+" on ch3");
+				nf=true;
+			}
+			if (bits[27]==true)	{
+				if (nf==true) sb3.append(",");
+				sb3.append("Group "+Integer.toString(group4)+" on ch4");
+				nf=true;
+			}
+			if (bits[28]==true)	{
+				if (nf==true) sb3.append(",");
+				sb3.append("Group "+Integer.toString(group5)+" on ch5");
+				nf=true;
+			}
+			if (bits[29]==true)	{
+				if (nf==true) sb3.append(",");
+				sb3.append("Group "+Integer.toString(group6)+" on ch6");
+				nf=true;
+			}
+			if (nf==true) display[3]=sb3.toString();
 		}
 		display[1]=sb1.toString();
 		// Display the full binary if in debug mode
