@@ -38,7 +38,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	private JMenuItem save_to_file,inverted_item,debug_item,capture_item,quick_log,save_settings;
 	private JMenuItem error_rate,exit_item,about_item,help_item,view_display_bar;
 	private JMenuItem view_cach,view_idle,view_onlygood,view_voice;
-	private JMenuItem clear_screen,copy_screen,twitter_item,download_item;
+	private JMenuItem clear_screen,copy_screen,twitter_item,download_item,linkedin_item;
 	private JStatusBar statusBar=new JStatusBar();
 	private DisplayBar displayBar=new DisplayBar();
 	public JScrollBar vscrollbar=new JScrollBar(JScrollBar.VERTICAL,0,1,0,2000);
@@ -107,6 +107,8 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		JMenu helpMenu=new JMenu("Help");
 		helpMenu.add(about_item=new JMenuItem("About"));		
 		about_item.addActionListener(this);
+		helpMenu.add(linkedin_item=new JMenuItem("Connect on Linkedin"));		
+		linkedin_item.addActionListener(this);
 		helpMenu.add(download_item=new JMenuItem("Download the latest build of DMRDecode"));		
 		download_item.addActionListener(this);
 		helpMenu.add(twitter_item=new JMenuItem("Follow DMRDecode Progress on Twitter"));		
@@ -307,6 +309,11 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		// Change mixer
 		if (event_name.equalsIgnoreCase("mixer")){
 			changeMixer(((JRadioButtonMenuItem)event.getSource()).getText());
+		}
+		
+		// Linkedin
+		if (event_name=="Connect on Linkedin")	{
+			BareBonesBrowserLaunch.openURL("https://uk.linkedin.com/pub/dir/Ian/Wraith");
 		}
 
 		menuItemUpdate();
