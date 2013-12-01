@@ -158,23 +158,7 @@ public class CSBK {
 	
 	// Capacity Plus
     // A great deal of information on this type of packet was kindly provided by Eric Cottrell on the Radioreference forums	
-	// see http://forums.radioreference.com/digital-voice-decoding-software/209318-understanding-capacity-plus-trunking-6.html#post2078924
-
-	// csbko 62 FID 16
-	// bits 20 - 23  Rest Channel
-	// bit  24       Channel 1 Active
-	// bit  25       Channel 2 Active
-	// bit  26       Channel 3 Active
-	// bit  27       Channel 4 Active
-	// bit  28       Channel 5 Active
-	// bit  29       Channel 6 Active
-	// bits 32 - 39  Talkgroup on lowest active channel number
-	// bits 40 - 47  Talkgroup on second lowest active channel number
-    // bits 48 - 55  Talkgroup on third lowest active channel number
-	// bits 56 - 63  Talkgroup on fourth lowest active channel number
-	// bits 64 - 71  Talkgroup on fifth lowest active channel number
-	// bits 72 - 79  Talkgroup on sixth lowest active channel number
-	
+	// see http://forums.radioreference.com/digital-voice-decoding-software/209318-understanding-capacity-plus-trunking-6.html#post2078924	
 	private void big_m_csbko62 (DMRDecode theApp,boolean bits[])	{
 		int group1,group2,group3,group4,group5,group6,a,lcn;
 		StringBuilder sb1=new StringBuilder(300);
@@ -252,39 +236,44 @@ public class CSBK {
 		if ((bits[24]==false)&&(bits[25]==false)&&(bits[26]==false)&&(bits[27]==false)&&(bits[28]==false)&&(bits[29]==false))	{
 			sb1.append("Activity Update : LCN "+Integer.toString(lcn)+" is the Rest Channel");
 		} else {
-			StringBuilder sb3=new StringBuilder(300);
 			boolean nf=false;
-			sb1.append("Activity Update : LCN is "+Integer.toString(lcn));
+			sb1.append("Activity Update : LCN is "+Integer.toString(lcn)+" (");
 			if (bits[24]==true)	{
-				sb3.append("Group "+Integer.toString(group1)+" on ch1");
+				if (group1>0) sb1.append("Group "+Integer.toString(group1)+" on LCN 1");
+				else sb1.append("Activity on LCN 1");
 				nf=true;
 			}
 			if (bits[25]==true)	{
-				if (nf==true) sb3.append(",");
-				sb3.append("Group "+Integer.toString(group2)+" on ch2");
+				if (nf==true) sb1.append(",");
+				if (group2>0) sb1.append("Group "+Integer.toString(group2)+" on LCN 2");
+				else sb1.append("Activity on LCN 2");
 				nf=true;
 			}
 			if (bits[26]==true)	{
-				if (nf==true) sb3.append(",");
-				sb3.append("Group "+Integer.toString(group3)+" on ch3");
+				if (nf==true) sb1.append(",");
+				if (group3>0) sb1.append("Group "+Integer.toString(group3)+" on LCN 3");
+				else sb1.append("Activity on LCN 3");
 				nf=true;
 			}
 			if (bits[27]==true)	{
-				if (nf==true) sb3.append(",");
-				sb3.append("Group "+Integer.toString(group4)+" on ch4");
+				if (nf==true) sb1.append(",");
+				if (group4>0) sb1.append("Group "+Integer.toString(group4)+" on LCN 4");
+				else sb1.append("Activity on LCN 4");
 				nf=true;
 			}
 			if (bits[28]==true)	{
-				if (nf==true) sb3.append(",");
-				sb3.append("Group "+Integer.toString(group5)+" on ch5");
+				if (nf==true) sb1.append(",");
+				if (group5>0) sb1.append("Group "+Integer.toString(group5)+" on LCN 5");
+				else sb1.append("Activity on LCN 5");
 				nf=true;
 			}
 			if (bits[29]==true)	{
-				if (nf==true) sb3.append(",");
-				sb3.append("Group "+Integer.toString(group6)+" on ch6");
+				if (nf==true) sb1.append(",");
+				if (group6>0) sb1.append("Group "+Integer.toString(group6)+" on LCN 6");
+				else sb1.append("Activity on LCN 6");
 				nf=true;
 			}
-			if (nf==true) display[3]=sb3.toString();
+			if (nf==true) sb1.append(")");
 		}
 		display[1]=sb1.toString();
 		// Display the full binary if in debug mode
