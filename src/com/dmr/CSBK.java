@@ -237,7 +237,7 @@ public class CSBK {
 			sb1.append("Activity Update : LCN "+Integer.toString(lcn)+" is the Rest Channel");
 		} else {
 			boolean nf=false;
-			sb1.append("Activity Update : LCN is "+Integer.toString(lcn)+" (");
+			sb1.append("Activity Update : LCN "+Integer.toString(lcn)+" is the rest channel (");
 			if (bits[24]==true)	{
 				if (group1>0) sb1.append("Group "+Integer.toString(group1)+" on LCN 1");
 				else sb1.append("Activity on LCN 1");

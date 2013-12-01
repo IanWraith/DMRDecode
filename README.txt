@@ -79,6 +79,8 @@ Build 68 - Decodes rate 3/4 data and has a unified method of handling data.
 Build 69 - Improve the decoding of Capacity Plus CSBKO=62 PDUs. This information was kindly
            provided by Eric Cottrell on the Radioreference forums. 
            Add the Linkedin menu item.
+           
+Build 70 - Fix a bug in the big_m_csbko62() method.
       
 Ian Wraith (1st December 2013)
 
