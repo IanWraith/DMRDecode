@@ -81,7 +81,10 @@ Build 69 - Improve the decoding of Capacity Plus CSBKO=62 PDUs. This information
            Add the Linkedin menu item.
            
 Build 70 - Fix a bug in the big_m_csbko62() method.
+
+Build 71 - Change so that if a quick log file exists ask the user if they want to overwrite it or append to the existing file.
+           Change so that if log file exists ask the user if they want to overwrite it or append data to the existing file.
       
-Ian Wraith (1st December 2013)
+Ian Wraith (4th January 2014)
 
 
