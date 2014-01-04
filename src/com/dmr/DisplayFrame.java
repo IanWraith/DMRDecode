@@ -349,6 +349,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public boolean saveDialogBox ()	{
 		if (theApp.getLogging()==true) return false;
 		String file_name;
+		Boolean append=true;
 		// Bring up a dialog box that allows the user to select the name
 		// of the saved file
 		JFileChooser fc=new JFileChooser();
@@ -375,19 +376,22 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		File tfile=new File(file_name);
 		// If the file exists ask the user if they want to overwrite it
 		if (tfile.exists()) {
+			// TODO : Fix the wording of the open log file dialog box e.g Have the buttons labelled "Overwrite" and "Append"
 			int response=JOptionPane.showConfirmDialog(null,
-					"Overwrite existing file?", "Confirm Overwrite",
-					JOptionPane.OK_CANCEL_OPTION,
+					"This log file already exists : What do you wish to do ?\nClick Yes to overwrite it\nClick No to append data to it\nClick Cancel to quit", "Confirm Overwrite",
+					JOptionPane.YES_NO_CANCEL_OPTION,
 					JOptionPane.QUESTION_MESSAGE);
 			if (response==JOptionPane.CANCEL_OPTION) return false;
+			else if (response==JOptionPane.YES_OPTION) append=false;
 		}
 		// Open the file
 		try {
-			theApp.file=new FileWriter(tfile);
+			// If append==true then the data written is appended to this file
+			theApp.file=new FileWriter(tfile,append);
 			// Clear all logged info
 			theApp.usersLogged.clearAll();
 			// Write the program version as the first line of the log
-			String fline=theApp.program_version+"\r\n";
+			String fline="\r\n##########################################################\r\n\r\n"+theApp.program_version+"\r\n";
 			theApp.file.write(fline);
 			// Display the state of the filters at the start of the log
 			if (theApp.isDisplayCACH()==false) theApp.file.write("You have selected not to display CACH data\r\n");
