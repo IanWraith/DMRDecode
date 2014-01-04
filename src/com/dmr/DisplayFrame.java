@@ -375,7 +375,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		File tfile=new File(file_name);
 		// If the file exists ask the user if they want to overwrite it
 		if (tfile.exists()) {
-			int response = JOptionPane.showConfirmDialog(null,
+			int response=JOptionPane.showConfirmDialog(null,
 					"Overwrite existing file?", "Confirm Overwrite",
 					JOptionPane.OK_CANCEL_OPTION,
 					JOptionPane.QUESTION_MESSAGE);
@@ -454,6 +454,7 @@ public class DisplayFrame extends JFrame implements ActionListener {
 	public boolean quickLogDialogBox ()	{
 		if (theApp.isQuickLog()==true) return false;
 		String file_name;
+		Boolean append=true;
 		// Bring up a dialog box that allows the user to select the name
 		// of the saved file
 		JFileChooser fc=new JFileChooser();
@@ -478,17 +479,20 @@ public class DisplayFrame extends JFrame implements ActionListener {
 		if (last_index!=(file_name.length()-4)) file_name=file_name + ".csv";
 		// Create a file with this name //
 		File tfile=new File(file_name);
-		// If the file exists ask the user if they want to overwrite it
+		// If the file exists ask the user if they want to overwrite it or append to the existing file
 		if (tfile.exists()) {
-			int response = JOptionPane.showConfirmDialog(null,
-					"Overwrite existing file?", "Confirm Overwrite",
-					JOptionPane.OK_CANCEL_OPTION,
+			// TODO : Fix the wording of this dialog box e.g Have the buttons labelled "Overwrite" and "Append"
+			int response=JOptionPane.showConfirmDialog(null,
+					"This file already exists : What do you wish to do ?\nClick Yes to overwrite it\nClick No to append data to it\nClick Cancel to quit", "Confirm Overwrite",
+					JOptionPane.YES_NO_CANCEL_OPTION,
 					JOptionPane.QUESTION_MESSAGE);
 			if (response==JOptionPane.CANCEL_OPTION) return false;
+			else if (response==JOptionPane.YES_OPTION) append=false;
 		}
 		// Open the file
 		try {
-			theApp.quickLogFile=new FileWriter(tfile);
+			// If append==true then the data written is appended to this file
+			theApp.quickLogFile=new FileWriter(tfile,append);
 			
 		} catch (Exception e) {
 			System.out.println("\nError opening the quick log file");
