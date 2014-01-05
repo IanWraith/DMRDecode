@@ -50,6 +50,16 @@ public class CSBK {
 		else if (csbko==5)	{
 			uu_ans_rep(bits);
 		}
+		// 31 (FID 16) - Call Alert 
+		// Note in Tier III that CSBKO=31 is C_RAND but only inbound also FID=0 
+		else if ((csbko==31)&&(fid==16))	{
+			csbko31fid16(theApp,bits);
+		}
+		// 32 (FID 16) - Call Alert Ack
+		// Note in Tier III that CSBKO=32 is C/P_ACKD but also FID=0
+		else if ((csbko==32)&&(fid==16))	{
+			csbko32fid16(theApp,bits);
+		}
 		// 38 - NACK_Rsp
 		else if (csbko==38)	{
 			nack_rsp(bits);
@@ -372,6 +382,52 @@ public class CSBK {
 		}
 	}
 
-
-
+	// CSBKO 31 FID 16 Call Alert
+	// The information to decode this was kindly provided by bben95 on the Radioreference forums
+	// http://forums.radioreference.com/digital-voice-decoding-software/191957-java-program-decode-dmr-31.html#post2098983
+	// 0000000000000000 000000000001011101110010 000000000001011101110001
+	// 1111222222222233 333333334444444444555555 555566666666667777777777
+	// 6789012345678901 234567890123456789012345 678901234567890123456789
+	// is Call alert from 6001 to 6002
+	private void csbko31fid16 (DMRDecode theApp,boolean bits[])	{
+		int a;
+		Utilities utils=new Utilities();
+		int from=utils.retAddress(bits,32);
+		int to=utils.retAddress(bits,56);
+		StringBuilder sb1=new StringBuilder(300);
+		display[0]="CSBK : CSBKO=31 + FID=16";
+		sb1.append("Call Alert from "+Integer.toString(from)+" to "+Integer.toString(to)+" (");
+		// Also display the unknown part as raw binary for now
+		for (a=16;a<32;a++)	{
+			if (bits[a]==true) sb1.append("1");
+			else sb1.append("0");
+			}
+		sb1.append(")");
+		display[1]=sb1.toString();	
+	}
+	
+	// CSBKO 32 FID 16 Call Alert Ack
+	// The information to decode this was kindly provided by bben95 on the Radioreference forums
+	// http://forums.radioreference.com/digital-voice-decoding-software/191957-java-program-decode-dmr-31.html#post2098983
+    // 1001111100000000 000000000001011101110001 000000000001011101110010
+	// 1111222222222233 333333334444444444555555 555566666666667777777777
+	// 6789012345678901 234567890123456789012345 678901234567890123456789
+	// is Call alert from 6001 to 6002: acknowledged
+	private void csbko32fid16 (DMRDecode theApp,boolean bits[])	{
+		int a;
+		Utilities utils=new Utilities();
+		int from=utils.retAddress(bits,32);
+		int to=utils.retAddress(bits,56);
+		StringBuilder sb1=new StringBuilder(300);
+		display[0]="CSBK : CSBKO=32 + FID=16";
+		sb1.append("Call Alert ACK from "+Integer.toString(from)+" to "+Integer.toString(to)+" (");
+		// Also display the unknown part as raw binary for now
+		for (a=16;a<32;a++)	{
+			if (bits[a]==true) sb1.append("1");
+			else sb1.append("0");
+			}
+		sb1.append(")");
+		display[1]=sb1.toString();		
+	}
+	
 }

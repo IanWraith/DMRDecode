@@ -84,7 +84,9 @@ Build 70 - Fix a bug in the big_m_csbko62() method.
 
 Build 71 - Change so that if a quick log file exists ask the user if they want to overwrite it or append to the existing file.
            Change so that if log file exists ask the user if they want to overwrite it or append data to the existing file.
+      	   Add support for CSBKO=31 FID=16 (Call Alert) and CSBKO=32 FID=16 (Call Alert Ack) this information kindly provided 
+      	   by bben95 on the Radioreference forums.
       
-Ian Wraith (4th January 2014)
+Ian Wraith (5th January 2014)
 
 
