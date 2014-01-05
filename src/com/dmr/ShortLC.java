@@ -252,6 +252,38 @@ public class ShortLC {
 				dline.append(" Hashed Addr "+Integer.toString(addr2));
 			}
 		}
+		
+		// Tier III SYS_Params
+		// TODO : Add support for Tier III SYS_Params see ETSI TS 102 361-4 V1.5.1 page 173
+		else if (slco==2)	{
+			int model,net,site,par,counter;
+			// Model
+			if (db[4]==true) model=2;
+			else model=0;
+			if (db[5]==true) model++;
+			// Par
+			if (db[18]==true) par=2;
+			else par=0;
+			if (db[19]==true) par++;
+			// Tiny
+			if (model==0)	{
+				
+			}
+			// Small
+			else if (model==1)	{
+				
+			}
+			// Large
+			else if (model==2)	{
+				
+			}
+			// Huge
+			else if (model==3)	{
+				
+			}
+			
+		}
+		
 		// Connect Plus SLCO 9
 		else if (slco==9)	{
 			int netID,siteID;
