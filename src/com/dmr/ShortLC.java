@@ -252,11 +252,11 @@ public class ShortLC {
 				dline.append(" Hashed Addr "+Integer.toString(addr2));
 			}
 		}
-		
-		// Tier III SYS_Params
-		// TODO : Add support for Tier III SYS_Params see ETSI TS 102 361-4 V1.5.1 page 173
+		// Tier III SYS_Parms
 		else if (slco==2)	{
-			int model,net,site,par,counter;
+			int model,net=0,site=0,par;
+			// Start to make up the display
+			dline.append("SYS_Parms : ");
 			// Model
 			if (db[4]==true) model=2;
 			else model=0;
@@ -267,21 +267,100 @@ public class ShortLC {
 			if (db[19]==true) par++;
 			// Tiny
 			if (model==0)	{
-				
+				dline.append("Tiny Network");
+				// Net
+				if (db[6]==true) net=256;
+				if (db[7]==true) net=net+128;
+				if (db[8]==true) net=net+64;
+				if (db[9]==true) net=net+32;
+				if (db[10]==true) net=net+16;
+				if (db[11]==true) net=net+8;
+				if (db[12]==true) net=net+4;
+				if (db[13]==true) net=net+2;
+				if (db[14]==true) net++;
+				// Site
+				if (db[15]==true) site=4;
+				if (db[16]==true) site=site+2;
+				if (db[17]==true) site++;				
 			}
 			// Small
 			else if (model==1)	{
-				
+				dline.append("Small Network");
+				// Net
+				if (db[6]==true) net=64;
+				if (db[7]==true) net=net+32;
+				if (db[8]==true) net=net+16;
+				if (db[9]==true) net=net+8;
+				if (db[10]==true) net=net+4;
+				if (db[11]==true) net=net+2;
+				if (db[12]==true) net++;
+				// Site
+				if (db[13]==true) site=16;
+				if (db[14]==true) site=site+8;
+				if (db[15]==true) site=site+4;
+				if (db[16]==true) site=site+2;
+				if (db[17]==true) site++;
 			}
 			// Large
 			else if (model==2)	{
-				
+				dline.append("Large Network");
+				// Net
+				if (db[6]==true) net=8;
+				if (db[7]==true) net=net+4;
+				if (db[8]==true) net=net+2;
+				if (db[9]==true) net++;
+				// Site
+				if (db[10]==true) site=128;
+				if (db[11]==true) site=site+64;
+				if (db[12]==true) site=site+32;
+				if (db[13]==true) site=site+16;
+				if (db[14]==true) site=site+8;
+				if (db[15]==true) site=site+4;
+				if (db[16]==true) site=site+2;
+				if (db[17]==true) site++;
 			}
 			// Huge
 			else if (model==3)	{
-				
+				dline.append("Huge Network");
+				// Net
+				if (db[6]==true) net=2;
+				if (db[7]==true) net++;
+				// Site
+				if (db[8]==true) site=512;
+				if (db[9]==true) site=site+256;
+				if (db[10]==true) site=site+128;
+				if (db[11]==true) site=site+64;
+				if (db[12]==true) site=site+32;
+				if (db[13]==true) site=site+16;
+				if (db[14]==true) site=site+8;
+				if (db[15]==true) site=site+4;
+				if (db[16]==true) site=site+2;
+				if (db[17]==true) site++;
 			}
-			
+			dline.append(" NET="+Integer.toString(net)+" SITE="+Integer.toString(site));
+			// PAR
+			if (par==1) dline.append(" Category A MSs only permitted");
+			else if (par==2) dline.append(" Category B MSs only permitted");
+			else if (par==3) dline.append(" Category A MSs and B MSs permitted");
+			// Reg
+			boolean reg=db[20];
+			int counter=0;
+			// Counter
+			if (db[21]==true) counter=256;
+			if (db[22]==true) counter=counter+128;
+			if (db[23]==true) counter=counter+64;
+			if (db[24]==true) counter=counter+32;
+			if (db[25]==true) counter=counter+16;
+			if (db[26]==true) counter=counter+8;
+			if (db[27]==true) counter=counter+4;
+			if (db[28]==true) counter=counter+2;
+			if (db[29]==true) counter++;
+			dline.append(" Common_Slot_Counter="+Integer.toString(counter));
+			if (reg==true) dline.append(" Reg=1");
+			else dline.append(" Reg=0");
+			// Display the network/site in the system label
+			String ldip=Integer.toString(net)+"/"+Integer.toString(site);
+			TtheApp.setSystemLabel(ldip);
 		}
 		
 		// Connect Plus SLCO 9
