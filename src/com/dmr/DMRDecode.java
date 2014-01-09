@@ -46,7 +46,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 72X)";
+	public String program_version="DMR Decoder (Build 73X)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -525,14 +525,19 @@ public class DMRDecode {
 	void addToDitbitBuf (int dibit)	{
 		dibitCircularBuffer[dibitCircularBufferCounter]=(byte)dibit;
 		dibitCircularBufferCounter++;
-		if (dibitCircularBufferCounter==144) dibitCircularBufferCounter=0;
+		
+		int countMax=144;
+		if (mode>0) countMax=132;
+		if (dibitCircularBufferCounter==countMax) dibitCircularBufferCounter=0;
 	}
 	
 	// Add a symbol to the circular symbol buffer
 	void addToSymbolBuffer (int symbol)	{
 		symbolBuffer[symbolBufferCounter]=symbol;
 		symbolBufferCounter++;
-		if (symbolBufferCounter==144) symbolBufferCounter=0;
+		int countMax=144;
+		if (mode>0) countMax=132;
+		if (symbolBufferCounter==countMax) symbolBufferCounter=0;
 	}
 	
 	// No carrier or carrier lost so clear the variables
@@ -607,8 +612,17 @@ public class DMRDecode {
 		// Allow 5 dibits to be incorrect when syncronised and set the offset
 		if (sync==true)	diff=5;
 		else diff=0;
-		circPos=dibitCircularBufferCounter+66;
-		if (circPos>=144) circPos=circPos-144;
+		
+		if (mode==0)	{
+			circPos=dibitCircularBufferCounter+66;
+			if (circPos>=144) circPos=circPos-144;
+		}
+		else	{
+			circPos=dibitCircularBufferCounter+54;
+			if (circPos>=132) circPos=circPos-132;
+		}
+		
+		
 		for (i=0;i<24;i++)	{
 			// BS
 			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC_BS[i]) voiceSyncBS++;
@@ -619,7 +633,10 @@ public class DMRDecode {
 			if (dibitCircularBuffer[circPos]==DMR_RC_SYNC[i]) rcSync++;
 			// Increment the circular buffer counter
 			circPos++;
-			if (circPos==144) circPos=0;
+			
+			int countMax=144;
+			if (mode>0) countMax=132;	
+			if (circPos==countMax) circPos=0;
 		}
 		if ((DMR_VOICE_SYNC_BS.length-voiceSyncBS)<=diff) return 1;
 		else if ((DMR_DATA_SYNC_BS.length-dataSyncBS)<=diff) return 2;
@@ -955,12 +972,15 @@ public class DMRDecode {
 	// Put the dibits into dibitFrame in the correct order from the circular dibit buffer
 	private void createDibitFrame()	{
 		int i,circPos;
-		circPos=dibitCircularBufferCounter-144;
-		if (circPos<0) circPos=144+circPos;
-		for (i=0;i<144;i++)	{
+		int countMax=144;
+		if (mode>0) countMax=132;
+		
+		circPos=dibitCircularBufferCounter-countMax;
+		if (circPos<0) circPos=countMax+circPos;
+		for (i=0;i<countMax;i++)	{
 			dibitFrame[i]=dibitCircularBuffer[circPos];
 			circPos++;
-			if (circPos==144) circPos=0;
+			if (circPos==countMax) circPos=0;
 		}
 	}
 	
