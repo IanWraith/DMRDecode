@@ -46,7 +46,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 71)";
+	public String program_version="DMR Decoder (Build 72X)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -59,8 +59,11 @@ public class DMRDecode {
 	private int centre=0;
 	private int lastsynctype=-1;
 	private int symbolcnt=0;
-	private final byte DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
-	private final byte DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
+	private final byte DMR_DATA_SYNC_BS[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
+	private final byte DMR_VOICE_SYNC_BS[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
+	private final byte DMR_DATA_SYNC_MS[]={3,1,1,1,3,1,1,3,3,3,1,3,1,3,3,3,3,1,1,3,1,1,1,3};
+	private final byte DMR_VOICE_SYNC_MS[]={1,3,3,3,1,3,3,1,1,1,3,1,3,1,1,1,1,3,3,1,3,3,3,1};
+	private final byte DMR_RC_SYNC[]={1,3,1,3,3,1,1,1,1,1,3,3,1,3,3,1,3,3,3,1,1,3,1,3};
 	private boolean carrier=false;
 	public boolean inverted=true;
 	private boolean firstframe=false;
@@ -77,7 +80,7 @@ public class DMRDecode {
 	public boolean pReady=false;
 	private int symbolBuffer[]=new int[144];
 	public AudioInThread lineInThread=new AudioInThread(this);
-	private boolean debug=false;
+	private boolean debug=true;
 	public int frameCount=0;
 	public int badFrameCount=0;
 	public ShortLC short_lc=new ShortLC();
@@ -128,6 +131,7 @@ public class DMRDecode {
     private int incomingDataType[]=new int[2];
     private int dataBlocksToFollow[]=new int[2];
     private int dataBlocksReceived[]=new int[2];
+    private int mode=-1;
     
     private ExecutorService socketExecutor = Executors.newSingleThreadExecutor(
         new ThreadFactory(){
@@ -354,7 +358,7 @@ public class DMRDecode {
 	// them accordingly
 	public int getFrameSync ()	{
 		int t=0,dibit,symbol,synctest_pos=0,syncType;
-		int lmin=0,lmax=0,a,highVol;
+		int lmin=0,lmax=0,a,highVol,dibitCount=144;
 		// Clear the symbol counter
 		symbolcnt=0;
 		while (true) {
@@ -369,11 +373,13 @@ public class DMRDecode {
 			dibit=symboltoDibit(symbol);
 			// Add the dibit to the circular dibit buffer
 			addToDitbitBuf(dibit);
+			// Only BS frames contain 144 dibits the others contain just 132
+			if (mode>0) dibitCount=132;
 		    // If we have received 144 dibits then we can check for a valid sync sequence
-			if (t>=144) {
+			if (t>=dibitCount) {
 				// If we don't have frame sync then rotate the symbol buffer
 				// and also find the new minimum and maximum
-				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
+				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%dibitCount==0)))	{
 					// Get the frames 24 sync symbols
 					syncHighLowlBuf=getSyncSymbols();
 					lmin=1;
@@ -391,20 +397,20 @@ public class DMRDecode {
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
-				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
+				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%dibitCount==0)))	{
 					// Identify the frame sync type which returns
 					// 0 if unknown
 					// 1 if voice
 					// 2 if data
 					syncType=syncCompare(frameSync);
 					// Embedded signalling frame
-					if ((frameSync==true)&&(syncType==0)&&(firstframe==false)&&(embeddedFrameCount<7))	{
+					if ((frameSync==true)&&(syncType==0)&&(firstframe==false)&&(embeddedFrameCount<7)&&(mode==0))	{
 						// Increment the embedded frame counter
 						embeddedFrameCount++;
 						lastsynctype=13;
 						return (13);
 					}					
-					// Data frame
+					// BS Data frame
 					if (syncType==2) {
 						// Clear the embedded frame counter
 						embeddedFrameCount=0;
@@ -417,10 +423,11 @@ public class DMRDecode {
 						if (lastsynctype==-1) firstframe=true;
 						else firstframe=false;
 						lastsynctype=10;
+						mode=0;
 						return (10);
 					}
-					// Voice frame
-					if (syncType==1) {
+					// BS Voice frame
+					else if (syncType==1) {
 						// Clear the embedded frame counter
 						embeddedFrameCount=0;
 						carrier=true;
@@ -432,9 +439,59 @@ public class DMRDecode {
 						if (lastsynctype==-1) firstframe=true;
 						else firstframe=false;
 						lastsynctype=12;
+						mode=0;
 						return (12);
 					}
-				
+					// MS Data frame
+					else if (syncType==4) {
+						String ss="MS Data Frame";
+						if (frameSync==true) ss=ss+" (FS)";
+						debugDump("MS Data Frame");
+						carrier=true;
+						if (frameSync==false)	{
+							frameCalcs(lmin,lmax);
+							frameSync=true;
+						}
+						else addToMinMaxBuffer(lmin,lmax);
+						if (lastsynctype==-1) firstframe=true;
+						else firstframe=false;
+						lastsynctype=20;
+						mode=1;
+						return (20);
+					}
+					// MS Voice frame
+					else if (syncType==3) {
+						String ss="MS Voice Frame";
+						if (frameSync==true) ss=ss+" (FS)";
+						debugDump(ss);
+						carrier=true;
+						if (frameSync==false)	{
+							frameCalcs(lmin,lmax);
+							frameSync=true;
+						}
+						else addToMinMaxBuffer(lmin,lmax);
+						if (lastsynctype==-1) firstframe=true;
+						else firstframe=false;
+						lastsynctype=22;
+						mode=1;
+						return (22);
+					}
+					// RC Sync
+					else if (syncType==5)	{
+						debugDump("RC Sync Frame");
+						carrier=true;
+						if (frameSync==false)	{
+							frameCalcs(lmin,lmax);
+							frameSync=true;
+						}
+						else addToMinMaxBuffer(lmin,lmax);
+						if (lastsynctype==-1) firstframe=true;
+						else firstframe=false;
+						lastsynctype=25;
+						mode=1;
+						return (25);
+					}
+					
 				}
 		}					
 		// We had a signal but appear to have lost it
@@ -489,6 +546,7 @@ public class DMRDecode {
 		firstframe=false;
 		errorFreeFrameCount=0;
 		continousBadFrameCount=0;
+		mode=-1;
 		// Update the status bar
 		window.updateSyncLabel(false);
 		window.setCh1Label("Unused",labelQuiteColour);
@@ -537,27 +595,37 @@ public class DMRDecode {
 			}
 	}
 	  	
-	// Compare the sync sequences held in global arrays with the contents of the dibit circular buffer
-	// Returns ..
-	// 0 if unknown
-	// 1 if voice
-	// 2 if data
+	// Compare the sync sequences held in global arrays with the contents of the dibit circular buffer which returns ..
+	// 0 unknown
+	// 1 BS voice
+	// 2 BS data
+	// 3 MS voice
+	// 4 MS data
+	// 5 RC Sync
 	private int syncCompare(boolean sync)	{
-		int i,dataSync=0,voiceSync=0,diff,circPos;
+		int i,dataSyncBS=0,voiceSyncBS=0,diff,circPos,dataSyncMS=0,voiceSyncMS=0,rcSync=0;
 		// Allow 5 dibits to be incorrect when syncronised and set the offset
 		if (sync==true)	diff=5;
 		else diff=0;
 		circPos=dibitCircularBufferCounter+66;
 		if (circPos>=144) circPos=circPos-144;
 		for (i=0;i<24;i++)	{
-			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC[i]) voiceSync++;
-			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC[i]) dataSync++;
+			// BS
+			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC_BS[i]) voiceSyncBS++;
+			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC_BS[i]) dataSyncBS++;
+			// MS
+			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC_MS[i]) voiceSyncMS++;
+			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC_MS[i]) dataSyncMS++;
+			if (dibitCircularBuffer[circPos]==DMR_RC_SYNC[i]) rcSync++;
 			// Increment the circular buffer counter
 			circPos++;
 			if (circPos==144) circPos=0;
 		}
-		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff) return 1;
-		else if ((DMR_DATA_SYNC.length-dataSync)<=diff)	return 2;
+		if ((DMR_VOICE_SYNC_BS.length-voiceSyncBS)<=diff) return 1;
+		else if ((DMR_DATA_SYNC_BS.length-dataSyncBS)<=diff) return 2;
+		else if ((DMR_VOICE_SYNC_MS.length-voiceSyncMS)<=diff) return 3;
+		else if ((DMR_DATA_SYNC_MS.length-dataSyncMS)<=diff) return 4;
+		else if ((DMR_RC_SYNC.length-rcSync)<=diff) return 5;
 		else return 0;	
 	}
 	
@@ -565,12 +633,17 @@ public class DMRDecode {
 	private int[] getSyncSymbols()	{
 		int i,circPos;
 		int syms[]=new int[24];
-		circPos=symbolBufferCounter+66;
-		if (circPos>=144) circPos=circPos-144;
+		int dbCount=144,mid=66;
+		if (mode>0)	{
+			mid=54;
+			dbCount=132;
+		}
+		circPos=symbolBufferCounter+mid;
+		if (circPos>=dbCount) circPos=circPos-dbCount;
 		for (i=0;i<24;i++)	{
 			syms[i]=symbolBuffer[circPos];
 			circPos++;
-			if (circPos==144) circPos=0;
+			if (circPos==dbCount) circPos=0;
 		}
 		return syms;	
 	}
@@ -603,8 +676,11 @@ public class DMRDecode {
 			// If debug enabled record obtaining sync
 			if (debug==true)	{
 				StringBuilder l=new StringBuilder(250);
-				if (synctype==12) l.append(getTimeStamp()+" DMR Voice Sync Acquired");
-				else l.append(getTimeStamp()+" DMR Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				if (synctype==12) l.append(getTimeStamp()+" DMR BS Voice Sync Acquired");
+				else if (synctype==10) l.append(getTimeStamp()+" DMR BS Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				else if (synctype==22) l.append(getTimeStamp()+" DMR MS Voice Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				else if (synctype==20) l.append(getTimeStamp()+" DMR MS Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				else if (synctype==25) l.append(getTimeStamp()+" DMR RC Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
 				addLine(l.toString(),Color.BLACK,plainFont);
 				fileWrite(l.toString());
 				}
