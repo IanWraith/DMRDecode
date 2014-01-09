@@ -392,8 +392,8 @@ public class CSBK {
 	private void csbko31fid16 (DMRDecode theApp,boolean bits[])	{
 		int a;
 		Utilities utils=new Utilities();
-		int from=utils.retAddress(bits,32);
-		int to=utils.retAddress(bits,56);
+		int to=utils.retAddress(bits,32);
+		int from=utils.retAddress(bits,56);
 		StringBuilder sb1=new StringBuilder(300);
 		display[0]="CSBK : CSBKO=31 + FID=16";
 		sb1.append("Call Alert from "+Integer.toString(from)+" to "+Integer.toString(to)+" (");
@@ -416,8 +416,8 @@ public class CSBK {
 	private void csbko32fid16 (DMRDecode theApp,boolean bits[])	{
 		int a;
 		Utilities utils=new Utilities();
-		int from=utils.retAddress(bits,32);
-		int to=utils.retAddress(bits,56);
+		int to=utils.retAddress(bits,32);
+		int from=utils.retAddress(bits,56);
 		StringBuilder sb1=new StringBuilder(300);
 		display[0]="CSBK : CSBKO=32 + FID=16";
 		sb1.append("Call Alert ACK from "+Integer.toString(from)+" to "+Integer.toString(to)+" (");
