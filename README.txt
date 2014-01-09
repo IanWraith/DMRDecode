@@ -87,7 +87,9 @@ Build 71 - Change so that if a quick log file exists ask the user if they want t
       	   Add support for CSBKO=31 FID=16 (Call Alert) and CSBKO=32 FID=16 (Call Alert Ack) this information kindly provided 
       	   by bben95 on the Radioreference forums.
       	   Decode Tier III Sys_Parms Short LCs
+      	   
+Build 72 - Fix bugs in the csbko31fid16() and csbko32fid16() methods were the to and from idents were transposed. 
       
-Ian Wraith (6th January 2014)
+Ian Wraith (9th January 2014)
 
 

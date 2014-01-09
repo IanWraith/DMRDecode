@@ -46,7 +46,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 71)";
+	public String program_version="DMR Decoder (Build 72)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -59,8 +59,8 @@ public class DMRDecode {
 	private int centre=0;
 	private int lastsynctype=-1;
 	private int symbolcnt=0;
-	private final byte DMR_DATA_SYNC[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
-	private final byte DMR_VOICE_SYNC[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
+	private final byte DMR_DATA_SYNC_BS[]={3,1,3,3,3,3,1,1,1,3,3,1,1,3,1,1,3,1,3,3,1,1,3,1};
+	private final byte DMR_VOICE_SYNC_BS[]={1,3,1,1,1,1,3,3,3,1,1,3,3,1,3,3,1,3,1,1,3,3,1,3};
 	private boolean carrier=false;
 	public boolean inverted=true;
 	private boolean firstframe=false;
@@ -550,14 +550,14 @@ public class DMRDecode {
 		circPos=dibitCircularBufferCounter+66;
 		if (circPos>=144) circPos=circPos-144;
 		for (i=0;i<24;i++)	{
-			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC[i]) voiceSync++;
-			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC[i]) dataSync++;
+			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC_BS[i]) voiceSync++;
+			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC_BS[i]) dataSync++;
 			// Increment the circular buffer counter
 			circPos++;
 			if (circPos==144) circPos=0;
 		}
-		if ((DMR_VOICE_SYNC.length-voiceSync)<=diff) return 1;
-		else if ((DMR_DATA_SYNC.length-dataSync)<=diff)	return 2;
+		if ((DMR_VOICE_SYNC_BS.length-voiceSync)<=diff) return 1;
+		else if ((DMR_DATA_SYNC_BS.length-dataSync)<=diff)	return 2;
 		else return 0;	
 	}
 	
