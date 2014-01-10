@@ -60,6 +60,10 @@ public class CSBK {
 		else if ((csbko==32)&&(fid==16))	{
 			csbko32fid16(theApp,bits);
 		}
+		// 36 (FID 16) - Radio Check
+		else if ((csbko==36)&&(fid==16))	{
+			csbko36fid16(theApp,bits);
+		}
 		// 38 - NACK_Rsp
 		else if (csbko==38)	{
 			nack_rsp(bits);
@@ -429,5 +433,23 @@ public class CSBK {
 		sb1.append(")");
 		display[1]=sb1.toString();		
 	}
+	
+	// CSBKO 36 FID 16 Radio Check
+	private void csbko36fid16 (DMRDecode theApp,boolean bits[])	{
+		int a;
+		Utilities utils=new Utilities();
+		int from=utils.retAddress(bits,32);
+		int to=utils.retAddress(bits,56);
+		StringBuilder sb1=new StringBuilder(300);
+		display[0]="CSBK : CSBKO=36 + FID=16";
+		sb1.append("Radio Check from "+Integer.toString(from)+" to "+Integer.toString(to)+" (");
+		// Also display the unknown part as raw binary for now
+		for (a=16;a<32;a++)	{
+			if (bits[a]==true) sb1.append("1");
+			else sb1.append("0");
+			}
+		sb1.append(")");
+		display[1]=sb1.toString();		
+	}	
 	
 }
