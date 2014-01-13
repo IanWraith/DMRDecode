@@ -64,6 +64,10 @@ public class DMRDecode {
 	private final byte DMR_DATA_SYNC_MS[]={3,1,1,1,3,1,1,3,3,3,1,3,1,3,3,3,3,1,1,3,1,1,1,3};
 	private final byte DMR_VOICE_SYNC_MS[]={1,3,3,3,1,3,3,1,1,1,3,1,3,1,1,1,1,3,3,1,3,3,3,1};
 	private final byte DMR_RC_SYNC[]={1,3,1,3,3,1,1,1,1,1,3,3,1,3,3,1,3,3,3,1,1,3,1,3};
+	private final byte DMR_DATA_SYNC_DIRECT1[]={3,3,1,3,3,3,3,1,3,1,1,1,3,1,3,1,3,3,3,1,1,1,1,1};
+	private final byte DMR_VOICE_SYNC_DIRECT1[]={1,1,3,1,1,1,1,3,1,3,3,3,1,3,1,3,1,1,1,3,3,3,3,3};
+	private final byte DMR_DATA_SYNC_DIRECT2[]={3,1,1,3,1,1,1,1,1,3,3,3,1,1,3,3,3,3,1,3,3,3,1,1};
+	private final byte DMR_VOICE_SYNC_DIRECT2[]={1,3,3,1,3,3,3,3,3,1,1,1,3,3,1,1,1,1,3,1,1,1,3,3};
 	private boolean carrier=false;
 	public boolean inverted=true;
 	private boolean firstframe=false;
@@ -491,7 +495,75 @@ public class DMRDecode {
 						mode=1;
 						return (25);
 					}
-					
+					// Direct Voice frame 1
+					else if (syncType==6) {
+						String ss="Direct Voice Frame 1";
+						if (frameSync==true) ss=ss+" (FS)";
+						debugDump("Direct Voice Frame 1");
+						carrier=true;
+						if (frameSync==false)	{
+							frameCalcs(lmin,lmax);
+							frameSync=true;
+						}
+						else addToMinMaxBuffer(lmin,lmax);
+						if (lastsynctype==-1) firstframe=true;
+						else firstframe=false;
+						lastsynctype=30;
+						mode=2;
+						return (30);
+					}
+					// Direct Data frame 1
+					else if (syncType==7) {
+						String ss="Direct Data Frame 1";
+						if (frameSync==true) ss=ss+" (FS)";
+						debugDump("Direct Data Frame 1");
+						carrier=true;
+						if (frameSync==false)	{
+							frameCalcs(lmin,lmax);
+							frameSync=true;
+						}
+						else addToMinMaxBuffer(lmin,lmax);
+						if (lastsynctype==-1) firstframe=true;
+						else firstframe=false;
+						lastsynctype=31;
+						mode=2;
+						return (31);
+					}
+					// Direct Voice frame 2
+					else if (syncType==8) {
+						String ss="Direct Voice Frame 2";
+						if (frameSync==true) ss=ss+" (FS)";
+						debugDump("Direct Voice Frame 2");
+						carrier=true;
+						if (frameSync==false)	{
+							frameCalcs(lmin,lmax);
+							frameSync=true;
+						}
+						else addToMinMaxBuffer(lmin,lmax);
+						if (lastsynctype==-1) firstframe=true;
+						else firstframe=false;
+						lastsynctype=32;
+						mode=2;
+						return (32);
+					}
+					// Direct Data frame 2
+					else if (syncType==9) {
+						String ss="Direct Data Frame 2";
+						if (frameSync==true) ss=ss+" (FS)";
+						debugDump("Direct Data Frame 2");
+						carrier=true;
+						if (frameSync==false)	{
+							frameCalcs(lmin,lmax);
+							frameSync=true;
+						}
+						else addToMinMaxBuffer(lmin,lmax);
+						if (lastsynctype==-1) firstframe=true;
+						else firstframe=false;
+						lastsynctype=33;
+						mode=2;
+						return (33);
+					}									
+	
 				}
 		}					
 		// We had a signal but appear to have lost it
@@ -607,8 +679,14 @@ public class DMRDecode {
 	// 3 MS voice
 	// 4 MS data
 	// 5 RC Sync
+	// 6 Direct Voice 1
+	// 7 Direct Data 1
+	// 8 Direct Voice 2
+	// 9 Direct Data 3	
 	private int syncCompare(boolean sync)	{
 		int i,dataSyncBS=0,voiceSyncBS=0,diff,circPos,dataSyncMS=0,voiceSyncMS=0,rcSync=0;
+		int directVoice1=0,directVoice2=0,directData1=0,directData2=0;
+		
 		// Allow 5 dibits to be incorrect when syncronised and set the offset
 		if (sync==true)	diff=5;
 		else diff=0;
@@ -621,8 +699,7 @@ public class DMRDecode {
 			circPos=dibitCircularBufferCounter+54;
 			if (circPos>=132) circPos=circPos-132;
 		}
-		
-		
+			
 		for (i=0;i<24;i++)	{
 			// BS
 			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC_BS[i]) voiceSyncBS++;
@@ -631,6 +708,13 @@ public class DMRDecode {
 			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC_MS[i]) voiceSyncMS++;
 			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC_MS[i]) dataSyncMS++;
 			if (dibitCircularBuffer[circPos]==DMR_RC_SYNC[i]) rcSync++;
+			// Direct Slot 1
+			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC_DIRECT1[i]) directVoice1++;
+			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC_DIRECT1[i]) directData1++;
+			// Direct Slot 2
+			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC_DIRECT2[i]) directVoice2++;
+			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC_DIRECT2[i]) directData2++;
+			
 			// Increment the circular buffer counter
 			circPos++;
 			
@@ -643,6 +727,10 @@ public class DMRDecode {
 		else if ((DMR_VOICE_SYNC_MS.length-voiceSyncMS)<=diff) return 3;
 		else if ((DMR_DATA_SYNC_MS.length-dataSyncMS)<=diff) return 4;
 		else if ((DMR_RC_SYNC.length-rcSync)<=diff) return 5;
+		else if ((DMR_VOICE_SYNC_DIRECT1.length-directVoice1)<=diff) return 6;
+		else if ((DMR_DATA_SYNC_DIRECT1.length-directData1)<=diff) return 7;
+		else if ((DMR_VOICE_SYNC_DIRECT2.length-directVoice2)<=diff) return 8;
+		else if ((DMR_DATA_SYNC_DIRECT2.length-directData2)<=diff) return 9;
 		else return 0;	
 	}
 	
