@@ -407,13 +407,13 @@ public class DMRDecode {
 					// 1 if voice
 					// 2 if data
 					syncType=syncCompare(frameSync);
-					// Embedded signalling frame
-					if ((frameSync==true)&&(syncType==0)&&(firstframe==false)&&(embeddedFrameCount<7)&&(mode==0))	{
+					// Embedded signalling frame (BS/MS and Direct)
+					if ((frameSync==true)&&(syncType==0)&&(firstframe==false)&&(embeddedFrameCount<7))	{
 						// Increment the embedded frame counter
 						embeddedFrameCount++;
 						lastsynctype=13;
 						return (13);
-					}					
+					}	
 					// BS Data frame
 					if (syncType==2) {
 						// Clear the embedded frame counter
@@ -785,7 +785,11 @@ public class DMRDecode {
 				else if (synctype==10) l.append(getTimeStamp()+" DMR BS Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
 				else if (synctype==22) l.append(getTimeStamp()+" DMR MS Voice Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
 				else if (synctype==20) l.append(getTimeStamp()+" DMR MS Data Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
-				else if (synctype==25) l.append(getTimeStamp()+" DMR RC Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				else if (synctype==25) l.append(getTimeStamp()+" DMR RC Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));	
+				else if (synctype==30) l.append(getTimeStamp()+" DMR Direct Voice 1 Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				else if (synctype==31) l.append(getTimeStamp()+" DMR Direct Data Data 1 Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				else if (synctype==32) l.append(getTimeStamp()+" DMR Direct Voice 2 Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				else if (synctype==33) l.append(getTimeStamp()+" DMR Direct Data Data 2 Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
 				addLine(l.toString(),Color.BLACK,plainFont);
 				fileWrite(l.toString());
 				}
@@ -1017,8 +1021,10 @@ public class DMRDecode {
 	// Display the dibit buffer as a string
 	public String displayDibitBuffer ()	{
 		StringBuilder lb=new StringBuilder(500);
-		int a;
-		for (a=0;a<144;a++)	{
+		int a,sm;
+		if (mode==0) sm=144;
+		else sm=132;
+		for (a=0;a<sm;a++)	{
 			lb.append(Integer.toString(dibitFrame[a]));
 		}
 		return lb.toString();
@@ -1027,20 +1033,31 @@ public class DMRDecode {
 	// Return a string showing the percentages of each dibit in the dibit buffer
 	public String returnDibitBufferPercentages ()	{
 		StringBuilder dline=new StringBuilder(500);
-		int a,c0=0,c1=0,c2=0,c3=0;
-		for (a=0;a<144;a++)	{
+		int a,c0=0,c1=0,c2=0,c3=0,fsize,p1,p2;
+		if (mode>0)	{
+			fsize=132;
+			p1=54;
+			p2=77;
+		}
+		else	{
+			fsize=144;
+			p1=66;
+			p2=89;
+		}
+		float mp=(float) (fsize-24.0);
+		for (a=0;a<fsize;a++)	{
 			// Exclude the sync burst from the percentages 
-			if ((a<66)||(a>89))	{
+			if ((a<p1)||(a>p2))	{
 			if (dibitFrame[a]==0) c0++;
 			if (dibitFrame[a]==1) c1++;
 			if (dibitFrame[a]==2) c2++;
 			if (dibitFrame[a]==3) c3++;
 			}
 		}
-		c0=(int)(((float)c0/(float)120.0)*(float)100);
-		c1=(int)(((float)c1/(float)120.0)*(float)100);
-		c2=(int)(((float)c2/(float)120.0)*(float)100);
-		c3=(int)(((float)c3/(float)120.0)*(float)100);
+		c0=(int)(((float)c0/mp)*(float)100);
+		c1=(int)(((float)c1/mp)*(float)100);
+		c2=(int)(((float)c2/mp)*(float)100);
+		c3=(int)(((float)c3/mp)*(float)100);
 		// Write this to a line
 		dline.append("Dibit 0="+Integer.toString(c0)+"% ");	
 		dline.append("Dibit 1="+Integer.toString(c1)+"% ");	
@@ -1471,6 +1488,11 @@ public class DMRDecode {
 	public void incrementCurrentDataBlocksReceived ()	{
 		if (currentChannel==1) dataBlocksReceived[0]++;
 		else dataBlocksReceived[1]++;
+	}
+	
+	// A getter for the mode
+	public int getMode ()	{
+		return this.mode;
 	}
 	
 }
