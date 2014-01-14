@@ -400,7 +400,7 @@ public class DMRDecode {
 				}
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
-				// frame sync then only do this every 144 bits
+				// frame sync then only do this every 132/144 bits
 				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%dibitCount==0)))	{
 					// Identify the frame sync type which returns
 					// 0 if unknown
@@ -568,8 +568,11 @@ public class DMRDecode {
 		}					
 		// We had a signal but appear to have lost it
 		if (carrier==true) {
+			int missedCount;
+			if (mode==0) missedCount=144*12;
+			else missedCount=132*25;
 			// If we have missed 12 frames then something is wrong
-			if (synctest_pos>=1728) {
+			if (synctest_pos>=missedCount) {
 				// If in debug mode show that sync has been lost
 				if (debug==true)	{
 					StringBuilder l=new StringBuilder(250);

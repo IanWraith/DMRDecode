@@ -15,28 +15,40 @@ public class DMREmbedded {
 	public String[] decode (DMRDecode TtheApp,byte[] dibit_buf)	{
 		String cline;
 		theApp=TtheApp;
-		DecodeCACH cachdecode=new DecodeCACH();
-		// CACH decode
-		cline=cachdecode.decode(theApp,dibit_buf);
-		resCACH=cachdecode.isPassErrorCheck();
-		if (resCACH==true) {
-			line[1]=cline;
-			fonts[1]=theApp.italicFont;
-			colours[1]=Color.BLACK;
-			resEMB=EMBdecode(dibit_buf);
-			// If short LC data is available then display it
-			if (cachdecode.getShortLC()==true)	{
-				line[7]=cachdecode.getShortLCline();
-				fonts[7]=theApp.boldFont;
-				if (cachdecode.getshortLCError()==true)	{
-					colours[7]=Color.RED;
-					if (theApp.isDisplayOnlyGoodFrames()==true) line[7]=null;
+		int mode=theApp.getMode();
+		// BS only
+		if (mode==0)	{
+			DecodeCACH cachdecode=new DecodeCACH();
+			// CACH decode
+			cline=cachdecode.decode(theApp,dibit_buf);
+			resCACH=cachdecode.isPassErrorCheck();
+			if (resCACH==true) {
+				line[1]=cline;
+				fonts[1]=theApp.italicFont;
+				colours[1]=Color.BLACK;
+				resEMB=EMBdecode(dibit_buf);
+				// If short LC data is available then display it
+				if (cachdecode.getShortLC()==true)	{
+					line[7]=cachdecode.getShortLCline();
+					fonts[7]=theApp.boldFont;
+					if (cachdecode.getshortLCError()==true)	{
+						colours[7]=Color.RED;
+						if (theApp.isDisplayOnlyGoodFrames()==true) line[7]=null;
+					}
+					else colours[7]=Color.BLACK;
+					cachdecode.clearShortLC();
 				}
-				else colours[7]=Color.BLACK;
-				cachdecode.clearShortLC();
 			}
+			if ((resCACH==false)&&(resEMB==false)) theApp.embeddedFrameCount=8;
 		}
-		if ((resCACH==false)&&(resEMB==false)) theApp.embeddedFrameCount=8;
+		else	{
+			// MS and Direct
+			Utilities utils=new Utilities();
+			byte buf[]=utils.expandDiBitBuffer(dibit_buf);
+			resEMB=EMBdecode(buf);
+		}
+		
+		
 		theApp.frameCount++;
 		return line;
 	}

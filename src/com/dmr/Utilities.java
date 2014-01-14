@@ -54,5 +54,20 @@ public class Utilities {
 		return b;
 	}
 	
+	// Add a dummy CACH to make MS or Direct dibit buffer consist of 144 bytes rather than just 132
+	public byte[] expandDiBitBuffer (byte bufIn[])	{
+		byte bufOut[]=new byte[144];
+		int a;
+		for (a=0;a<144;a++)	{
+			if (a<12)	{
+				bufOut[a]=0;
+			}
+			else	{
+				bufOut[a]=bufIn[a-12];
+			}
+		}
+		return bufOut;
+	}
+	
 
 }
