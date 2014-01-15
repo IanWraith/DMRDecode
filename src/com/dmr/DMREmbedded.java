@@ -43,9 +43,7 @@ public class DMREmbedded {
 		}
 		else	{
 			// MS and Direct
-			Utilities utils=new Utilities();
-			byte buf[]=utils.expandDiBitBuffer(dibit_buf);
-			resEMB=EMBdecode(buf);
+			resEMB=EMBdecode(dibit_buf);
 		}
 		
 		

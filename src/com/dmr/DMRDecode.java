@@ -84,7 +84,7 @@ public class DMRDecode {
 	public boolean pReady=false;
 	private int symbolBuffer[]=new int[144];
 	public AudioInThread lineInThread=new AudioInThread(this);
-	private boolean debug=true;
+	private boolean debug=false;
 	public int frameCount=0;
 	public int badFrameCount=0;
 	public ShortLC short_lc=new ShortLC();
@@ -377,8 +377,6 @@ public class DMRDecode {
 			dibit=symboltoDibit(symbol);
 			// Add the dibit to the circular dibit buffer
 			addToDitbitBuf(dibit);
-			// Only BS frames contain 144 dibits the others contain just 132
-			if (mode>0) dibitCount=132;
 		    // If we have received 144 dibits then we can check for a valid sync sequence
 			if (t>=dibitCount) {
 				// If we don't have frame sync then rotate the symbol buffer
@@ -400,7 +398,7 @@ public class DMRDecode {
 				}
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
-				// frame sync then only do this every 132/144 bits
+				// frame sync then only do this every 144 bits
 				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%dibitCount==0)))	{
 					// Identify the frame sync type which returns
 					// 0 if unknown
@@ -448,9 +446,7 @@ public class DMRDecode {
 					}
 					// MS Data frame
 					else if (syncType==4) {
-						String ss="MS Data Frame";
-						if (frameSync==true) ss=ss+" (FS)";
-						debugDump("MS Data Frame");
+						embeddedFrameCount=0;
 						carrier=true;
 						if (frameSync==false)	{
 							frameCalcs(lmin,lmax);
@@ -465,9 +461,7 @@ public class DMRDecode {
 					}
 					// MS Voice frame
 					else if (syncType==3) {
-						String ss="MS Voice Frame";
-						if (frameSync==true) ss=ss+" (FS)";
-						debugDump(ss);
+						embeddedFrameCount=0;
 						carrier=true;
 						if (frameSync==false)	{
 							frameCalcs(lmin,lmax);
@@ -482,7 +476,7 @@ public class DMRDecode {
 					}
 					// RC Sync
 					else if (syncType==5)	{
-						debugDump("RC Sync Frame");
+						embeddedFrameCount=0;
 						carrier=true;
 						if (frameSync==false)	{
 							frameCalcs(lmin,lmax);
@@ -497,9 +491,7 @@ public class DMRDecode {
 					}
 					// Direct Voice frame 1
 					else if (syncType==6) {
-						String ss="Direct Voice Frame 1";
-						if (frameSync==true) ss=ss+" (FS)";
-						debugDump("Direct Voice Frame 1");
+						embeddedFrameCount=0;
 						carrier=true;
 						if (frameSync==false)	{
 							frameCalcs(lmin,lmax);
@@ -514,9 +506,6 @@ public class DMRDecode {
 					}
 					// Direct Data frame 1
 					else if (syncType==7) {
-						String ss="Direct Data Frame 1";
-						if (frameSync==true) ss=ss+" (FS)";
-						debugDump("Direct Data Frame 1");
 						carrier=true;
 						if (frameSync==false)	{
 							frameCalcs(lmin,lmax);
@@ -531,9 +520,7 @@ public class DMRDecode {
 					}
 					// Direct Voice frame 2
 					else if (syncType==8) {
-						String ss="Direct Voice Frame 2";
-						if (frameSync==true) ss=ss+" (FS)";
-						debugDump("Direct Voice Frame 2");
+						embeddedFrameCount=0;
 						carrier=true;
 						if (frameSync==false)	{
 							frameCalcs(lmin,lmax);
@@ -548,9 +535,7 @@ public class DMRDecode {
 					}
 					// Direct Data frame 2
 					else if (syncType==9) {
-						String ss="Direct Data Frame 2";
-						if (frameSync==true) ss=ss+" (FS)";
-						debugDump("Direct Data Frame 2");
+						embeddedFrameCount=0;
 						carrier=true;
 						if (frameSync==false)	{
 							frameCalcs(lmin,lmax);
@@ -568,9 +553,7 @@ public class DMRDecode {
 		}					
 		// We had a signal but appear to have lost it
 		if (carrier==true) {
-			int missedCount;
-			if (mode==0) missedCount=144*12;
-			else missedCount=132*25;
+			int missedCount=144*12;
 			// If we have missed 12 frames then something is wrong
 			if (synctest_pos>=missedCount) {
 				// If in debug mode show that sync has been lost
@@ -600,9 +583,7 @@ public class DMRDecode {
 	void addToDitbitBuf (int dibit)	{
 		dibitCircularBuffer[dibitCircularBufferCounter]=(byte)dibit;
 		dibitCircularBufferCounter++;
-		
 		int countMax=144;
-		if (mode>0) countMax=132;
 		if (dibitCircularBufferCounter==countMax) dibitCircularBufferCounter=0;
 	}
 	
@@ -611,7 +592,6 @@ public class DMRDecode {
 		symbolBuffer[symbolBufferCounter]=symbol;
 		symbolBufferCounter++;
 		int countMax=144;
-		if (mode>0) countMax=132;
 		if (symbolBufferCounter==countMax) symbolBufferCounter=0;
 	}
 	
@@ -694,14 +674,8 @@ public class DMRDecode {
 		if (sync==true)	diff=5;
 		else diff=0;
 		
-		if (mode==0)	{
-			circPos=dibitCircularBufferCounter+66;
-			if (circPos>=144) circPos=circPos-144;
-		}
-		else	{
-			circPos=dibitCircularBufferCounter+54;
-			if (circPos>=132) circPos=circPos-132;
-		}
+		circPos=dibitCircularBufferCounter+66;
+		if (circPos>=144) circPos=circPos-144;
 			
 		for (i=0;i<24;i++)	{
 			// BS
@@ -722,7 +696,6 @@ public class DMRDecode {
 			circPos++;
 			
 			int countMax=144;
-			if (mode>0) countMax=132;	
 			if (circPos==countMax) circPos=0;
 		}
 		if ((DMR_VOICE_SYNC_BS.length-voiceSyncBS)<=diff) return 1;
@@ -742,10 +715,6 @@ public class DMRDecode {
 		int i,circPos;
 		int syms[]=new int[24];
 		int dbCount=144,mid=66;
-		if (mode>0)	{
-			mid=54;
-			dbCount=132;
-		}
 		circPos=symbolBufferCounter+mid;
 		if (circPos>=dbCount) circPos=circPos-dbCount;
 		for (i=0;i<24;i++)	{
@@ -801,7 +770,7 @@ public class DMRDecode {
 	    // Update the sync label
 	    window.updateSyncLabel(frameSync);
 	    // Deal with the frame
-	    if (synctype==12) processDMRvoice ();
+	    if ((synctype==12)||(synctype==22)||(synctype==30)||(synctype==32)) processDMRvoice();
 	    else if (synctype==10) processDMRdata ();
 	    else if (synctype==13) processEmbedded ();
 	}
@@ -1024,9 +993,7 @@ public class DMRDecode {
 	// Display the dibit buffer as a string
 	public String displayDibitBuffer ()	{
 		StringBuilder lb=new StringBuilder(500);
-		int a,sm;
-		if (mode==0) sm=144;
-		else sm=132;
+		int a,sm=144;
 		for (a=0;a<sm;a++)	{
 			lb.append(Integer.toString(dibitFrame[a]));
 		}
@@ -1036,17 +1003,7 @@ public class DMRDecode {
 	// Return a string showing the percentages of each dibit in the dibit buffer
 	public String returnDibitBufferPercentages ()	{
 		StringBuilder dline=new StringBuilder(500);
-		int a,c0=0,c1=0,c2=0,c3=0,fsize,p1,p2;
-		if (mode>0)	{
-			fsize=132;
-			p1=54;
-			p2=77;
-		}
-		else	{
-			fsize=144;
-			p1=66;
-			p2=89;
-		}
+		int a,c0=0,c1=0,c2=0,c3=0,fsize=144,p1=66,p2=89;
 		float mp=(float) (fsize-24.0);
 		for (a=0;a<fsize;a++)	{
 			// Exclude the sync burst from the percentages 
@@ -1081,8 +1038,6 @@ public class DMRDecode {
 	private void createDibitFrame()	{
 		int i,circPos;
 		int countMax=144;
-		if (mode>0) countMax=132;
-		
 		circPos=dibitCircularBufferCounter-countMax;
 		if (circPos<0) circPos=countMax+circPos;
 		for (i=0;i<countMax;i++)	{
