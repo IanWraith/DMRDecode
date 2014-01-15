@@ -13,23 +13,35 @@ public class DMRDataDecode {
 	
 	public String[] decode (DMRDecode theApp,byte[] dibit_buf)	{
 		String cline;
-		DecodeCACH cachdecode=new DecodeCACH();
 		SlotType slottype=new SlotType();
+		int mode=theApp.getMode();
+		DecodeCACH cachdecode=new DecodeCACH();
 		line[0]=theApp.getTimeStamp()+" DMR Data Frame";
+		if (mode==0) line[0]=line[0]+" (BS)";
+		else if (mode==1) line[0]=line[0]+" (MS)";
+		else if (mode==2) line[0]=line[0]+" (Direct)";
 		colours[0]=Color.BLACK;
 		fonts[0]=theApp.boldFont;
 		// CACH decode
-		cline=cachdecode.decode(theApp,dibit_buf);
-		CACHres=cachdecode.isPassErrorCheck();
+		if (mode==0)	{
+			cline=cachdecode.decode(theApp,dibit_buf);
+			CACHres=cachdecode.isPassErrorCheck();
+		}
+		else	{
+			CACHres=true;
+			cline=null;
+		}
 		// Slot Type Decode
 		if (CACHres==true)	{
-			line[1]=cline;
-			fonts[1]=theApp.italicFont;
-			colours[1]=Color.BLACK;
+			if (mode==0)	{
+				line[1]=cline;
+				fonts[1]=theApp.italicFont;
+				colours[1]=Color.BLACK;
+			}
 			line[2]=slottype.decode(theApp,dibit_buf);
 			SLOT_TYPEres=slottype.isPassErrorCheck();
 			// If short LC data is available then display it
-			if (cachdecode.getShortLC()==true)	{
+			if ((cachdecode.getShortLC()==true)&&(mode==0))	{
 				line[7]=cachdecode.getShortLCline();
 				fonts[7]=theApp.boldFont;
 				if (cachdecode.getshortLCError()==true)	{

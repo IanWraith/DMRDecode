@@ -771,7 +771,7 @@ public class DMRDecode {
 	    window.updateSyncLabel(frameSync);
 	    // Deal with the frame
 	    if ((synctype==12)||(synctype==22)||(synctype==30)||(synctype==32)) processDMRvoice();
-	    else if (synctype==10) processDMRdata ();
+	    else if ((synctype==10)||(synctype==20)||(synctype==31)||(synctype==33)) processDMRdata ();
 	    else if (synctype==13) processEmbedded ();
 	}
 
