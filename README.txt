@@ -89,7 +89,9 @@ Build 71 - Change so that if a quick log file exists ask the user if they want t
       	   Decode Tier III Sys_Parms Short LCs
       	   
 Build 72 - Fix bugs in the csbko31fid16() and csbko32fid16() methods were the to and from idents were transposed. 
+
+Build 73 - Add basic support for monitoring MS and Direct mode.
       
-Ian Wraith (9th January 2014)
+Ian Wraith (16th January 2014)
 
 

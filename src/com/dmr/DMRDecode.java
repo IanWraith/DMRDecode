@@ -46,7 +46,7 @@ public class DMRDecode {
 	private DisplayView display_view;
 	private static DMRDecode theApp;
 	private static DisplayFrame window;
-	public String program_version="DMR Decoder (Build 73X)";
+	public String program_version="DMR Decoder (Build 73)";
 	public int vertical_scrollbar_value=0;
 	public int horizontal_scrollbar_value=0;
 	private static boolean RUNNING=true;
@@ -362,7 +362,7 @@ public class DMRDecode {
 	// them accordingly
 	public int getFrameSync ()	{
 		int t=0,dibit,symbol,synctest_pos=0,syncType;
-		int lmin=0,lmax=0,a,highVol,dibitCount=144;
+		int lmin=0,lmax=0,a,highVol;
 		// Clear the symbol counter
 		symbolcnt=0;
 		while (true) {
@@ -378,10 +378,10 @@ public class DMRDecode {
 			// Add the dibit to the circular dibit buffer
 			addToDitbitBuf(dibit);
 		    // If we have received 144 dibits then we can check for a valid sync sequence
-			if (t>=dibitCount) {
+			if (t>=144) {
 				// If we don't have frame sync then rotate the symbol buffer
 				// and also find the new minimum and maximum
-				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%dibitCount==0)))	{
+				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
 					// Get the frames 24 sync symbols
 					syncHighLowlBuf=getSyncSymbols();
 					lmin=1;
@@ -399,7 +399,7 @@ public class DMRDecode {
 				// Check if a frame has a voice or data sync
 				// If no frame sync do this at any time but if we do have
 				// frame sync then only do this every 144 bits
-				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%dibitCount==0)))	{
+				if ((frameSync==false)||((frameSync==true)&&(symbolcnt%144==0)))	{
 					// Identify the frame sync type which returns
 					// 0 if unknown
 					// 1 if voice
@@ -553,9 +553,8 @@ public class DMRDecode {
 		}					
 		// We had a signal but appear to have lost it
 		if (carrier==true) {
-			int missedCount=144*12;
 			// If we have missed 12 frames then something is wrong
-			if (synctest_pos>=missedCount) {
+			if (synctest_pos>=(144*12)) {
 				// If in debug mode show that sync has been lost
 				if (debug==true)	{
 					StringBuilder l=new StringBuilder(250);
@@ -583,16 +582,14 @@ public class DMRDecode {
 	void addToDitbitBuf (int dibit)	{
 		dibitCircularBuffer[dibitCircularBufferCounter]=(byte)dibit;
 		dibitCircularBufferCounter++;
-		int countMax=144;
-		if (dibitCircularBufferCounter==countMax) dibitCircularBufferCounter=0;
+		if (dibitCircularBufferCounter==144) dibitCircularBufferCounter=0;
 	}
 	
 	// Add a symbol to the circular symbol buffer
 	void addToSymbolBuffer (int symbol)	{
 		symbolBuffer[symbolBufferCounter]=symbol;
 		symbolBufferCounter++;
-		int countMax=144;
-		if (symbolBufferCounter==countMax) symbolBufferCounter=0;
+		if (symbolBufferCounter==144) symbolBufferCounter=0;
 	}
 	
 	// No carrier or carrier lost so clear the variables
@@ -694,9 +691,7 @@ public class DMRDecode {
 			
 			// Increment the circular buffer counter
 			circPos++;
-			
-			int countMax=144;
-			if (circPos==countMax) circPos=0;
+			if (circPos==144) circPos=0;
 		}
 		if ((DMR_VOICE_SYNC_BS.length-voiceSyncBS)<=diff) return 1;
 		else if ((DMR_DATA_SYNC_BS.length-dataSyncBS)<=diff) return 2;
@@ -714,13 +709,12 @@ public class DMRDecode {
 	private int[] getSyncSymbols()	{
 		int i,circPos;
 		int syms[]=new int[24];
-		int dbCount=144,mid=66;
-		circPos=symbolBufferCounter+mid;
-		if (circPos>=dbCount) circPos=circPos-dbCount;
+		circPos=symbolBufferCounter+66;
+		if (circPos>=144) circPos=circPos-144;
 		for (i=0;i<24;i++)	{
 			syms[i]=symbolBuffer[circPos];
 			circPos++;
-			if (circPos==dbCount) circPos=0;
+			if (circPos==144) circPos=0;
 		}
 		return syms;	
 	}
@@ -993,8 +987,8 @@ public class DMRDecode {
 	// Display the dibit buffer as a string
 	public String displayDibitBuffer ()	{
 		StringBuilder lb=new StringBuilder(500);
-		int a,sm=144;
-		for (a=0;a<sm;a++)	{
+		int a;
+		for (a=0;a<144;a++)	{
 			lb.append(Integer.toString(dibitFrame[a]));
 		}
 		return lb.toString();
@@ -1003,11 +997,11 @@ public class DMRDecode {
 	// Return a string showing the percentages of each dibit in the dibit buffer
 	public String returnDibitBufferPercentages ()	{
 		StringBuilder dline=new StringBuilder(500);
-		int a,c0=0,c1=0,c2=0,c3=0,fsize=144,p1=66,p2=89;
-		float mp=(float) (fsize-24.0);
-		for (a=0;a<fsize;a++)	{
+		int a,c0=0,c1=0,c2=0,c3=0;
+		float mp=(float) (144-24.0);
+		for (a=0;a<144;a++)	{
 			// Exclude the sync burst from the percentages 
-			if ((a<p1)||(a>p2))	{
+			if ((a<66)||(a>89))	{
 			if (dibitFrame[a]==0) c0++;
 			if (dibitFrame[a]==1) c1++;
 			if (dibitFrame[a]==2) c2++;
@@ -1037,13 +1031,12 @@ public class DMRDecode {
 	// Put the dibits into dibitFrame in the correct order from the circular dibit buffer
 	private void createDibitFrame()	{
 		int i,circPos;
-		int countMax=144;
-		circPos=dibitCircularBufferCounter-countMax;
-		if (circPos<0) circPos=countMax+circPos;
-		for (i=0;i<countMax;i++)	{
+		circPos=dibitCircularBufferCounter-144;
+		if (circPos<0) circPos=144+circPos;
+		for (i=0;i<144;i++)	{
 			dibitFrame[i]=dibitCircularBuffer[circPos];
 			circPos++;
-			if (circPos==countMax) circPos=0;
+			if (circPos==144) circPos=0;
 		}
 	}
 	
