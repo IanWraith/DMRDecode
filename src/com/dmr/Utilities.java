@@ -54,4 +54,14 @@ public class Utilities {
 		return b;
 	}
 	
+	// Return a 4 bit byte from a boolean array
+	public int retFour (boolean bits[],int offset)	{
+		int b=0;
+		if (bits[offset]==true) b=8;
+		if (bits[offset+1]==true) b=b+4;
+		if (bits[offset+2]==true) b=b+2;
+		if (bits[offset+3]==true) b++;
+		return b;
+	}	
+	
 }

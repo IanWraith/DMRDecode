@@ -68,6 +68,10 @@ public class CSBK {
 		else if (csbko==38)	{
 			nack_rsp(bits);
 		}
+		// 59 - Capacity Plus
+		else if ((csbko==59)&&(fid==16))	{
+			big_m_csbko59(theApp,bits);
+		}	
 		// 61 - Pre_CSBK
 		else if (csbko==61)	{
 			preCSBK(theApp,bits);
@@ -451,5 +455,61 @@ public class CSBK {
 		sb1.append(")");
 		display[1]=sb1.toString();		
 	}	
+	
+	// Capacity Plus
+    // The information on this type of packet was kindly provided by Eric Cottrell on the Radioreference forums	
+	// see http://forums.radioreference.com/digital-voice-decoding-software/209318-understanding-capacity-plus-trunking-6.html#post2106396
+	private void big_m_csbko59 (DMRDecode theApp,boolean bits[])	{
+		StringBuilder sb1=new StringBuilder(300);
+		StringBuilder sb2=new StringBuilder(300);
+		display[0]="Capacity Plus CSBK : CSBKO=59 + FID=16: SYSSITESTS";
+		// Bits 16 & 17 First/Last Block
+		int fl=0;
+		if (bits[16]==true) fl=2;
+		if (bits[17]==true) fl++;
+		sb1.append("FL="+Integer.toString(fl));
+		// Bit 18 slot
+		if (bits[18]==false) sb1.append(" : TS1");
+		else sb1.append(" : TS2");
+		// Bits 19,20,21,22,23  Rest Channel ID
+		int restCh=0;
+		if (bits[19]==true) restCh=16;
+		else if (bits[20]==true) restCh=restCh+8;
+		else if (bits[21]==true) restCh=restCh+4;
+		else if (bits[22]==true) restCh=restCh+2;
+		else if (bits[23]==true) restCh++;
+		sb1.append(" : Rest Channel ID "+Integer.toString(restCh));
+		// Bit 24 ASYNC
+		if (bits[24]==false) sb1.append(" : Periodic Beacons");
+		else sb1.append(" : Asynchronous Beacons");
+		// Bits 25,26,27,28 My Site ID
+		int mySiteID=0;
+		if (bits[25]==true) mySiteID=8;
+		if (bits[26]==true) mySiteID=mySiteID+4;
+		if (bits[27]==true) mySiteID=mySiteID+2;
+		if (bits[28]==true) mySiteID++;
+		sb1.append(" : This Site ID "+Integer.toString(mySiteID));
+		// Display this
+		display[1]=sb1.toString();
+		// Bits 29.30,31 Number of neighbour sites
+		int nNos=0;
+		if (bits[29]==true) nNos=4;
+		if (bits[30]==true) nNos=nNos+2;
+		if (bits[31]==true) nNos++;
+		// Display the neighbour site info
+		Utilities utils=new Utilities();
+		int a,pos=32,nsid,nrst;
+		for (a=0;a<nNos;a++)	{
+			nsid=utils.retFour(bits,pos);
+			nrst=utils.retFour(bits,pos+4);
+			// Display
+			if (a>0) sb2.append(" : ");
+			sb2.append("Site #"+Integer.toString(a+1)+" ID "+Integer.toString(nsid)+" Rest Ch "+Integer.toString(nrst));
+			// Move along
+			pos=pos+8;
+		}
+		// If there is any neighbour site info then display it
+		if (nNos>0) display[2]=sb2.toString();
+	}
 	
 }
