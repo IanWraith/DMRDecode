@@ -496,6 +496,8 @@ public class CSBK {
 		if (bits[29]==true) nNos=4;
 		if (bits[30]==true) nNos=nNos+2;
 		if (bits[31]==true) nNos++;
+		// If more than 6 sites we have a problem that will cause an overflow
+		if (nNos>6) nNos=6;
 		// Display the neighbour site info
 		Utilities utils=new Utilities();
 		int a,pos=32,nsid,nrst;
@@ -503,7 +505,7 @@ public class CSBK {
 			nsid=utils.retFour(bits,pos);
 			nrst=utils.retFour(bits,pos+4);
 			// Display
-			if (a>0) sb2.append(" : ");
+			if (a>0) sb2.append(",");
 			sb2.append("Site #"+Integer.toString(a+1)+" ID "+Integer.toString(nsid)+" Rest Ch "+Integer.toString(nrst));
 			// Move along
 			pos=pos+8;
