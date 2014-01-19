@@ -68,6 +68,7 @@ public class DMRDecode {
 	private final byte DMR_VOICE_SYNC_DIRECT1[]={1,1,3,1,1,1,1,3,1,3,3,3,1,3,1,3,1,1,1,3,3,3,3,3};
 	private final byte DMR_DATA_SYNC_DIRECT2[]={3,1,1,3,1,1,1,1,1,3,3,3,1,1,3,3,3,3,1,3,3,3,1,1};
 	private final byte DMR_VOICE_SYNC_DIRECT2[]={1,3,3,1,3,3,3,3,3,1,1,1,3,3,1,1,1,1,3,1,1,1,3,3};
+	private final byte DMR_DATA_REST_SYNC_BS[]={3,1,3,1,1,3,3,3,3,3,1,1,3,1,1,3,1,1,1,3,3,1,3,1};
 	private boolean carrier=false;
 	public boolean inverted=true;
 	private boolean firstframe=false;
@@ -547,8 +548,23 @@ public class DMRDecode {
 						lastsynctype=33;
 						mode=2;
 						return (33);
-					}									
-	
+					}		
+					// Rest Data
+					else if (syncType==10) {
+						embeddedFrameCount=0;
+						carrier=true;
+						if (frameSync==false)	{
+							frameCalcs(lmin,lmax);
+							frameSync=true;
+						}
+						else addToMinMaxBuffer(lmin,lmax);
+						if (lastsynctype==-1) firstframe=true;
+						else firstframe=false;
+						lastsynctype=33;
+						mode=0;
+						return (40);
+					}		
+					
 				}
 		}					
 		// We had a signal but appear to have lost it
@@ -653,19 +669,20 @@ public class DMRDecode {
 	}
 	  	
 	// Compare the sync sequences held in global arrays with the contents of the dibit circular buffer which returns ..
-	// 0 unknown
-	// 1 BS voice
-	// 2 BS data
-	// 3 MS voice
-	// 4 MS data
-	// 5 RC Sync
-	// 6 Direct Voice 1
-	// 7 Direct Data 1
-	// 8 Direct Voice 2
-	// 9 Direct Data 3	
+	// 00 unknown
+	// 01 BS voice
+	// 02 BS data
+	// 03 MS voice
+	// 04 MS data
+	// 05 RC Sync
+	// 06 Direct Voice 1
+	// 07 Direct Data 1
+	// 08 Direct Voice 2
+	// 09 Direct Data 2
+	// 10 Rest Data
 	private int syncCompare(boolean sync)	{
 		int i,dataSyncBS=0,voiceSyncBS=0,diff,circPos,dataSyncMS=0,voiceSyncMS=0,rcSync=0;
-		int directVoice1=0,directVoice2=0,directData1=0,directData2=0;
+		int directVoice1=0,directVoice2=0,directData1=0,directData2=0,restData=0;
 		
 		// Allow 5 dibits to be incorrect when syncronised and set the offset
 		if (sync==true)	diff=5;
@@ -688,7 +705,8 @@ public class DMRDecode {
 			// Direct Slot 2
 			if (dibitCircularBuffer[circPos]==DMR_VOICE_SYNC_DIRECT2[i]) directVoice2++;
 			if (dibitCircularBuffer[circPos]==DMR_DATA_SYNC_DIRECT2[i]) directData2++;
-			
+			// Rest Data
+			if (dibitCircularBuffer[circPos]==DMR_DATA_REST_SYNC_BS[i]) restData++;
 			// Increment the circular buffer counter
 			circPos++;
 			if (circPos==144) circPos=0;
@@ -702,6 +720,7 @@ public class DMRDecode {
 		else if ((DMR_DATA_SYNC_DIRECT1.length-directData1)<=diff) return 7;
 		else if ((DMR_VOICE_SYNC_DIRECT2.length-directVoice2)<=diff) return 8;
 		else if ((DMR_DATA_SYNC_DIRECT2.length-directData2)<=diff) return 9;
+		else if ((DMR_DATA_REST_SYNC_BS.length-restData)<=diff) return 10;
 		else return 0;	
 	}
 	
@@ -718,7 +737,12 @@ public class DMRDecode {
 		}
 		return syms;	
 	}
-	  
+	
+	// Returns the current sync type
+	public int getSyncType()	{
+		return this.synctype;
+	}
+	
 	// Adds a line to the display as long as pause isn't enabled
 	public void addLine(final String line, final Color col, final Font font) {
 		if (pauseScreen==true) return;
@@ -756,6 +780,7 @@ public class DMRDecode {
 				else if (synctype==31) l.append(getTimeStamp()+" DMR Direct Data Data 1 Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
 				else if (synctype==32) l.append(getTimeStamp()+" DMR Direct Voice 2 Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
 				else if (synctype==33) l.append(getTimeStamp()+" DMR Direct Data Data 2 Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));
+				else if (synctype==40) l.append(getTimeStamp()+" DMR BS Data Rest Sync Acquired : centre="+Integer.toString(centre)+" max="+Integer.toString(max)+" min="+Integer.toString(min)+" umid="+Integer.toString(umid)+" lmid="+Integer.toString(lmid));		
 				addLine(l.toString(),Color.BLACK,plainFont);
 				fileWrite(l.toString());
 				}
@@ -765,7 +790,7 @@ public class DMRDecode {
 	    window.updateSyncLabel(frameSync);
 	    // Deal with the frame
 	    if ((synctype==12)||(synctype==22)||(synctype==30)||(synctype==32)) processDMRvoice();
-	    else if ((synctype==10)||(synctype==20)||(synctype==31)||(synctype==33)) processDMRdata ();
+	    else if ((synctype==10)||(synctype==20)||(synctype==31)||(synctype==33)||(synctype==40)) processDMRdata ();
 	    else if (synctype==13) processEmbedded ();
 	}
 

@@ -16,7 +16,8 @@ public class DMRDataDecode {
 		SlotType slottype=new SlotType();
 		int mode=theApp.getMode();
 		DecodeCACH cachdecode=new DecodeCACH();
-		line[0]=theApp.getTimeStamp()+" DMR Data Frame";
+		if (theApp.getSyncType()==40) line[0]=theApp.getTimeStamp()+" DMR Data Rest Frame";
+		else line[0]=theApp.getTimeStamp()+" DMR Data Frame";
 		if (mode==0) line[0]=line[0]+" (BS)";
 		else if (mode==1) line[0]=line[0]+" (MS)";
 		else if (mode==2) line[0]=line[0]+" (Direct)";
