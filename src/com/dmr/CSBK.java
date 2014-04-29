@@ -72,10 +72,10 @@ public class CSBK {
 		else if (csbko==38)	{
 			nack_rsp(bits);
 		}
-		
 		// 40 (FID 00) - C_BCAST (Tier III)
-		// TODO : Add CSBKO=40
-		
+		else if ((csbko==40)&&(fid==0))	{
+			csbko40fid0(theApp,bits);
+		}
 		// 59 - Capacity Plus
 		else if ((csbko==59)&&(fid==16))	{
 			big_m_csbko59(theApp,bits);
@@ -444,6 +444,41 @@ public class CSBK {
 		sb2.append("MS Individual Address="+Integer.toString(addr));
 		display[2]=sb2.toString();
 	}
+	
+	// CSBKO 40 FID 00 C_BCAST
+	// Bits 16,17,18,19,20 Announcement type
+	// 21,22,23,24,25,26,27,28,29,30,31,32,33,34 Broadcast Parms 1
+	// 35 Reg
+	// 36,37,38,39 Backoff
+	// 40 - 55 System ID
+	// 56 - 79 Broadcast Parms 2
+	private void csbko40fid0 (DMRDecode theApp,boolean bits[])	{
+		StringBuilder sb1=new StringBuilder(300);
+		StringBuilder sb2=new StringBuilder(300);
+		Utilities utils=new Utilities();
+		// Announcement Type
+		int at=0;
+		String aType;
+		if (bits[16]==true) at=16;
+		if (bits[17]==true) at=at+8;
+		if (bits[18]==true) at=at+4;
+		if (bits[19]==true) at=at+2;
+		if (bits[20]==true) at++;
+		if (at==0) aType="Ann-WD_TSCC (Announce/Withdraw TSCC)";
+		else if (at==1) aType="CallTimer_Parms (Specify Call Timer Parameters)";
+		else if (at==2) aType="Vote_Now (Vote Now Advice)";
+		else if (at==3) aType="Local_Time (Broadcast Local Time)";
+		else if (at==4) aType="MassReg (Mass_Registration)";
+		else if (at==5) aType="Chan_Freq (Announce a logical channel/frequency relationship)";
+		else if (at==6) aType="Adjacent_Site (Adjacent Site Information)";
+		else if ((at==30)||(at==31)) aType="Manufacturer Specific";
+		else aType="Reserved";
+		display[0]="C_BCAST : CSBKO=40 + FID=0 "+aType;
+		
+		// TODO : Complete work on the C_BCAST PDU
+		
+	}	
+	
 
 	// CSBKO 31 FID 16 Call Alert
 	// The information to decode this was kindly provided by bben95 on the Radioreference forums
