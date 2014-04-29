@@ -28,6 +28,28 @@ public class Utilities {
 		return addr;
 	}
 	
+	// Return an 16 bit byte from a boolean array
+	public int retSixteen (boolean bits[],int offset)	{
+		int b=0;
+		if (bits[offset]==true) b=32768;
+		if (bits[offset+1]==true) b=b+16384;
+		if (bits[offset+2]==true) b=b+8192;
+		if (bits[offset+3]==true) b=b+4096;
+		if (bits[offset+4]==true) b=b+2048;
+		if (bits[offset+5]==true) b=b+1024;
+		if (bits[offset+6]==true) b=b+512;
+		if (bits[offset+7]==true) b=b+256;
+		if (bits[offset+8]==true) b=b+128;
+		if (bits[offset+9]==true) b=b+64;
+		if (bits[offset+10]==true) b=b+32;
+		if (bits[offset+11]==true) b=b+16;
+		if (bits[offset+12]==true) b=b+8;
+		if (bits[offset+13]==true) b=b+4;
+		if (bits[offset+14]==true) b=b+2;
+		if (bits[offset+15]==true) b++;
+		return b;
+	}	
+	
 	// Return an 8 bit byte from a boolean array
 	public int retEight (boolean bits[],int offset)	{
 		int b=0;
