@@ -50,6 +50,10 @@ public class CSBK {
 		else if (csbko==5)	{
 			uu_ans_rep(bits);
 		}
+		// 25 (FID 00) - C_ALOHA (Tier III)
+		else if ((csbko==25)&&(fid==0))	{
+			csbko25fid0(theApp,bits);
+		}
 		// 31 (FID 16) - Call Alert 
 		// Note in Tier III that CSBKO=31 is C_RAND but only inbound also FID=0 
 		else if ((csbko==31)&&(fid==16))	{
@@ -68,6 +72,10 @@ public class CSBK {
 		else if (csbko==38)	{
 			nack_rsp(bits);
 		}
+		
+		// 40 (FID 00) - C_BCAST (Tier III)
+		// TODO : Add CSBKO=40
+		
 		// 59 - Capacity Plus
 		else if ((csbko==59)&&(fid==16))	{
 			big_m_csbko59(theApp,bits);
@@ -388,6 +396,53 @@ public class CSBK {
 			}
 			display[2]=sb2.toString();
 		}
+	}
+	
+	// CSBKO 25 FID 00 C_ALOHA
+	// Bits 16,17,18,19,20,21 Reserved
+	// 22 Infill
+	// 23 Active connection
+	// 24,25,26,27,28 Mask
+	// 29,30 Service Function
+	// 31,32,33,34 NRand_Wait
+	// 35 Reg
+	// 36,37,38,39 Backoff
+	// 40 - 55 System ID
+	// 56 - 79 MS Individual addr
+	private void csbko25fid0 (DMRDecode theApp,boolean bits[])	{
+		StringBuilder sb1=new StringBuilder(300);
+		StringBuilder sb2=new StringBuilder(300);
+		Utilities utils=new Utilities();
+		display[0]="C_ALOHA : CSBKO=25 + FID=0";
+		// Infill
+		if (bits[22]==true) sb1.append("Infill Radio Site : ");
+		else sb1.append("Not an Infill Radio Site : ");
+		// Active_Connection
+		if (bits[23]==true) sb1.append("TS has Network Connection : ");
+		else sb1.append("TS doesn't have a Network Connection : ");
+		// Mask
+		int mask=0;
+		if (bits[24]==true) mask=16;
+		if (bits[25]==true) mask=mask+8;
+		if (bits[26]==true) mask=mask+4;
+		if (bits[27]==true) mask=mask+2;
+		if (bits[28]==true) mask++;
+		sb1.append("Mask="+Integer.toString(mask)+" : ");
+		// Service Function
+		int sf=0;
+		if (bits[29]==true) sf=2;
+		if (bits[30]==true) sf++;
+		sb1.append("Service Function="+Integer.toString(sf)+" : ");
+		// Reg
+		if (bits[35]==true) sb1.append("TSCC demands MS must register");
+		display[1]=sb1.toString();
+		// System Identity Code
+		int sysID=utils.retSixteen(bits,40);
+		sb2.append("System Identity Code="+Integer.toString(sysID)+" : ");
+		// MS Address
+		int addr=utils.retAddress(bits,56);
+		sb2.append("MS Individual Address="+Integer.toString(addr));
+		display[2]=sb2.toString();
 	}
 
 	// CSBKO 31 FID 16 Call Alert
