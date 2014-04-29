@@ -91,7 +91,9 @@ Build 71 - Change so that if a quick log file exists ask the user if they want t
 Build 72 - Fix bugs in the csbko31fid16() and csbko32fid16() methods were the to and from idents were transposed. 
 
 Build 73 - Add basic support for monitoring MS and Direct mode.
+
+Build 74 - Support the Tier III CSBKO=25 C_ALOHA PDU.
       
-Ian Wraith (16th January 2014)
+Ian Wraith (29th April 2014)
 
 
