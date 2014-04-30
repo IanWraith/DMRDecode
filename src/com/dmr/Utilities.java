@@ -50,6 +50,39 @@ public class Utilities {
 		return b;
 	}	
 	
+	// Return an 12 bit byte from a boolean array
+	public int retTwelve (boolean bits[],int offset)	{
+		int b=0;
+		if (bits[offset]==true) b=2048;
+		if (bits[offset+2]==true) b=b+1024;
+		if (bits[offset+2]==true) b=b+512;
+		if (bits[offset+3]==true) b=b+256;
+		if (bits[offset+4]==true) b=b+128;
+		if (bits[offset+5]==true) b=b+64;
+		if (bits[offset+6]==true) b=b+32;
+		if (bits[offset+7]==true) b=b+16;
+		if (bits[offset+8]==true) b=b+8;
+		if (bits[offset+9]==true) b=b+4;
+		if (bits[offset+10]==true) b=b+2;
+		if (bits[offset+11]==true) b++;
+		return b;
+	}		
+
+	// Return an 9 bit byte from a boolean array
+	public int retNine (boolean bits[],int offset)	{
+		int b=0;
+		if (bits[offset]==true) b=256;
+		if (bits[offset+1]==true) b=b+128;
+		if (bits[offset+2]==true) b=b+64;
+		if (bits[offset+3]==true) b=b+32;
+		if (bits[offset+4]==true) b=b+16;
+		if (bits[offset+5]==true) b=b+8;
+		if (bits[offset+6]==true) b=b+4;
+		if (bits[offset+7]==true) b=b+2;
+		if (bits[offset+7]==true) b++;
+		return b;
+	}		
+	
 	// Return an 8 bit byte from a boolean array
 	public int retEight (boolean bits[],int offset)	{
 		int b=0;
@@ -76,6 +109,17 @@ public class Utilities {
 		return b;
 	}
 	
+	// Return a 5 bit byte from a boolean array
+	public int retFive (boolean bits[],int offset)	{
+		int b=0;
+		if (bits[offset]==true) b=16;
+		if (bits[offset+1]==true) b=b+8;
+		if (bits[offset+2]==true) b=b+4;
+		if (bits[offset+3]==true) b=b+2;
+		if (bits[offset+4]==true) b++;
+		return b;
+	}	
+	
 	// Return a 4 bit byte from a boolean array
 	public int retFour (boolean bits[],int offset)	{
 		int b=0;
@@ -85,5 +129,14 @@ public class Utilities {
 		if (bits[offset+3]==true) b++;
 		return b;
 	}	
+	
+	// Return a 3 bit byte from a boolean array
+	public int retThree (boolean bits[],int offset)	{
+		int b=0;
+		if (bits[offset]==true) b=4;
+		if (bits[offset+1]==true) b=b+2;
+		if (bits[offset+2]==true) b++;
+		return b;
+	}		
 	
 }
