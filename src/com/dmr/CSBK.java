@@ -447,7 +447,7 @@ public class CSBK {
 	
 	// CSBKO 40 FID 00 C_BCAST
 	// Bits 16,17,18,19,20 Announcement type
-	// 21,22,23,24,25,26,27,28,29,30,31,32,33,34 Broadcast Parms 1
+	// 21 - 34 Broadcast Parms 1
 	// 35 Reg
 	// 36,37,38,39 Backoff
 	// 40 - 55 System ID
@@ -464,16 +464,144 @@ public class CSBK {
 		if (bits[18]==true) at=at+4;
 		if (bits[19]==true) at=at+2;
 		if (bits[20]==true) at++;
-		if (at==0) aType="Ann-WD_TSCC (Announce/Withdraw TSCC)";
-		else if (at==1) aType="CallTimer_Parms (Specify Call Timer Parameters)";
-		else if (at==2) aType="Vote_Now (Vote Now Advice)";
-		else if (at==3) aType="Local_Time (Broadcast Local Time)";
-		else if (at==4) aType="MassReg (Mass_Registration)";
-		else if (at==5) aType="Chan_Freq (Announce a logical channel/frequency relationship)";
-		else if (at==6) aType="Adjacent_Site (Adjacent Site Information)";
+		if (at==0)	{
+			aType="Ann-WD_TSCC (Announce/Withdraw TSCC)";
+			// Parms 1
+			// Bits 21,22,23,24 are reserved
+			int col_ch1=utils.retFour(bits,25);
+			int col_ch2=utils.retFour(bits,29);
+			boolean aw_flag1=bits[33];
+			boolean aw_flag2=bits[34];
+			// Parms 2
+			int bcast_ch1=utils.retTwelve(bits,56);
+			// T_MS-LINE_TIMER
+			int bcast_ch2=utils.retTwelve(bits,68);
+			// Display
+			if (aw_flag1==true)	sb1.append("Withdraw BCAST_CH1 (Colour Code "+Integer.toString(col_ch1)+") from the hunt list : ");
+			else sb1.append("Add BCAST_CH1 (Colour Code "+Integer.toString(col_ch1)+") from the hunt list : ");
+			if (aw_flag2==true)	sb1.append("Withdraw BCAST_CH2 (Colour Code "+Integer.toString(col_ch2)+") from the hunt list : ");
+			else sb1.append("Add BCAST_CH2 (Colour Code "+Integer.toString(col_ch2)+") from the hunt list : ");
+			sb2.append("BCAST_CH1="+Integer.toString(bcast_ch1));
+			sb2.append(" : BCAST_CH2="+Integer.toString(bcast_ch2));
+			display[1]=sb1.toString();
+			display[2]=sb2.toString();
+		}
+		else if (at==1)	{
+			aType="CallTimer_Parms (Specify Call Timer Parameters)";
+			// Parms 1
+			// T_EMERG_TIMER
+			int t_emerg_timer=utils.retNine(bits,21);
+			// T_PACKET_TIMER
+			int t_packet_timer=utils.retFive(bits,30);
+			// Parms 2
+			// T_MS-MS_TIMER
+			int t_ms_ms_timer=utils.retTwelve(bits,56);
+			// T_MS-LINE_TIMER
+			int t_ms_line_timer=utils.retTwelve(bits,68);
+			// Display these
+			if (t_emerg_timer==512)	{
+				sb1.append("Emergency Call Timer is Infinity : ");
+			}
+			else	{
+				sb1.append("T_EMERG_TIMER="+Integer.toString(t_emerg_timer)+" : ");
+			}
+			if (t_packet_timer==31)	{
+				sb1.append("Packet Call Timer is Infinity : ");
+			}
+			else	{
+				sb1.append("T_PACKET_TIMER="+Integer.toString(t_packet_timer)+" : ");
+			}
+			if (t_ms_ms_timer==4095)	{
+				sb1.append("MS to MS Call Timer is Infinity : ");
+			}
+			else	{
+				sb1.append("T_MS-MS_TIMER="+Integer.toString(t_ms_ms_timer)+" : ");
+			}
+			if (t_ms_line_timer==4095)	{
+				sb1.append("Line Connected Call Timer is Infinity");
+			}
+			else	{
+				sb1.append("T_MS-LINE_TIMER="+Integer.toString(t_ms_line_timer)+" : ");
+			}			
+			display[1]=sb1.toString();
+		}
+		else if (at==2)	{
+			aType="Vote_Now (Vote Now Advice)";
+			// Parms1 contains the most significant 14 bits of the TSCC system identity
+			// Parms2
+			// Bits 56,57 least significant 2 bits of TSCC system identity is 'Manufacturer Specific' VN_ACTION option selected
+			// Bit 58 active connection
+			// Bits 59,60,61,62,63,64 Reserved
+			// Site_Strategy
+			int site_strat=utils.retThree(bits,65);
+			if (site_strat==0) sb1.append("Radio Site : ");
+			else if (site_strat==1) sb1.append("Infill : ");
+			else if (site_strat==2) sb1.append("Manufacturer specific strategy : ");
+			else sb1.append("Reserved : ");
+			// CH_VOTE
+			int ch_vote=utils.retTwelve(bits,68);
+			sb1.append("CH_VOTE is "+Integer.toString(ch_vote));
+			display[1]=sb1.toString();
+		}
+		else if (at==3)	{
+			aType="Local_Time (Broadcast Local Time)";
+			// Parms 1
+			// B_DAY 
+			int b_day=utils.retFive(bits,21);
+			// B_MONTH 
+			int b_month=utils.retFour(bits,25);
+			// UTC_OFFSET
+			int utc_offset=utils.retFive(bits,30);
+			// Check there is a date
+			if ((b_day>0)&&(b_month>0))	{
+				sb1.append("Date "+Integer.toString(b_day)+"/"+Integer.toString(b_month)+" ");
+				if (utc_offset==31) sb1.append("UTC Offset is "+Integer.toString(utc_offset)+" hours ");
+			}
+			// Parms 2
+			// B_HOURS
+			int b_hours=utils.retFive(bits,56);
+			// B_MINS
+			int b_mins=utils.retSix(bits,61);
+			// B_SECS
+			int b_secs=utils.retSix(bits,67);
+			// DAYOF_WEEK
+			int dayof_week=utils.retThree(bits,73);
+			// UTC_OFFSET_FRACTION
+			int utc_offset_fraction=0;
+			if (bits[74]==true) utc_offset_fraction=2;
+			if (bits[75]==true) utc_offset_fraction++;
+			// 76,77,78,79 Reserved
+			if (dayof_week==1) sb1.append("Sunday ");
+			else if (dayof_week==2) sb1.append("Monday ");
+			else if (dayof_week==3) sb1.append("Tuesday ");
+			else if (dayof_week==4) sb1.append("Wednesday ");
+			else if (dayof_week==5) sb1.append("Thursday ");
+			else if (dayof_week==6) sb1.append("Friday ");
+			else if (dayof_week==7) sb1.append("Saturday ");
+			if (b_hours<10) sb1.append("0");
+			sb1.append(Integer.toString(b_hours)+":");
+			if (b_mins<10) sb1.append("0");
+			sb1.append(Integer.toString(b_mins)+":");
+			if (b_secs<10) sb1.append("0");
+			sb1.append(Integer.toString(b_secs));
+			
+			// TODO : Display the UTC_OFFSET_FRACTION
+			
+		}
+		else if (at==4)	{
+			aType="MassReg (Mass_Registration)";
+		}
+		else if (at==5)	{
+			aType="Chan_Freq (Announce a logical channel/frequency relationship)";
+		}
+		else if (at==6)	{
+			aType="Adjacent_Site (Adjacent Site Information)";
+		}
 		else if ((at==30)||(at==31)) aType="Manufacturer Specific";
 		else aType="Reserved";
-		display[0]="C_BCAST : CSBKO=40 + FID=0 "+aType;
+		// System Identity Code
+		int sysID=utils.retSixteen(bits,40);
+		display[0]="C_BCAST : CSBKO=40 + FID=0 : System ID="+Integer.toString(sysID)+" : "+aType;
 		
 		// TODO : Complete work on the C_BCAST PDU
 		
