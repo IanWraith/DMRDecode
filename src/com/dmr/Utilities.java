@@ -137,6 +137,30 @@ public class Utilities {
 		if (bits[offset+1]==true) b=b+2;
 		if (bits[offset+2]==true) b++;
 		return b;
-	}		
+	}	
+	
+	// Decode and display Service Options
+	public String decodeServiceOptions (boolean bits[],int offset)	{
+		int priority;
+		StringBuilder so=new StringBuilder(300);
+		so.append("Service Options : ");
+		// Emergency
+		if (bits[offset]==false) so.append("Non-emergency");
+		else so.append("Emergency");
+		// Privacy
+		if (bits[offset+1]==true) so.append("/Privacy Enabled");
+		// +2 and +3 are reserved bits
+		// +4 is Broadcast
+		if (bits[offset+4]==true) so.append("/Broadcast");
+		// +5 is OVCM
+		if (bits[offset+5]==true) so.append("/OVCM Call");
+		// 6 and 7 are priority
+		if (bits[offset+6]==true) priority=2;
+		else priority=0;
+		if (bits[offset+7]==true) priority++;
+		if (priority==0) so.append("/No priority");
+		else so.append("/Priority "+Integer.toString(priority));
+		return so.toString();
+	}
 	
 }
