@@ -76,6 +76,10 @@ public class CSBK {
 		else if ((csbko==40)&&(fid==0))	{
 			csbko40fid0(theApp,bits);
 		}
+		// 48 (FID 00) - PV_GRANT (Tier III)
+		else if ((csbko==48)&&(fid==0))	{
+			csbko48fid0(theApp,bits);
+		}
 		// 59 - Capacity Plus
 		else if ((csbko==59)&&(fid==16))	{
 			big_m_csbko59(theApp,bits);
@@ -781,5 +785,65 @@ public class CSBK {
 		// If there is any neighbour site info then display it
 		if (nNos>0) display[2]=sb2.toString();
 	}
+	
+	// PV_GRANT
+	// Bits ..
+	// 16,17,18,19,20,21,22,23,24,25,26,27 Logical Physical Channel Number
+	// 28 TDMA Channel
+	// 29 OVCM
+	// 30 Emergency
+	// 31 Offset
+	// 32 - 55 Target Address
+	// 56 - 79 Source Address
+	void csbko48fid0 (DMRDecode theApp,boolean bits[])	{
+		int index;
+		Utilities utils=new Utilities();
+		StringBuilder sb1=new StringBuilder(250);
+		StringBuilder sb2=new StringBuilder(250);
+		display[0]="Private Voice Channel Grant";
+		// Logical Physical Channel Number
+		int lchannel=utils.retTwelve(bits,16);
+		sb1.append("Payload Channel "+Integer.toString(lchannel));
+		if (bits[28]==false) sb1.append(" TDMA ch1 ");
+		else sb1.append(" TDMA ch2 ");
+		if (bits[29]==true) sb1.append(": OVCM Call ");
+		if (bits[30]==true) sb1.append(": Emergency Call ");
+		if (bits[31]==false) sb1.append(": Aligned Timing");
+		else sb1.append(": Offset Timing");
+		display[1]=sb1.toString();
+		// Target address
+		int target=utils.retAddress(bits,32);
+		// Source address
+		int source=utils.retAddress(bits,56);
+		sb2.append("Target Address : "+Integer.toString(target));
+		sb2.append(" Source Address : "+Integer.toString(source));
+		display[2]=sb2.toString();
+		// Log these users
+		// Target
+		theApp.usersLogged.addUser(target);	
+		index=theApp.usersLogged.findUserIndex(target);
+		if (index!=-1)	{
+			theApp.usersLogged.setAsUnitUser(index);
+			theApp.usersLogged.setChannel(index,lchannel);
+		}
+		// Source
+		theApp.usersLogged.addUser(source);
+		index=theApp.usersLogged.findUserIndex(source);
+		if (index!=-1)	{
+			theApp.usersLogged.setAsUnitUser(index);
+			theApp.usersLogged.setChannel(index,lchannel);
+		}
+		// Display this in a label on the status bar
+		StringBuilder lab=new StringBuilder(250);
+		lab.append("PV_GRANT from ");
+		lab.append(Integer.toString(source));
+		lab.append(" to ");
+		lab.append(Integer.toString(target));
+		if (theApp.currentChannel==1) theApp.setCh1Label(lab.toString(),theApp.labelBusyColour);
+		else theApp.setCh2Label(lab.toString(),theApp.labelBusyColour);
+		// Quick log
+		if (theApp.isQuickLog()==true) theApp.quickLogData("Private Voice Channel Grant",target,source,lchannel,display[1]);
+	}
+		
 	
 }
