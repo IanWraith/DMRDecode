@@ -584,27 +584,77 @@ public class CSBK {
 			sb1.append(Integer.toString(b_mins)+":");
 			if (b_secs<10) sb1.append("0");
 			sb1.append(Integer.toString(b_secs));
-			
-			// TODO : Display the UTC_OFFSET_FRACTION
-			
+			if (utc_offset_fraction==1) sb1.append(" (Add 15 mins)");
+			else if (utc_offset_fraction==1) sb1.append(" (Add 30 mins)");
+			else if (utc_offset_fraction==2) sb1.append(" (Add 45 mins)");
+			display[1]=sb1.toString();
 		}
 		else if (at==4)	{
 			aType="MassReg (Mass_Registration)";
+			// Parms 1
+			// 21,22,23,24,25 Reserved
+			// Reg_Window
+			int reg_window=utils.retFour(bits,26);
+			// Aloha Mask
+			int aloha_mask=utils.retFive(bits,30);
+			// Parms 2
+			int ms_individual_address=utils.retAddress(bits,26);
+			// Display this
+			sb1.append("Reg_Window="+Integer.toString(reg_window)+" : Aloha Mask="+Integer.toString(aloha_mask)+" : MS Individual Address "+Integer.toString(ms_individual_address));
+			display[1]=sb1.toString();
 		}
 		else if (at==5)	{
 			aType="Chan_Freq (Announce a logical channel/frequency relationship)";
+			// Nothing describing this is in ETSI TS 102 361-4 V1.5.1 so just show binary parms 1 & 2 instead
+			int a;
+			for (a=21;a<35;a++)	{
+				if (bits[a]==false) sb1.append("0");
+				else sb1.append("1");
+			}
+			sb1.append(" ");
+			for (a=56;a<80;a++)	{
+				if (bits[a]==false) sb1.append("0");
+				else sb1.append("1");
+			}		
+			display[1]=sb1.toString();
 		}
 		else if (at==6)	{
 			aType="Adjacent_Site (Adjacent Site Information)";
+			// Parms1 contains the most significant 14 bits of the TSCC system identity
+			// Parms2
+			// Bits 56,57 least significant 2 bits of TSCC system identity is 'Manufacturer Specific' VN_ACTION option selected
+			// Bit 58 active connection
+			// Bits 59,60,61,62,63,64 Reserved
+			// Site_Strategy
+			int site_strat=utils.retThree(bits,65);
+			if (site_strat==0) sb1.append("Radio Site : ");
+			else if (site_strat==1) sb1.append("Infill : ");
+			else if (site_strat==2) sb1.append("Manufacturer specific strategy : ");
+			else sb1.append("Reserved : ");
+			// CH_ADJ
+			int ch_adj=utils.retTwelve(bits,68);
+			sb1.append("CH_ADJ "+Integer.toString(ch_adj));
+			display[1]=sb1.toString();
 		}
-		else if ((at==30)||(at==31)) aType="Manufacturer Specific";
-		else aType="Reserved";
+		else if ((at==30)||(at==31))	{
+			aType="Manufacturer Specific ("+Integer.toString(at)+")";
+			// Display the parms binary
+			int a;
+			for (a=21;a<35;a++)	{
+				if (bits[a]==false) sb1.append("0");
+				else sb1.append("1");
+			}
+			sb1.append(" ");
+			for (a=56;a<80;a++)	{
+				if (bits[a]==false) sb1.append("0");
+				else sb1.append("1");
+			}		
+			display[1]=sb1.toString();			
+		}
+		else aType="Reserved ("+Integer.toString(at)+")";
 		// System Identity Code
 		int sysID=utils.retSixteen(bits,40);
 		display[0]="C_BCAST : CSBKO=40 + FID=0 : System ID="+Integer.toString(sysID)+" : "+aType;
-		
-		// TODO : Complete work on the C_BCAST PDU
-		
 	}	
 	
 
