@@ -1102,6 +1102,39 @@ public class CSBK {
 		// Quick log
 		if (theApp.isQuickLog()==true) theApp.quickLogData("Talkgroup Data Channel Grant",target,source,lchannel,display[1]);
 	}	
+	
+	// C_MOVE
+	// Bits ..
+	// 16,17,18,19,20,21,22,23,24 Reserved
+	// 25,26,27,28,29 Mask
+	// 30,31,32,33,34 Reserved
+	// 35 Reg
+	// 36,37,38,39 Backoff
+	// 40,41,42,43 Reserved
+	// 44 - 55 Physical Channel Number
+	// 56 - 79 MS Individual Address
+	void csbko57fid0 (DMRDecode theApp,boolean bits[])	{
+		Utilities utils=new Utilities();
+		StringBuilder sb1=new StringBuilder(250);
+		StringBuilder sb2=new StringBuilder(250);
+		display[0]="C_MOVE : CSBKO=57 + FID=0";
+		// Mask
+		int mask=utils.retFive(bits,25);
+		sb1.append("Mask="+Integer.toString(mask)+" : ");
+		// Reg
+		if (bits[35]==true) sb1.append("TSCC demands MS must register : ");
+	    // Backoff
+		int backoff=utils.retFour(bits,36);
+		sb1.append("Backoff="+Integer.toString(backoff));
+		display[1]=sb1.toString();
+		// Physical Channel Number
+		int chanNo=utils.retTwelve(bits,44);
+		sb2.append("Physical Channel Number "+Integer.toString(chanNo)+" : ");
+		// MS Individual Address
+		int msi=utils.retAddress(bits,56);
+		sb2.append("MS Individual Address "+Integer.toString(msi));
+		display[2]=sb2.toString();
+	}
 		
 	
 }
