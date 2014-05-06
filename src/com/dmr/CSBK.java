@@ -54,6 +54,10 @@ public class CSBK {
 		else if ((csbko==25)&&(fid==0))	{
 			csbko25fid0(theApp,bits);
 		}
+		// 28 (FID 00) - AHOY (Tier III)
+		else if ((csbko==28)&&(fid==0))	{
+			csbko28fid0(theApp,bits);
+		}		
 		// 31 (FID 16) - Call Alert 
 		// Note in Tier III that CSBKO=31 is C_RAND but only inbound also FID=0 
 		else if ((csbko==31)&&(fid==16))	{
@@ -476,6 +480,89 @@ public class CSBK {
 		display[2]=sb2.toString();
 	}
 	
+	// C_AHOY
+	// Bits
+	// 16,17,18,19,20,21,22 Service_Options_Mirror
+	// 23 Service_Kind_Flag
+	// 24 Ambient Listening Service
+	// 25 IG
+	// 26,27 Appended Blocks
+	// 28,29,30,31 Service_Kind
+	// 32 - 55 Target Address
+	// 56 - 79 Source Address
+	private void csbko28fid0 (DMRDecode theApp,boolean bits[])	{
+		int index;
+		StringBuilder sb1=new StringBuilder(300);
+		StringBuilder sb2=new StringBuilder(300);
+		Utilities utils=new Utilities();
+		// Service_Options_Mirror
+		int service_options_mirror=utils.retSeven(bits,16);
+		// Service_Kind_Flag
+		boolean service_kind_flag=bits[23];
+		// Ambient Listening Service
+		boolean ambient_listening_service=bits[24];
+		// IG
+		boolean ig=bits[25];
+		// Appended Blocks
+		int appended_blocks=0;
+		if (bits[26]==true) appended_blocks=2;
+		if (bits[27]==true) appended_blocks++;
+		// Service_Kind
+		String service_kind;
+		int sk=utils.retFour(bits,28);
+		if (sk==0) service_kind="Individual Voice Call Service";
+		else if (sk==1) service_kind="Talkgroup Voice Call Service";
+		else if (sk==2) service_kind="Individual Packet Data Call Service";
+		else if (sk==3) service_kind="Packet Data Call Service to a talkgroup";
+		else if (sk==4) service_kind="Individual Short Data Call Service";
+		else if (sk==5) service_kind="Talkgroup Short Data Call Service";
+		else if (sk==6) service_kind="Short Data Polling Service";
+		else if (sk==7) service_kind="Status Transport Service";
+		else if (sk==8) service_kind="Call Diversion Service";
+		else if (sk==9) service_kind="Call Answer Service";
+		else if (sk==13) service_kind="Supplementary Service";
+		else if (sk==14) service_kind="Registration/Authentication Service/MS Radio Check";
+		else if (sk==15) service_kind="Cancel Call Service";
+		else service_kind="Reserved";
+		// Target address
+		int targetAddr=utils.retAddress(bits,32);
+		// Source address
+		int sourceAddr=utils.retAddress(bits,56);
+		// Display
+		display[0]="C_AHOY : CSBKO=28 + FID=0 : "+service_kind;
+		if (ambient_listening_service==true) display[0]=display[0]+" : ALS Requested : ";
+		if (appended_blocks>0) display[0]=display[0]+Integer.toString(appended_blocks)+" Blocks Appended : ";
+		display[0]=display[0]+"SOM="+Integer.toString(service_options_mirror);
+		if (service_kind_flag==true) display[0]=display[0]+" : SKF=1";
+		else display[0]=display[0]+" : SKF=0";
+		sb1.append("Target : ");
+		if (targetAddr==0xFFFECC) sb1.append("STUNI");
+		else if (targetAddr==0xFFFECF) sb1.append("KILLII");
+		else if (targetAddr==0xFFFECD) sb1.append("AUTHI");
+		else sb1.append(Integer.toString(targetAddr));
+		if (ig==true) sb1.append (" (TG)");
+		display[1]=sb1.toString();
+		sb2.append("Source : ");
+		if (sourceAddr==0xFFFECC) sb2.append("STUNI");
+		else if (sourceAddr==0xFFFECF) sb2.append("KILLII");
+		else if (sourceAddr==0xFFFECD) sb2.append("AUTHI");
+		else sb2.append(Integer.toString(sourceAddr));
+		display[2]=sb2.toString();
+		// Record this
+		// Log these users
+		// Target
+		if (targetAddr<0xFFFEC0)	{
+			theApp.usersLogged.addUser(targetAddr);	
+			index=theApp.usersLogged.findUserIndex(targetAddr);
+			if (index!=-1) { 
+				if (ig==true) theApp.usersLogged.setAsGroup(index);
+			}
+		}
+		// Source
+		if (sourceAddr<0xFFFEC0) theApp.usersLogged.addUser(sourceAddr);
+	}
+	
+	
 	// CSBKO 40 FID 00 C_BCAST
 	// Bits 16,17,18,19,20 Announcement type
 	// 21 - 34 Broadcast Parms 1
@@ -827,7 +914,7 @@ public class CSBK {
 		StringBuilder sb2=new StringBuilder(250);
 		// Logical channel number
 		int lochan=utils.retTwelve(bits,16);
-		display[0]="P_Clear from channel "+Integer.toString(lochan);
+		display[0]="P_Clear : CSBKO=46 + FID=0 from channel "+Integer.toString(lochan);
 		// IG
 		boolean ig=bits[31];
 		// Target address
@@ -884,7 +971,7 @@ public class CSBK {
 		else if (pk==1) protect_kind="EN_PTT (Enable Target MS or Talkgroup transmission)";
 		else if (pk==2) protect_kind="ILLEGALLY_PARKED (Clear down from the payload channel, MS whose address does not match Source or Target Address)";
 		else protect_kind="Reserved";
-		display[0]="P_PROTECT : "+protect_kind;
+		display[0]="P_PROTECT : CSBKO=47 + FID=0 : "+protect_kind;
 		// IG
 		boolean ig=bits[31];
 		// Target address
@@ -936,7 +1023,7 @@ public class CSBK {
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
 		StringBuilder sb2=new StringBuilder(250);
-		display[0]="Private Voice Channel Grant";
+		display[0]="Private Voice Channel Grant : CSBKO=48 + FID=0";
 		// Logical Physical Channel Number
 		int lchannel=utils.retTwelve(bits,16);
 		sb1.append("Payload Channel "+Integer.toString(lchannel));
@@ -995,7 +1082,7 @@ public class CSBK {
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
 		StringBuilder sb2=new StringBuilder(250);
-		display[0]="Talkgroup Voice Channel Grant";
+		display[0]="Talkgroup Voice Channel Grant : CSBKO=49 + FID=0";
 		// Logical Physical Channel Number
 		int lchannel=utils.retTwelve(bits,16);
 		sb1.append("Payload Channel "+Integer.toString(lchannel));
@@ -1054,7 +1141,7 @@ public class CSBK {
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
 		StringBuilder sb2=new StringBuilder(250);
-		display[0]="Broadcast Talkgroup Voice Channel Grant";
+		display[0]="Broadcast Talkgroup Voice Channel Grant : CSBKO=50 + FID=0";
 		// Logical Physical Channel Number
 		int lchannel=utils.retTwelve(bits,16);
 		sb1.append("Payload Channel "+Integer.toString(lchannel));
@@ -1113,7 +1200,7 @@ public class CSBK {
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
 		StringBuilder sb2=new StringBuilder(250);
-		display[0]="Private Data Channel Grant";
+		display[0]="Private Data Channel Grant : CSBKO=51 + FID=0";
 		// Logical Physical Channel Number
 		int lchannel=utils.retTwelve(bits,16);
 		sb1.append("Payload Channel "+Integer.toString(lchannel));
@@ -1173,7 +1260,7 @@ public class CSBK {
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
 		StringBuilder sb2=new StringBuilder(250);
-		display[0]="Talkgroup Data Channel Grant";
+		display[0]="Talkgroup Data Channel Grant : CSBKO=52 + FID=0";
 		// Logical Physical Channel Number
 		int lchannel=utils.retTwelve(bits,16);
 		sb1.append("Payload Channel "+Integer.toString(lchannel));
