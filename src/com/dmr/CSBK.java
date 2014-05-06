@@ -60,7 +60,6 @@ public class CSBK {
 			csbko31fid16(theApp,bits);
 		}
 		// 32 (FID 16) - Call Alert Ack
-		// Note in Tier III that CSBKO=32 is C/P_ACKD but also FID=0
 		else if ((csbko==32)&&(fid==16))	{
 			csbko32fid16(theApp,bits);
 		}
@@ -80,6 +79,10 @@ public class CSBK {
 		else if ((csbko==46)&&(fid==0))	{
 			csbko46fid0(theApp,bits);
 		}
+		// 47 (FID 00) - P_PROTECT (Tier III)
+		else if ((csbko==47)&&(fid==0))	{
+			csbko47fid0(theApp,bits);
+		}		
 		// 48 (FID 00) - PV_GRANT (Tier III)
 		else if ((csbko==48)&&(fid==0))	{
 			csbko48fid0(theApp,bits);
@@ -843,6 +846,7 @@ public class CSBK {
 		// Source Address
 		int sourceAddr=utils.retAddress(bits,56);
 		sb2.append("Source Address "+Integer.toString(sourceAddr));
+		display[2]=sb2.toString();
 		// Record this
 		// Log these users
 		// Target
@@ -859,6 +863,62 @@ public class CSBK {
 		index=theApp.usersLogged.findUserIndex(sourceAddr);
 		// Quick log
 		if (theApp.isQuickLog()==true) theApp.quickLogData("P_CLEAR",targetAddr,sourceAddr,lochan,"");
+	}
+	
+	// P_PROTECT
+	// bits
+	// 16,17,18,19,20,21,22,23,24,25,26,27 Reserved
+	// 28,29,30 Protect_Kind
+	// 31 IG
+	// 32 - 55 Target Address
+	// 56 - 79 Source Address
+	void csbko47fid0 (DMRDecode theApp,boolean bits[])	{
+		int index;
+		Utilities utils=new Utilities();
+		StringBuilder sb1=new StringBuilder(250);
+		StringBuilder sb2=new StringBuilder(250);
+		// Protect_Kind
+		String protect_kind;
+		int pk=utils.retThree(bits,28);
+		if (pk==0) protect_kind="DIS_PTT (Disable Target MS or Talkgroup transmission)";
+		else if (pk==1) protect_kind="EN_PTT (Enable Target MS or Talkgroup transmission)";
+		else if (pk==2) protect_kind="ILLEGALLY_PARKED (Clear down from the payload channel, MS whose address does not match Source or Target Address)";
+		else protect_kind="Reserved";
+		display[0]="P_PROTECT : "+protect_kind;
+		// IG
+		boolean ig=bits[31];
+		// Target address
+		int targetAddr=utils.retAddress(bits,32);
+		// Display this
+		// Is this an ALLMSI
+		if (targetAddr==0xFFFED4)	{
+			sb1.append("Target : ALLMSI");
+		}
+		else	{
+			if (ig==true) sb1.append("Target TG :");
+			else sb1.append("Target : ");
+			sb1.append(Integer.toString(targetAddr));
+		}
+		display[1]=sb1.toString();
+		// Source Address
+		int sourceAddr=utils.retAddress(bits,56);
+		sb2.append("Source Address "+Integer.toString(sourceAddr));
+		display[2]=sb2.toString();
+		// Record this
+		// Log these users
+		// Target
+		if (targetAddr!=0xFFFED4)	{
+			theApp.usersLogged.addUser(targetAddr);	
+			index=theApp.usersLogged.findUserIndex(targetAddr);
+			if (index!=-1)	{
+				if (ig==true) theApp.usersLogged.setAsGroup(index);
+			}
+		}
+		// Source
+		theApp.usersLogged.addUser(sourceAddr);
+		index=theApp.usersLogged.findUserIndex(sourceAddr);
+		// Quick log
+		if (theApp.isQuickLog()==true) theApp.quickLogData("P_PROTECT",targetAddr,sourceAddr,0,protect_kind);	
 	}
 	
 	
