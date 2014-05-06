@@ -97,6 +97,19 @@ public class Utilities {
 		return b;
 	}
 	
+	// Return an 7 bit byte from a boolean array
+	public int retSeven (boolean bits[],int offset)	{
+		int b=0;
+		if (bits[offset]==true) b=64;
+		if (bits[offset+1]==true) b=b+32;
+		if (bits[offset+2]==true) b=b+16;
+		if (bits[offset+3]==true) b=b+8;
+		if (bits[offset+4]==true) b=b+4;
+		if (bits[offset+5]==true) b=b+2;
+		if (bits[offset+6]==true) b++;
+		return b;
+	}	
+	
 	// Return a 6 bit byte from a boolean array
 	public int retSix (boolean bits[],int offset)	{
 		int b=0;
