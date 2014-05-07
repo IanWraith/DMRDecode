@@ -829,9 +829,19 @@ public class CSBK {
 		else sb1.append("MS to TS : ");
 		int ar=reason_code&31;
 		sb1.append(getAckReason(rc_t,ar));
-		
-		// TODO : Complete work on csbko32fid0()
-		
+		display[1]=sb1.toString();
+		// Target address
+		int target=utils.retAddress(bits,32);
+		// Source address
+		int source=utils.retAddress(bits,56);
+		sb2.append("Target Address : "+Integer.toString(target));
+		sb2.append(" Source Address : "+Integer.toString(source));
+		display[2]=sb2.toString();
+		// Log these users
+		// Target
+		theApp.usersLogged.addUser(target);	
+		// Source
+		theApp.usersLogged.addUser(source);
 	}
 	
 	// CSBKO 32 FID 16 Call Alert Ack
@@ -1391,18 +1401,36 @@ public class CSBK {
 		else if (ack_type==0)	{
 			if (ack_num==0b00100000) return "Not_Supported";
 			else if (ack_num==0b00100001) return "Perm_User_Refused";
-			else if (ack_num=0b00100010) return "Temp_User_Refused";
-			else if (ack_num=0b) return "";
+			else if (ack_num==0b00100010) return "Temp_User_Refused";
+			else if (ack_num==0b00100011) return "Transient_Sys_Refused";
+			else if (ack_num==0b00100100) return "NoregMSaway_Refused";
+			else if (ack_num==0b00100101) return "MSaway_Refused";
+			else if (ack_num==0b00100110) return "Div_Cause_Fail";
+			else if (ack_num==0b00100111) return "SYSbusy_Refused";
+			else if (ack_num==0b00101000) return "SYS_NotReady";
+			else if (ack_num==0b00101001) return "Call_Cancel_Refused";
+			else if (ack_num==0b00101010) return "Reg_Refused";
+			else if (ack_num==0b00101011) return "Reg_Denied";
+			else if (ack_num==0b00101100) return "IP_Connection_failed";
+			else if (ack_num==0b00101101) return "MS_Not_Registered";
+			else if (ack_num==0b00101110) return "Called_Party_Busy";
+			else if (ack_num==0b00000000) return "MSNot_Supported";
+			else if (ack_num==0b00010001) return "LineNot_Supported";
+			else if (ack_num==0b00010010) return "StackFull_Refused";			
+			else if (ack_num==0b00010011) return "EuipBusy_Refused";
+			else if (ack_num==0b00010100) return "Recipient_Refused";
+			else if (ack_num==0b00010101) return "Custom_Refused";
 		}
 		// QACK
 		else if (ack_type==2)	{
-			
+			if (ack_num==0b10100000) return "Queued-for-resource";
+			else if (ack_num==0b10100001) return "Queued-for-busy";
 		}
 		// WACK
 		else if (ack_type==3)	{
-			
+			if (ack_num==0b11100000) return "Wait";
 		}
-		return "Unknown : at="+Integer.toString(ack_type)+" : ack_num="+Integer.toString(ack_num);
+		return "Unknown (at="+Integer.toString(ack_type)+" + ack_num="+Integer.toString(ack_num)+")";
 	}
 		
 	
