@@ -63,6 +63,10 @@ public class CSBK {
 		else if ((csbko==31)&&(fid==16))	{
 			csbko31fid16(theApp,bits);
 		}
+		// 32 (FID 00) - C_ACKD (Tier III)
+		else if ((csbko==32)&&(fid==0))	{
+			csbko32fid0(theApp,bits);
+		}
 		// 32 (FID 16) - Call Alert Ack
 		else if ((csbko==32)&&(fid==16))	{
 			csbko32fid16(theApp,bits);
@@ -800,6 +804,36 @@ public class CSBK {
 		display[1]=sb1.toString();	
 	}
 	
+	// C_ACKD
+	// Bits ..
+	// 16,17,18,19,20,21,22 Response_Info
+	// 23,24,25,26,27,28,29,30 Reason Code
+	// 31 Reserved
+	// 32 - 55 Target Address
+	// 56 - 79 Source Address
+	private void csbko32fid0 (DMRDecode theApp,boolean bits[])	{
+		Utilities utils=new Utilities();
+		StringBuilder sb1=new StringBuilder(250);
+		StringBuilder sb2=new StringBuilder(250);
+		// Response_Info
+		int response_info=utils.retSeven(bits,16);
+		display[0]="C_ACKD : CSBKO=32 + FID=0 : Response_Info="+Integer.toString(response_info);
+		// Reason Code
+		int reason_code=utils.retEight(bits,23);
+		int rc_t=(reason_code&192)>>6;
+		if (rc_t==0) sb1.append("NACK : ");
+		else if (rc_t==1) sb1.append("ACK : ");
+		else if (rc_t==2) sb1.append("QACK : ");
+		else if (rc_t==3) sb1.append("WACK : ");
+		if ((reason_code&32)>0) sb1.append("TS to MS : ");
+		else sb1.append("MS to TS : ");
+		int ar=reason_code&31;
+		sb1.append(getAckReason(rc_t,ar));
+		
+		// TODO : Complete work on csbko32fid0()
+		
+	}
+	
 	// CSBKO 32 FID 16 Call Alert Ack
 	// The information to decode this was kindly provided by bben95 on the Radioreference forums
 	// http://forums.radioreference.com/digital-voice-decoding-software/191957-java-program-decode-dmr-31.html#post2098983
@@ -907,7 +941,7 @@ public class CSBK {
 	// 31 IG
 	// 32 - 55 Target Address
 	// 56 - 79 Source Address
-	void csbko46fid0 (DMRDecode theApp,boolean bits[])	{
+	private void csbko46fid0 (DMRDecode theApp,boolean bits[])	{
 		int index;
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
@@ -959,7 +993,7 @@ public class CSBK {
 	// 31 IG
 	// 32 - 55 Target Address
 	// 56 - 79 Source Address
-	void csbko47fid0 (DMRDecode theApp,boolean bits[])	{
+	private void csbko47fid0 (DMRDecode theApp,boolean bits[])	{
 		int index;
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
@@ -1018,7 +1052,7 @@ public class CSBK {
 	// 31 Offset
 	// 32 - 55 Target Address
 	// 56 - 79 Source Address
-	void csbko48fid0 (DMRDecode theApp,boolean bits[])	{
+	private void csbko48fid0 (DMRDecode theApp,boolean bits[])	{
 		int index;
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
@@ -1077,7 +1111,7 @@ public class CSBK {
 	// 31 Offset
 	// 32 - 55 Target Address
 	// 56 - 79 Source Address
-	void csbko49fid0 (DMRDecode theApp,boolean bits[])	{
+	private void csbko49fid0 (DMRDecode theApp,boolean bits[])	{
 		int index;
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
@@ -1136,7 +1170,7 @@ public class CSBK {
 	// 31 Offset
 	// 32 - 55 Target Address
 	// 56 - 79 Source Address
-	void csbko50fid0 (DMRDecode theApp,boolean bits[])	{
+	private void csbko50fid0 (DMRDecode theApp,boolean bits[])	{
 		int index;
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
@@ -1195,7 +1229,7 @@ public class CSBK {
 	// 31 Offset
 	// 32 - 55 Target Address
 	// 56 - 79 Source Address
-	void csbko51fid0 (DMRDecode theApp,boolean bits[])	{
+	private void csbko51fid0 (DMRDecode theApp,boolean bits[])	{
 		int index;
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
@@ -1255,7 +1289,7 @@ public class CSBK {
 	// 31 Offset
 	// 32 - 55 Target Address
 	// 56 - 79 Source Address
-	void csbko52fid0 (DMRDecode theApp,boolean bits[])	{
+	private void csbko52fid0 (DMRDecode theApp,boolean bits[])	{
 		int index;
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
@@ -1316,7 +1350,7 @@ public class CSBK {
 	// 40,41,42,43 Reserved
 	// 44 - 55 Physical Channel Number
 	// 56 - 79 MS Individual Address
-	void csbko57fid0 (DMRDecode theApp,boolean bits[])	{
+	private void csbko57fid0 (DMRDecode theApp,boolean bits[])	{
 		Utilities utils=new Utilities();
 		StringBuilder sb1=new StringBuilder(250);
 		StringBuilder sb2=new StringBuilder(250);
@@ -1337,6 +1371,38 @@ public class CSBK {
 		int msi=utils.retAddress(bits,56);
 		sb2.append("MS Individual Address "+Integer.toString(msi));
 		display[2]=sb2.toString();
+	}
+	
+	
+	// Return a ACK reason string
+	private String getAckReason (int ack_type,int ack_num)	{
+		// ACK
+		if (ack_type==1)	{
+			if (ack_num==0b01100000) return "Message_Accepted";
+			else if (ack_num==0b01100001) return "Store_Forward";
+			else if (ack_num==0b01100010) return "Reg_Accepted";
+			else if (ack_num==0b01100011) return "Accepted for the Status Polling Service";
+			else if (ack_num==0b01000100) return "MS_Accepted";
+			else if (ack_num==0b01000101) return "CallBack";
+			else if (ack_num==0b01000110) return "MS_ALERTING";
+			else if (ack_num==0b01000111) return "Accepted for the Status Polling Service";
+		}
+		// NACK
+		else if (ack_type==0)	{
+			if (ack_num==0b00100000) return "Not_Supported";
+			else if (ack_num==0b00100001) return "Perm_User_Refused";
+			else if (ack_num=0b00100010) return "Temp_User_Refused";
+			else if (ack_num=0b) return "";
+		}
+		// QACK
+		else if (ack_type==2)	{
+			
+		}
+		// WACK
+		else if (ack_type==3)	{
+			
+		}
+		return "Unknown : at="+Integer.toString(ack_type)+" : ack_num="+Integer.toString(ack_num);
 	}
 		
 	
