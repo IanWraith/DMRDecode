@@ -92,8 +92,8 @@ Build 72 - Fix bugs in the csbko31fid16() and csbko32fid16() methods were the to
 
 Build 73 - Add basic support for monitoring MS and Direct mode.
 
-Build 74 - Support the Tier III CSBKO=25 C_ALOHA PDU.
+Build 74 - The program now supports nearly all Tier III CSBKOs
       
-Ian Wraith (29th April 2014)
+Ian Wraith (8th May 2014)
 
 
