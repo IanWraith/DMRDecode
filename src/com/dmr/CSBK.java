@@ -54,12 +54,21 @@ public class CSBK {
 		else if ((csbko==25)&&(fid==0))	{
 			csbko25fid0(theApp,bits);
 		}
+		// TODO : Support CSBKO 26 (FID 00) - C_UDTHD (Tier III) PDU defined in ETSI TS 102 361-4 V1.5.1 (2013-02) but not as a CSBK !
+		// TODO : Support CSBKO 27 (FID 00) - C_UDTHU (Tier III) PDU defined in ETSI TS 102 361-4 V1.5.1 (2013-02) but not as a CSBK !
 		// 28 (FID 00) - AHOY (Tier III)
 		else if ((csbko==28)&&(fid==0))	{
 			csbko28fid0(theApp,bits);
+		}	
+		// 30 (FID 00) - C_ACKVIT (Tier III)
+		else if ((csbko==30)&&(fid==0))	{
+			csbko30fid0(theApp,bits);
+		}			
+		// 31 (FID 00) - C_RAND (Tier III)
+		else if ((csbko==31)&&(fid==0))	{
+			csbko31fid0(theApp,bits);
 		}		
 		// 31 (FID 16) - Call Alert 
-		// Note in Tier III that CSBKO=31 is C_RAND but only inbound also FID=0 
 		else if ((csbko==31)&&(fid==16))	{
 			csbko31fid16(theApp,bits);
 		}
@@ -71,6 +80,12 @@ public class CSBK {
 		else if ((csbko==32)&&(fid==16))	{
 			csbko32fid16(theApp,bits);
 		}
+		// 33 (FID 00) - C_ACKU (Tier III)
+		else if ((csbko==33)&&(fid==0))	{
+			csbko33fid0(theApp,bits);
+		}		
+		// TODO : Support CSBKO 34 (FID 00) - P_ACKD (Tier III)	PDU not defined in ETSI TS 102 361-4 V1.5.1 (2013-02)		
+		// TODO : Support CSBKO 35 (FID 00) - P_ACKU (Tier III) PDU not defined in ETSI TS 102 361-4 V1.5.1 (2013-02)			
 		// 36 (FID 16) - Radio Check
 		else if ((csbko==36)&&(fid==16))	{
 			csbko36fid16(theApp,bits);
@@ -83,6 +98,10 @@ public class CSBK {
 		else if ((csbko==40)&&(fid==0))	{
 			csbko40fid0(theApp,bits);
 		}
+		// 42 (FID 00) - P_MAINT (Tier III)
+		else if ((csbko==42)&&(fid==0))	{
+			csbko42fid0(theApp,bits);
+		}		
 		// 46 (FID 00) - P_CLEAR (Tier III)
 		else if ((csbko==46)&&(fid==0))	{
 			csbko46fid0(theApp,bits);
@@ -779,6 +798,98 @@ public class CSBK {
 		display[0]="C_BCAST : CSBKO=40 + FID=0 : System ID="+Integer.toString(sysID)+" : "+aType;
 	}	
 	
+	// C_ACKVIT
+	// Bits ..
+	// 16,17,18,19,20,21,22 Service_Options_Mirror
+	// 23 Service_Kind_Flag 
+	// 24,25 Reserved
+	// 26,27 Appended_Blocks
+	// 28,29,30,31 Service_Kind
+	// 32 - 55 Target Address
+	// 56 - 79 Source Address
+	private void csbko30fid0 (DMRDecode theApp,boolean bits[])	{
+		Utilities utils=new Utilities();
+		StringBuilder sb1=new StringBuilder(250);
+		StringBuilder sb2=new StringBuilder(250);
+		// Service Options Mirror
+		int service_options_mirror=utils.retSeven(bits,16);
+		display[0]="C_ACKVIT : CSBKO=30 + FID=0 : Service_Options_Mirror="+Integer.toString(service_options_mirror);
+		// Service_Kind_Flag
+		boolean skf=bits[23];
+		// Appended_Blocks
+		int ablocks=0;
+		if (bits[26]==true) ablocks=2;
+		if (bits[27]==true) ablocks++;
+		// Service_Kind
+		int service_kind=utils.retFour(bits,28);
+		// Display this
+		if (skf==true) sb1.append("Service_Kind_Flag=1 : ");
+		else sb1.append("Service_Kind_Flag=0 : ");
+		sb1.append("Appended_Blocks="+Integer.toString(ablocks)+" : ");
+		sb1.append("Service_Kind="+Integer.toString(service_kind));
+		display[1]=sb1.toString();
+		// Target address
+		int target=utils.retAddress(bits,32);
+		// Source address
+		int source=utils.retAddress(bits,56);
+		sb2.append("Target Address : "+Integer.toString(target));
+		sb2.append(" Source Address : "+Integer.toString(source));
+		display[2]=sb2.toString();
+		// Log these users
+		// Target
+		theApp.usersLogged.addUser(target);	
+		// Source
+		theApp.usersLogged.addUser(source);
+	}		
+	
+	// C_RAND
+	// Bits ..
+	// 16,17,18,19,20,21,22 Service_Options
+	// 23 Proxy Flag
+	// 24,25 Appended_Supplementary_Data
+	// 26,27 Appended_Short_Data
+	// 28,29,30,31 Service_Kind
+	// 32 - 55 Target Address
+	// 56 - 79 Source Address
+	private void csbko31fid0 (DMRDecode theApp,boolean bits[])	{
+		Utilities utils=new Utilities();
+		StringBuilder sb1=new StringBuilder(250);
+		StringBuilder sb2=new StringBuilder(250);
+		// Service Options
+		int service_options=utils.retSeven(bits,16);
+		display[0]="C_RAND : CSBKO=31 + FID=0 : Service_Options="+Integer.toString(service_options);
+		// Proxy Flag
+		boolean pf=bits[23];
+		// Appended_Supplementary_Data
+		int asd=0;
+		if (bits[24]==true) asd=2;
+		if (bits[24]==true) asd++;
+		// Appended_Short_Data
+		int ashortd=0;
+		if (bits[24]==true) ashortd=2;
+		if (bits[25]==true) ashortd++;
+		// Service_Kind
+		int service_kind=utils.retFour(bits,28);
+		// Display this
+		if (pf==true) sb1.append("Proxy Flag=1 : ");
+		else sb1.append("Proxy Flag=0 : ");
+		sb1.append("Appended_Supplementary_Data="+Integer.toString(asd)+" : ");
+		sb1.append("Appended_Short_Data="+Integer.toString(ashortd)+" : ");
+		sb1.append("Service_Kind="+Integer.toString(service_kind));
+		display[1]=sb1.toString();
+		// Target address
+		int target=utils.retAddress(bits,32);
+		// Source address
+		int source=utils.retAddress(bits,56);
+		sb2.append("Target Address : "+Integer.toString(target));
+		sb2.append(" Source Address : "+Integer.toString(source));
+		display[2]=sb2.toString();
+		// Log these users
+		// Target
+		theApp.usersLogged.addUser(target);	
+		// Source
+		theApp.usersLogged.addUser(source);
+	}	
 
 	// CSBKO 31 FID 16 Call Alert
 	// The information to decode this was kindly provided by bben95 on the Radioreference forums
@@ -868,6 +979,47 @@ public class CSBK {
 		display[1]=sb1.toString();		
 	}
 	
+	// C_ACKU
+	// Bits ..
+	// 16,17,18,19,20,21,22 Response_Info
+	// 23,24,25,26,27,28,29,30 Reason Code
+	// 31 Reserved
+	// 32 - 55 Target Address
+	// 56 - 79 Source Address
+	private void csbko33fid0 (DMRDecode theApp,boolean bits[])	{
+		Utilities utils=new Utilities();
+		StringBuilder sb1=new StringBuilder(250);
+		StringBuilder sb2=new StringBuilder(250);
+		// Response_Info
+		int response_info=utils.retSeven(bits,16);
+		display[0]="C_ACKU : CSBKO=33 + FID=0 : Response_Info="+Integer.toString(response_info);
+		// Reason Code
+		int reason_code=utils.retEight(bits,23);
+		int rc_t=(reason_code&192)>>6;
+		if (rc_t==0) sb1.append("NACK : ");
+		else if (rc_t==1) sb1.append("ACK : ");
+		else if (rc_t==2) sb1.append("QACK : ");
+		else if (rc_t==3) sb1.append("WACK : ");
+		if ((reason_code&32)>0) sb1.append("TS to MS : ");
+		else sb1.append("MS to TS : ");
+		int ar=reason_code&31;
+		sb1.append(getAckReason(rc_t,ar));
+		display[1]=sb1.toString();
+		// Target address
+		int target=utils.retAddress(bits,32);
+		// Source address
+		int source=utils.retAddress(bits,56);
+		sb2.append("Target Address : "+Integer.toString(target));
+		sb2.append(" Source Address : "+Integer.toString(source));
+		display[2]=sb2.toString();
+		// Log these users
+		// Target
+		theApp.usersLogged.addUser(target);	
+		// Source
+		theApp.usersLogged.addUser(source);
+	}	
+	
+	
 	// CSBKO 36 FID 16 Radio Check
 	private void csbko36fid16 (DMRDecode theApp,boolean bits[])	{
 		int a;
@@ -885,6 +1037,36 @@ public class CSBK {
 		sb1.append(")");
 		display[1]=sb1.toString();		
 	}	
+	
+	// P_MAINT
+	// Bits ..
+	// 16,17,18,19,20,21,22,23,24,25,26,27 Reserved
+	// 28,29,30 Maint Kind
+	// 31 Reserved
+	// 32 - 55 Target Address
+	// 56 - 79 Source Address
+	private void csbko42fid0 (DMRDecode theApp,boolean bits[])	{
+		Utilities utils=new Utilities();
+		StringBuilder sb1=new StringBuilder(250);
+		// Maint Kind
+		String mks;
+		int maint_kind=utils.retThree(bits,28);
+		if (maint_kind==0) mks="Disconnect. End of payload channel use";
+		else mks="Reserved";
+		display[0]="P_MAINT : CSBKO=42 + FID=0 : "+mks;
+		// Target address
+		int target=utils.retAddress(bits,32);
+		// Source address
+		int source=utils.retAddress(bits,56);
+		sb1.append("Target Address : "+Integer.toString(target));
+		sb1.append(" Source Address : "+Integer.toString(source));
+		display[1]=sb1.toString();
+		// Log these users
+		// Target
+		theApp.usersLogged.addUser(target);	
+		// Source
+		theApp.usersLogged.addUser(source);
+	}			
 	
 	// Capacity Plus
     // The information on this type of packet was kindly provided by Eric Cottrell on the Radioreference forums	
