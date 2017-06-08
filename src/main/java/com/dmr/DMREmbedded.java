@@ -272,7 +272,7 @@ public class DMREmbedded {
 						}	
 					}
 				}
-				// Rate ï¿½ Data Continuation
+				// Rate ½ Data Continuation
 				else if (dataType==7) {
 					BPTC19696 bptc19696=new BPTC19696();
 					if (bptc19696.decode(dibit_buf)==true)	{
@@ -293,7 +293,7 @@ public class DMREmbedded {
 					}
 				}
 				
-				// Rate ï¿½ Data Continuation
+				// Rate ¾ Data Continuation
 				else if (dataType==8)	{
 					// Just use the BPTC19696 class to extract the raw binary from the dibit buffer
 					BPTC19696 bptc19696=new BPTC19696();

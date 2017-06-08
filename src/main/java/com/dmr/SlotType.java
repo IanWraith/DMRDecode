@@ -85,8 +85,8 @@ public class SlotType {
 		else if (dataType==4) sb.append(" MBC Header");
 		else if (dataType==5) sb.append(" MBC Continuation");
 		else if (dataType==6) sb.append(" Data Header");
-		else if (dataType==7) sb.append(" Rate ï¿½ Data Continuation");
-		else if (dataType==8) sb.append(" Rate ï¿½ Data Continuation");
+		else if (dataType==7) sb.append(" Rate ½ Data Continuation");
+		else if (dataType==8) sb.append(" Rate ¾ Data Continuation");
 		else if (dataType==9) sb.append(" Idle");
 		else sb.append(" Reserved for future use");
 		// Convert from StringBuilder to a String
