@@ -1,10 +1,16 @@
+PLEASE NOTE : This project is obsolete and no longer supported. It has been superseded by other better DMR decoders but I'm leaving the repository on here as people seem to be interested.
+
+###
+
 The aim of this project is to provide a user friendly DMR data decoder for hobbyists.
 It is Java based so should run under Microsoft Windows , Apple and Linux PC's. The
 only hardware needed will be a radio scanner with a discriminator audio output.
 
 A binary version of this program which will run without being compiled is available from ..
 
-http://borg.shef.ac.uk/dmrdecode/
+https://drive.google.com/file/d/0B48eZhmoMv5nZUlpdTRNamNrQkk/view?usp=share_link&resourcekey=0-e1snv0OJnYG3bPY8_TfsDg
+
+This was however compiled for an earlier version of Java so may or may not still run.
 
 The core of the program is based around the open source DSD program by an unknown
 author. This program was written in C and runs under Linux only so my first job was to
@@ -55,7 +61,7 @@ From build 57 onwards Java 7 is required to run DMRDecode.
            
 Build 57 - Decode Connect Plus CSBKO 01 FID=6 PDUs
 
-Build 58 - Add a link to the new download page. Also decode Rate ¾ Data Continuation PDUs as raw binary.
+Build 58 - Add a link to the new download page. Also decode Rate Â¾ Data Continuation PDUs as raw binary.
 
 Build 59 - Display the Time Slot in Connect Plus Channel Grants (CSBKO 03 FID=6). This information was kindly
            provided by W8EMX on the Radioreference forums. 
@@ -94,6 +100,6 @@ Build 73 - Add basic support for monitoring MS and Direct mode.
 
 Build 74 - The program now supports nearly all Tier III CSBKOs
       
-Ian Wraith (8th May 2014)
+Ian Wraith (12th November 2022)
 
 
